@@ -1,0 +1,19 @@
+[project]
+name = "arbiter"
+version = "0.1.0"
+description = "Self-hosted AI security analyst — triage engine slice (MVP)"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+ollama = ["httpx>=0.27"]
+
+[project.scripts]
+arbiter = "arbiter.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["arbiter*"]

