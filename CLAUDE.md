@@ -11,7 +11,11 @@ First vertical slice of the triage engine (Python, stdlib-only):
 - `arbiter/prefilter.py` — cheap tier: severity × criticality × history. Thresholds are provisional; shadow-mode data should tune them.
 - `arbiter/llm.py` — pluggable backends: `OllamaBackend` (local open-weights model) and `MockBackend` (deterministic heuristics for tests/dev).
 - `arbiter/triage.py` — orchestrator, shadow mode, JSONL audit trail.
-- `arbiter/cli.py` — `python -m arbiter seed` / `python -m arbiter run samples/events.jsonl`.
+- `arbiter/respond.py` — response actuator: surgical, TTL-limited actions from escalation verdicts (block IP / lock account / kill session / quarantine host). Dry-run default; AUTO only for prefilter-tier + auto-safe catalog entries, LLM-tier is always RECOMMEND. Allowlists (CGNAT/office NAT) deliberately deferred.
+- `arbiter/store.py` — queryable SQLite audit store for the dashboard; `lifetime_counts()` is the only public-safe (non-identifying) view; 30-day `prune()`. Separate from `memory.py`, which is never pruned.
+- `arbiter/iam.py` — built-in IAM: local accounts, `hashlib.scrypt` hashing, HMAC-signed session cookies, `analyst`/`admin` roles, lockout. Stdlib-only.
+- `arbiter/web/` — self-hosted dashboard (ADR-001): stdlib `http.server`, server-rendered UI, public zero-recon splash, sign-in, live SSE feed wired to the real `TriageEngine`. No external deps, no CDN.
+- `arbiter/cli.py` — `python -m arbiter seed` / `run samples/events.jsonl [--respond]` / `serve`.
 
 ## Design invariants (do not violate)
 
@@ -20,6 +24,7 @@ First vertical slice of the triage engine (Python, stdlib-only):
 3. **Nothing leaves the customer's network.** No cloud API calls in the triage path. LLM inference is local (Ollama) or mock.
 4. **Adaptation through context, not weights** — learning lives in the SQLite memory layer, never in fine-tuning.
 5. Collection logic stays out of the brain. Anything that reads logs communicates with triage only through the `Event` schema.
+6. **Response mirrors both 1 and 5**: blocking requires stronger justification than alerting (false blocks are costly). Response logic stays out of the brain — `respond.py` consumes verdicts, `triage.py` never gains side effects. Actions are surgical, reversible, TTL-limited; never service-wide. The LLM tier never auto-executes.
 
 ## Verify changes
 

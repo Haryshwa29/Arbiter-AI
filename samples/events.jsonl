@@ -24,3 +24,21 @@
 # Scenario 7: garden-variety failed login, no history yet — should escalate
 # (low confidence to suppress) until the memory layer learns it.
 {"source": "sshd", "host": "web-prod-01", "event_type": "auth_failure", "message": "failed password for invalid user admin from 203.0.113.9", "severity": 3.0, "fields": {"src_ip": "203.0.113.9", "user": "admin"}}
+# Scenario 8 (DDoS): volumetric HTTP flood on the public web server.
+{"source": "nginx", "host": "web-prod-01", "event_type": "request_flood", "message": "94,000 req/s sustained for 4m from 2,100 distinct IPs against /api/login, upstream latency p99 12s, 502 rate 61%", "severity": 8.0, "fields": {"rps": 94000, "distinct_ips": 2100, "path": "/api/login"}}
+# Scenario 9 (DDoS): SYN flood at kernel level.
+{"source": "kernel", "host": "web-prod-01", "event_type": "syn_flood", "message": "possible SYN flooding on port 443, 48,000 half-open connections, SYN cookies engaged", "severity": 6.0, "fields": {"port": 443, "half_open": 48000}}
+# Scenario 10 (DDoS): slowloris-style connection exhaustion on a low-value host — ambiguous band, LLM must judge.
+{"source": "nginx", "host": "dev-laptop-42", "event_type": "conn_exhaustion", "message": "worker_connections exhausted: 4,096 connections held open with incomplete headers from 40 IPs", "severity": 5.0, "fields": {"connections": 4096, "distinct_ips": 40}}
+# Scenario 11 (DDoS benign look-alike): launch-day traffic spike, error rate normal — suppressed only if a launch-window fact exists.
+{"source": "nginx", "host": "web-prod-01", "event_type": "traffic_spike", "message": "traffic spike to 9,000 req/s during product launch campaign window, error rate normal at 0.2%", "severity": 4.0, "fields": {"rps": 9000, "error_rate": 0.002}}
+# Scenario 12 (geo): impossible travel — same account, two countries, 6 minutes apart. High severity, prefilter should catch.
+{"source": "vpn", "host": "vpn-gw-01", "event_type": "geo_impossible_travel", "message": "successful VPN login for user maria from 203.0.113.50 (geo: RU) 6 minutes after login from office IP 49.207.1.9 (geo: IN) — impossible travel", "severity": 7.5, "fields": {"user": "maria", "src_ip": "203.0.113.50", "geo": "RU", "prev_geo": "IN", "gap_minutes": 6}}
+# Scenario 13 (geo, subtle): admin login from a residential proxy in an unusual country, modest severity — lands in ambiguous band.
+{"source": "webapp", "host": "web-prod-01", "event_type": "geo_anomaly_login", "message": "admin panel login success for user devops from residential proxy 45.146.26.8 (geo: BR); user has only ever logged in from IN", "severity": 4.0, "fields": {"user": "devops", "src_ip": "45.146.26.8", "geo": "BR", "usual_geo": "IN"}}
+# Scenario 14 (internal corruption): system binary tampered outside any patch window — crown-jewel host, prefilter catches.
+{"source": "aide", "host": "db-prod-01", "event_type": "file_integrity", "message": "integrity check: /usr/sbin/sshd binary checksum changed outside patch window; package manager reports no update installed", "severity": 6.0, "fields": {"path": "/usr/sbin/sshd"}}
+# Scenario 15 (internal corruption): ransomware-pattern mass rename on an internal NAS by a process in /tmp.
+{"source": "auditd", "host": "nas-01", "event_type": "mass_file_rename", "message": "3,400 files renamed with .lockd extension in 5m by process /tmp/updater on shared volume /srv/files", "severity": 5.0, "fields": {"count": 3400, "binary": "/tmp/updater"}}
+# Scenario 16 (internal corruption, ambiguous): failing disk — hardware, not attack, but should still escalate (no benign fact covers it).
+{"source": "smartd", "host": "ci-runner-01", "event_type": "disk_degradation", "message": "SMART: reallocated sector count rising on /dev/sda; fsck repaired orphaned inodes on /var", "severity": 3.0, "fields": {"device": "/dev/sda"}}

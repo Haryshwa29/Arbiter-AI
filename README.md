@@ -33,7 +33,17 @@ Asymmetric error costs are enforced in three places: the prefilter only suppress
 
 ## What the sample run demonstrates
 
-The recurring backup IO spike is suppressed by the LLM (environment fact) until the signature accumulates 5 benign verdicts — then the prefilter suppresses it for free. Brute force and `curl | sh` on critical assets escalate at the prefilter tier without spending an LLM call. A privilege escalation on a *low-value* laptop scores too low for the prefilter but is caught by the LLM tier. An unknown host gets elevated criticality and escalates.
+The recurring backup IO spike is suppressed by the LLM (environment fact) until the signature accumulates 5 benign verdicts — then the prefilter suppresses it for free. Brute force and `curl | sh` on critical assets escalate at the prefilter tier without spending an LLM call. A privilege escalation on a *low-value* laptop scores too low for the prefilter but is caught by the LLM tier. An unknown host gets elevated criticality and escalates. The sample set also covers DDoS (volumetric flood, SYN flood, slowloris, and a benign launch-day spike), geo-location attacks (impossible travel, anomalous-country admin login), and internal corruption (tampered system binary, ransomware-pattern mass rename, failing disk).
+
+## Response actuator (surgical auto-block, dry-run)
+
+`arbiter/respond.py` turns escalation verdicts into *surgical* actions — one IP, one account, one session, one process, one host; never a service-wide switch:
+
+```bash
+python -m arbiter run samples/events.jsonl --respond   # plans actions, executes nothing
+```
+
+The trust-model extension: blocking requires stronger justification than alerting, because a false block is costlier than a false alert. So AUTO execution is reserved for deterministic prefilter-tier escalations with auto-safe actions (brute-force IP ban with a 60m TTL, kill/lock an impossible-travel session); LLM-tier escalations always produce RECOMMEND actions for one-click human approval — the model proposes, rules dispose. Actions that could take the service down (quarantining a crown-jewel host, edge under-attack mode for volumetric DDoS) are never auto, regardless of tier. All actions are TTL-limited or held-for-review, land in `response_audit.jsonl`, and dry-run is the default (the response analog of shadow mode). Response logic lives outside the brain, consuming verdicts the same way collectors emit events. Deferred: never-block allowlists (office NAT / CGNAT) and live executors.
 
 ## Development
 
@@ -42,4 +52,38 @@ python -m unittest discover -s tests -v   # unit tests (stdlib only, no pytest n
 python -m arbiter eval                    # score the mock backend against the labeled eval set
 ```
 
-CI (GitHub Actions) runs the test suite and an end-to-end smoke run on Python 3.10–3.13, plus a non-blocking eval report. The eval exits non-zero on any missed attac
+CI (GitHub Actions) runs the test suite and an end-to-end smoke run on Python 3.10–3.13, plus a non-blocking eval report. The eval exits non-zero on any missed attack; the mock backend deliberately fails the fact-trap cases, so the eval only becomes a hard CI gate once a real local model runs it.
+
+## Evaluating a model ("minimum viable local model")
+
+`samples/eval_set.jsonl` is 24 hand-labeled cases (clear attacks, attacks disguised behind a plausible-but-wrong environment fact, and benign anomalies) scored by calling the LLM backend directly — bypassing the prefilter, since that's already rule-based and the open question is specifically about model judgment.
+
+```bash
+python -m arbiter eval --backend mock                      # baseline: fails the fact-trap cases on purpose
+python -m arbiter eval --backend ollama --model qwen3.5:4b  # candidate model
+```
+
+The report leads with missed attacks (fatal per the trust model) before accuracy — that's the number that decides whether a model is usable at all. On this eval set, a ~4B model (`qwen3.5:4b`) scored 100% including every fact-trap case, once `OllamaBackend` disabled the model's "thinking" mode (hybrid-reasoning models otherwise put the whole answer in a `thinking` field and leave `response` empty under a forced `format: json`, which broke parsing).
+
+## Dashboard (self-hosted web UI)
+
+A stdlib-only web dashboard (ADR-001) over the triage engine — no external dependencies, nothing loads from off the network.
+
+```bash
+python -m arbiter seed
+python -m arbiter serve                                   # http://127.0.0.1:8787
+python -m arbiter serve --backend ollama --model qwen3.5:4b   # real local model in the feed
+```
+
+On first run it prints one-time `admin` and `analyst` credentials. The logged-out page is deliberately zero-recon — only cumulative aggregate counts, no hosts/IPs/signatures/live feed. After sign-in, `analyst` and `admin` see the live feed (Server-Sent Events streaming real verdicts from the triage engine), overview, and audit; `admin` also sees settings/users/retention. Sessions are HMAC-signed cookies, passwords hashed with `hashlib.scrypt`, logins throttled, and a failed dashboard login is itself fed back into Arbiter as an event.
+
+## Next steps
+
+1. Evaluate real local models against the mock: build a labeled eval set, answer "minimum viable local model" (the biggest open question).
+2. Human feedback loop CLI: confirm/overrule escalations → `memory.label_verdicts`.
+3. Wrap a real collector (Vector/Wazuh decision) emitting the `Event` schema.
+4. Event-triggered micro-rescans when unknown assets appear.
+
+## License
+
+Not yet licensed — all rights reserved. A license will be chosen when the product is ready to open up.

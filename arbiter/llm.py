@@ -156,4 +156,14 @@ class MockBackend(LLMBackend):
         return LLMVerdict(
             Decision.ESCALATE, 0.55,
             f"Review {event.source}/{event.event_type} on {event.host}; "
-            f"no h
+            f"no history to justify suppression.",
+            "No strong benign explanation available; erring toward escalation.",
+        )
+
+
+def get_backend(name: str, model: str = "llama3.1:8b") -> LLMBackend:
+    if name == "ollama":
+        return OllamaBackend(model=model)
+    if name == "mock":
+        return MockBackend()
+    raise ValueError(f"unknown backend: {name}")
