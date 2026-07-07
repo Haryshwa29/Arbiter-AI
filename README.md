@@ -1,4 +1,4 @@
-# Arbiter — triage engine slice
+# Arbiter AI - Triage
 
 The first vertical slice of the Arbiter concept (see `CONCEPT.md`): sample events in → cheap pre-filter → local LLM on ambiguous alerts → verdict with evidence or rationale → audit trail. No collector, no dashboard — just proof that the brain works.
 
