@@ -29,9 +29,13 @@ flowchart TD
         D["dashboard<br/><small>analyst sees, acts, resolves</small>"]
         R["response actuator<br/><small>surgical · TTL · reversible</small>"]
 
-        L --> C --> P
+        G["security guardrails<br/><small>non-suppressible signals</small>"]
+        L --> C --> G
+        G -- "hard signal: exposure / tampering / exfil" --> V
+        G -- "otherwise" --> P
         P -- "high/low score: decided cheaply" --> V
-        P -- "ambiguous only" --> LLM --> V
+        P -- "ambiguous only" --> LLM --> GV{"guardrail veto"}
+        GV --> V
         V --> D
         V --> R
         M -. feeds scoring .-> P
@@ -39,6 +43,8 @@ flowchart TD
         D -. analyst feedback trains .-> M
     end
 ```
+
+The guardrail layer wraps the model on both sides — `Event → guardrails → LLM → guardrails → Decision`. See "Guardrails" below for why.
 
 The cost-control idea: a cheap rule-based **prefilter** handles the large majority of events (an LLM call per alert is far too expensive at log volume), and the **local LLM** only sees the ambiguous minority. The model runs on the customer's own hardware via Ollama (open weights), which is what makes "nothing leaves the network" true rather than marketing.
 
@@ -58,6 +64,30 @@ flowchart LR
 - Every suppression carries a written rationale; every escalation carries an evidence summary. No silent verdicts.
 - A low-confidence "suppress" from the model is upgraded to escalate; if the model is unreachable, the event escalates by policy.
 - **Shadow mode first**: Arbiter scores alongside the human for weeks before it earns the right to suppress anything.
+
+## Guardrails — non-suppressible invariants (the adversarial layer)
+
+The hardest attack class is the **fact-trap**: a malicious action dressed as routine maintenance ("opened RDP to the internet *during the patch window*", "uploaded 6GB to an unknown host *during the backup window*"). An adversarial evaluation exposed that this can't be fixed by trusting the model. A local 4B model caught **0 of 9** fact-traps — and, counter-intuitively, did *worse* than a dumb keyword heuristic, because a smarter model over-applies the benign "maintenance window" framing and extends it to things it never should.
+
+So fact-trap resistance is not a property to hope the model has; it is a guarantee enforced in code. Certain signals are **non-suppressible** — no environment fact and no model verdict may silence them:
+
+- exposure of a service to the public internet (`0.0.0.0/0`)
+- an integrity/binary change with no matching package update
+- data leaving to an unknown or external destination
+- creation or elevation of a privileged (uid-0/admin) account
+- remote shell execution (pipe-to-shell, reverse shell)
+- credential dumping
+
+`arbiter/guardrails.py` checks these before the model (a hard signal escalates without spending inference) and vetoes any model "suppress" after it. With the guardrail sandwich, both the mock and the local model go to **100% recall on the fact-trap set** (9/9), with precision *unchanged* — the guardrails never fire on benign maintenance.
+
+### The Adversarial Evaluation Suite
+
+`samples/adversarial_suite.jsonl` turns this into a permanent, growing benchmark. Each category pairs legitimate maintenance (must suppress) with an attack wearing the same costume (must escalate): maintenance window, backup window, patch Tuesday, scheduled scan, CI/CD, developer sandbox, nightly sync, database migration, VPN maintenance, cloud autoscaling, and generic fact-traps. The rule is binary — **every disguised attack must be caught, or the gate fails.** Every new fact-trap that slips past becomes a new guardrail rule *and* a permanent case here; the suite only grows.
+
+```bash
+python -m arbiter eval samples/adversarial_suite.jsonl --backend ollama --model qwen3.5:4b
+python -m arbiter eval samples/adversarial_suite.jsonl --backend mock --no-guardrails   # see the raw model fail
+```
 
 ## Adaptation through context, not weights
 
@@ -85,6 +115,8 @@ A stdlib-only web dashboard (see [`ADR-001`](ADR-001-dashboard-retention-iam.md)
 | Per-company memory: assets, history, facts | `arbiter/memory.py` |
 | Tier 1 — cheap prefilter | `arbiter/prefilter.py` |
 | Tier 2 — local LLM (Ollama / mock) | `arbiter/llm.py` |
+| Non-suppressible security guardrails | `arbiter/guardrails.py` |
+| Adversarial evaluation suite + gate | `samples/adversarial_suite.jsonl`, `arbiter/eval.py` |
 | Orchestrator, shadow mode, audit trail | `arbiter/triage.py` |
 | Response actuator (surgical, dry-run) | `arbiter/respond.py` |
 | Queryable audit store + 30-day retention | `arbiter/store.py` |

@@ -10,6 +10,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from .guardrails import fact_downgrade, guardrail_check
 from .llm import LLMBackend
 from .memory import Memory
 from .prefilter import prefilter
@@ -24,6 +25,8 @@ class TriageStats:
     total: int = 0
     prefilter_decided: int = 0
     llm_decided: int = 0
+    guardrail_decided: int = 0
+    guardrail_downgraded: int = 0
     escalated: int = 0
     suppressed: int = 0
 
@@ -39,9 +42,41 @@ class TriageEngine:
         self.stats = TriageStats()
 
     def triage(self, event: Event) -> Verdict:
+        # Security guardrail, pre-LLM: non-suppressible signals escalate
+        # immediately — no fact, score, or model verdict may silence them.
+        # Sole exception: an admin-curated environment fact that names this
+        # host AND the specific dangerous marker downgrades the rail to an
+        # LLM decision (never a suppression by itself, never the prefilter's
+        # call).
+        hit = guardrail_check(event)
+        downgraded = None
+        if hit is not None:
+            facts = self.memory.facts_for(event.host, event.source)
+            fact = fact_downgrade(hit, event, facts)
+            if fact is None:
+                verdict = Verdict(
+                    event_id=event.id, signature=event.signature,
+                    decision=Decision.ESCALATE, score=10.0, tier=Tier.GUARDRAIL,
+                    rationale=f"Security guardrail [{hit.code}]: {hit.reason}.",
+                    evidence=f"Non-suppressible signal: {event.message}",
+                )
+                self.stats.guardrail_decided += 1
+                self.stats.total += 1
+                self.stats.escalated += 1
+                self.memory.record_verdict(verdict)
+                self._audit(event, verdict)
+                return verdict
+            downgraded = (hit, fact)
+            self.stats.guardrail_downgraded += 1
+
         pre = prefilter(event, self.memory)
 
-        if pre.decision is not Decision.AMBIGUOUS:
+        if downgraded is not None:
+            # Rail fired but a standing fact corroborates the exact pattern:
+            # the decision belongs to the LLM tier, with the fact in context.
+            verdict = self._llm_triage(event, pre.score, downgraded=downgraded)
+            self.stats.llm_decided += 1
+        elif pre.decision is not Decision.AMBIGUOUS:
             verdict = Verdict(
                 event_id=event.id, signature=event.signature,
                 decision=pre.decision, score=pre.score, tier=Tier.PREFILTER,
@@ -64,7 +99,8 @@ class TriageEngine:
         self._audit(event, verdict)
         return verdict
 
-    def _llm_triage(self, event: Event, pre_score: float) -> Verdict:
+    def _llm_triage(self, event: Event, pre_score: float,
+                    downgraded: tuple | None = None) -> Verdict:
         history = self.memory.history(event.signature)
         summary = (
             f"seen {history.total}x before: {history.suppressed} suppressed, "
@@ -91,6 +127,25 @@ class TriageEngine:
             rationale = (f"LLM suggested suppress at confidence "
                          f"{llm.confidence:.2f} < {MIN_SUPPRESS_CONFIDENCE}; "
                          f"upgraded to escalate. LLM said: {llm.rationale}")
+
+        # Post-LLM guardrail veto (second half of the sandwich): a suppress
+        # can never stand against a non-suppressible signal, whatever the
+        # model concluded from the environment facts. A rail downgraded by a
+        # corroborating fact does not veto — but any OTHER rail still does.
+        if decision is Decision.SUPPRESS:
+            hit = guardrail_check(event)
+            if hit is not None and (downgraded is None
+                                    or hit.name != downgraded[0].name):
+                decision = Decision.ESCALATE
+                rationale = (f"Security guardrail [{hit.code}] vetoed LLM "
+                             f"suppress: {hit.reason}.")
+
+        # Transparency (invariant #2): a downgraded rail is always visible in
+        # the verdict, whichever way the model decided.
+        if downgraded is not None:
+            d_hit, d_fact = downgraded
+            rationale = (f"[guardrail {d_hit.name} downgraded to LLM decision "
+                         f"by standing fact: \"{d_fact}\"] {rationale}")
 
         return Verdict(
             event_id=event.id, signature=event.signature,

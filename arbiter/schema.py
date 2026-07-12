@@ -24,6 +24,7 @@ class Decision(str, Enum):
 class Tier(str, Enum):
     PREFILTER = "prefilter"
     LLM = "llm"
+    GUARDRAIL = "guardrail"  # deterministic non-suppressible security invariant
 
 
 @dataclass

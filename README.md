@@ -56,14 +56,20 @@ CI (GitHub Actions) runs the test suite and an end-to-end smoke run on Python 3.
 
 ## Evaluating a model ("minimum viable local model")
 
-`samples/eval_set.jsonl` is 24 hand-labeled cases (clear attacks, attacks disguised behind a plausible-but-wrong environment fact, and benign anomalies) scored by calling the LLM backend directly — bypassing the prefilter, since that's already rule-based and the open question is specifically about model judgment.
+Labeled eval sets score a backend and report **recall / precision** plus an adversarial PASS/FAIL gate:
+
+- `samples/realistic_suite.jsonl` — **101 cases replicating a deployment day**: routine ops noise (auth, deploy, backup, cloud, dev, hardware, network) plus attacks across the full kill chain (recon → brute force → execution → persistence → privesc → credential access → lateral movement → exfil → impact/ransomware/mining → DDoS → cloud misconfig) and disguised fact-traps. This is the **precision benchmark** — the real question is whether a model keeps 100% recall while suppressing the day-to-day noise.
+- `samples/adversarial_suite.jsonl` — 11 disguised-attack categories (the fact-trap gate).
+- `samples/stress_set.jsonl` (58) and `samples/eval_set.jsonl` (24) — earlier sets.
 
 ```bash
-python -m arbiter eval --backend mock                      # baseline: fails the fact-trap cases on purpose
-python -m arbiter eval --backend ollama --model qwen3.5:4b  # candidate model
+python -m arbiter eval samples/realistic_suite.jsonl --backend ollama --model qwen3.5:4b
+python -m arbiter eval samples/adversarial_suite.jsonl --backend mock --no-guardrails  # watch the raw model fail
 ```
 
-The report leads with missed attacks (fatal per the trust model) before accuracy — that's the number that decides whether a model is usable at all. On this eval set, a ~4B model (`qwen3.5:4b`) scored 100% including every fact-trap case, once `OllamaBackend` disabled the model's "thinking" mode (hybrid-reasoning models otherwise put the whole answer in a `thinking` field and leave `response` empty under a forced `format: json`, which broke parsing).
+**Honest finding on the fact-trap class.** Evaluated directly, a 4B model (`qwen3.5:4b`) catches every clear, subtle, DDoS and corruption attack and perfectly suppresses legitimate maintenance — but it caught **0 of 9 fact-traps** (attacks disguised as routine maintenance), *worse* than the dumb keyword mock, because a smarter model over-applies the benign "maintenance window" framing. Fact-trap resistance therefore lives in code, not the model: the non-suppressible **security guardrails** (`arbiter/guardrails.py`) wrap the LLM on both sides. With guardrails on (the default), both backends reach 100% recall on the fact-trap set with precision unchanged. `--no-guardrails` isolates the raw model. See `docs/ARCHITECTURE.md` → Guardrails.
+
+(Note: an earlier revision of this README claimed the 4B model scored 100% on fact-traps. The adversarial suite, with harder traps, showed that was over-optimistic — this is the corrected, guardrail-backed picture.)
 
 ## Dashboard (self-hosted web UI)
 

@@ -11,7 +11,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from .eval import evaluate, load_cases
+from .eval import evaluate, load_cases, print_variance
 from .llm import get_backend
 from .memory import Memory
 from .respond import ActionMode, Responder
@@ -74,11 +74,20 @@ def cmd_eval(args):
     cases = load_cases(path)
     backend = get_backend(args.backend, model=args.model)
     name = f"{backend.name}:{args.model}" if args.backend == "ollama" else backend.name
-    print(f"Evaluating {name} against {len(cases)} labeled cases from {path}...")
-    report = evaluate(backend, cases)
-    report.backend_name = name
-    report.print_summary()
-    if report.missed_attacks:
+    guard = "off" if args.no_guardrails else "on"
+    print(f"Evaluating {name} against {len(cases)} labeled cases from {path} "
+          f"(guardrails {guard})...")
+    reports = []
+    for i in range(args.runs):
+        if args.runs > 1:
+            print(f"--- run {i + 1}/{args.runs} ---")
+        report = evaluate(backend, cases, use_guardrails=not args.no_guardrails)
+        report.backend_name = name
+        reports.append(report)
+    reports[-1].print_summary()
+    if args.runs > 1:
+        print_variance(reports)
+    if any(r.missed_attacks for r in reports):
         sys.exit(1)
 
 
@@ -112,6 +121,11 @@ def main():
     ep.add_argument("eval_set", nargs="?", default="samples/eval_set.jsonl")
     ep.add_argument("--backend", choices=["mock", "ollama"], default="mock")
     ep.add_argument("--model", default="llama3.1:8b")
+    ep.add_argument("--no-guardrails", action="store_true",
+                    help="measure the raw model without the security guardrails")
+    ep.add_argument("--runs", type=int, default=1,
+                    help="repeat the eval N times and report cross-run "
+                         "variance (flaky cases are latent misses)")
     ep.set_defaults(fn=cmd_eval)
 
     wp = sub.add_parser("serve", help="run the self-hosted dashboard")
