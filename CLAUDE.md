@@ -8,6 +8,7 @@ First vertical slice of the triage engine (Python, stdlib-only):
 
 - `arbiter/schema.py` — Event/Verdict data contract. **This is the stable boundary a future Go collector agent must honor. Do not change it casually; keep it dependency-free.**
 - `arbiter/memory.py` — SQLite memory layer: asset criticality, verdict history per signature, environment facts. Deliberately human-readable (transparency is a product feature).
+- `arbiter/facts.py` — scoped environment facts (the fact-overreach fix): a fact may carry `user`/`path`/`process`/`event_types`/`window` constraints, checked in code against each event before the LLM sees it; out-of-scope facts render with a `[SCOPE MISMATCH]` annotation that can never justify suppression. Scope facts to the event class they explain — over-scoping mismatches legit events (see `cmd_seed`).
 - `arbiter/prefilter.py` — cheap tier: severity × criticality × history. Thresholds are provisional; shadow-mode data should tune them.
 - `arbiter/llm.py` — pluggable backends: `OllamaBackend` (local open-weights model) and `MockBackend` (deterministic heuristics for tests/dev).
 - `arbiter/triage.py` — orchestrator, shadow mode, JSONL audit trail.

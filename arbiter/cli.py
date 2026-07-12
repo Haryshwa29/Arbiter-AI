@@ -29,8 +29,17 @@ def cmd_seed(args):
               ("dev-laptop-42", 0.5, "developer laptop", True)]
     for host, crit, role, confirmed in assets:
         mem.upsert_asset(host, crit, role, confirmed)
-    mem.add_fact("backups run at 02:00 — nightly IO spike on db-prod-01 is normal", scope="db-prod-01")
-    mem.add_fact("ci-runner-01 spawns many short-lived containers; process churn is expected", scope="ci-runner-01")
+    # Scoped facts: each covers ONLY the behavior it names (facts.py) — an
+    # event outside the scope gets a code-side [SCOPE MISMATCH] annotation.
+    # Scope to the event CLASS the fact explains: the IO-spike fact covers
+    # io_anomaly events, not the process_exec that writes the archive —
+    # over-scoping (user/path/window here) would mismatch legit IO spikes.
+    mem.add_fact("backups run at 02:00 — nightly IO spike on db-prod-01 is normal",
+                 scope="db-prod-01", event_types=("io_anomaly",))
+    mem.add_fact("ci-runner-01 spawns many short-lived containers; process churn is expected",
+                 scope="ci-runner-01",
+                 event_types=("process_anomaly", "process_burst",
+                              "process_exec"))
     print(f"Seeded {len(assets)} assets and 2 environment facts into {args.db}")
 
 

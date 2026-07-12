@@ -10,6 +10,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+from .facts import render_all, texts
 from .guardrails import fact_downgrade, guardrail_check
 from .llm import LLMBackend
 from .memory import Memory
@@ -52,7 +53,7 @@ class TriageEngine:
         downgraded = None
         if hit is not None:
             facts = self.memory.facts_for(event.host, event.source)
-            fact = fact_downgrade(hit, event, facts)
+            fact = fact_downgrade(hit, event, texts(facts))
             if fact is None:
                 verdict = Verdict(
                     event_id=event.id, signature=event.signature,
@@ -107,7 +108,11 @@ class TriageEngine:
             f"{history.escalated} escalated, {history.overruled} human-overruled"
             if history.total else "first occurrence of this signature"
         )
-        facts = self.memory.facts_for(event.host, event.source)
+        # Scope-check every fact against THIS event before the model sees
+        # it (facts.py): a fact that demonstrably doesn't cover the event
+        # is annotated [SCOPE MISMATCH] — the fact-overreach fix.
+        facts = render_all(self.memory.facts_for(event.host, event.source),
+                           event)
         criticality = self.memory.asset_criticality(event.host)
 
         try:

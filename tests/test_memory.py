@@ -47,10 +47,21 @@ class TestMemory(unittest.TestCase):
         self.mem.add_fact("backups at 02:00", scope="db-prod-01")
         self.mem.add_fact("company uses tailscale", scope="*")
         self.mem.add_fact("irrelevant", scope="other-host")
-        facts = self.mem.facts_for("db-prod-01", "auditd")
+        facts = [f.text for f in self.mem.facts_for("db-prod-01", "auditd")]
         self.assertIn("backups at 02:00", facts)
         self.assertIn("company uses tailscale", facts)
         self.assertNotIn("irrelevant", facts)
+
+    def test_scoped_fact_round_trips_constraints(self):
+        self.mem.add_fact("backups run at 02:00", scope="db-prod-01",
+                          user="postgres", path="/backup",
+                          event_types=("process_exec",), window="01:45-02:30")
+        (f,) = self.mem.facts_for("db-prod-01", "auditd")
+        self.assertEqual(f.user, "postgres")
+        self.assertEqual(f.path, "/backup")
+        self.assertEqual(f.event_types, ("process_exec",))
+        self.assertEqual(f.window, "01:45-02:30")
+        self.assertTrue(f.scoped)
 
 
 if __name__ == "__main__":

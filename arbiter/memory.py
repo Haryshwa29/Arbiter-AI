@@ -12,6 +12,7 @@ import sqlite3
 from dataclasses import dataclass
 from pathlib import Path
 
+from .facts import ScopedFact
 from .schema import Verdict
 
 _SCHEMA = """
@@ -33,9 +34,20 @@ CREATE INDEX IF NOT EXISTS idx_history_sig ON verdict_history (signature);
 CREATE TABLE IF NOT EXISTS facts (
     id      INTEGER PRIMARY KEY,
     scope   TEXT NOT NULL DEFAULT '*',       -- host, source, or '*'
-    fact    TEXT NOT NULL                    -- "backups run at 02:00 — IO spike is normal"
+    fact    TEXT NOT NULL,                   -- "backups run at 02:00 — IO spike is normal"
+    -- Optional scope constraints (the fact-overreach fix): a fact covers
+    -- ONLY the behavior these name. Discrete columns, not a JSON blob, so
+    -- the customer can read their own facts straight out of the table.
+    f_user      TEXT DEFAULT '',             -- acting user the fact covers
+    f_path      TEXT DEFAULT '',             -- path prefix the fact covers
+    f_process   TEXT DEFAULT '',             -- tool/process the fact covers
+    f_events    TEXT DEFAULT '',             -- comma-separated event types
+    f_window    TEXT DEFAULT ''              -- "HH:MM-HH:MM" time-of-day
 );
 """
+
+# Columns added after the first release; applied to pre-existing DBs.
+_FACT_SCOPE_COLUMNS = ("f_user", "f_path", "f_process", "f_events", "f_window")
 
 
 @dataclass
@@ -54,7 +66,16 @@ class Memory:
     def __init__(self, db_path: str | Path = "arbiter_memory.db") -> None:
         self.conn = sqlite3.connect(str(db_path))
         self.conn.executescript(_SCHEMA)
+        self._migrate()
         self.conn.commit()
+
+    def _migrate(self) -> None:
+        have = {row[1] for row in
+                self.conn.execute("PRAGMA table_info(facts)").fetchall()}
+        for col in _FACT_SCOPE_COLUMNS:
+            if col not in have:
+                self.conn.execute(
+                    f"ALTER TABLE facts ADD COLUMN {col} TEXT DEFAULT ''")
 
     # -- assets ------------------------------------------------------------
     def upsert_asset(self, host: str, criticality: float, role: str = "",
@@ -112,17 +133,34 @@ class Memory:
         self.conn.commit()
 
     # -- environment facts ---------------------------------------------------
-    def add_fact(self, fact: str, scope: str = "*") -> None:
+    def add_fact(self, fact: str, scope: str = "*", *, user: str = "",
+                 path: str = "", process: str = "",
+                 event_types: tuple[str, ...] | list[str] = (),
+                 window: str = "") -> None:
+        """Record a fact, optionally with the scope it actually covers.
+
+        Unscoped facts behave as before. Scoped facts get code-side scope
+        checking before the LLM sees them (see facts.py) — a fact only
+        excuses the exact behavior it names.
+        """
         self.conn.execute(
-            "INSERT INTO facts (scope, fact) VALUES (?,?)", (scope, fact)
+            "INSERT INTO facts (scope, fact, f_user, f_path, f_process, "
+            "f_events, f_window) VALUES (?,?,?,?,?,?,?)",
+            (scope, fact, user, path, process, ",".join(event_types), window),
         )
         self.conn.commit()
 
-    def facts_for(self, host: str, source: str) -> list[str]:
+    def facts_for(self, host: str, source: str) -> list[ScopedFact]:
         rows = self.conn.execute(
-            "SELECT fact FROM facts WHERE scope IN (?,?,'*')", (host, source)
+            "SELECT fact, scope, f_user, f_path, f_process, f_events, f_window "
+            "FROM facts WHERE scope IN (?,?,'*')", (host, source)
         ).fetchall()
-        return [r[0] for r in rows]
+        return [ScopedFact(text=r[0], host=r[1], user=r[2] or "",
+                           path=r[3] or "", process=r[4] or "",
+                           event_types=tuple(t for t in (r[5] or "").split(",")
+                                             if t),
+                           window=r[6] or "")
+                for r in rows]
 
     def close(self) -> None:
         self.conn.close()

@@ -30,6 +30,7 @@ Respond ONLY with JSON:
 Rules:
 - Missing a real intrusion is far worse than a false escalation. If unsure, escalate.
 - Use environment facts to explain benign anomalies, but never let a fact excuse credential abuse or lateral movement.
+- A fact covers ONLY the specific behavior it names (user, path, process, event class, time). Some facts carry a code-verified scope annotation: a fact marked [SCOPE MISMATCH ...] does NOT apply to this event and must never justify suppression — activity merely adjacent to a known-benign pattern (right host, wrong user/path/action) is itself suspicious.
 - Evidence must be specific: name the host, user, IP, or pattern to check."""
 
 
@@ -130,6 +131,14 @@ class MockBackend(LLMBackend):
 
     @staticmethod
     def _fact_explains(fact: str, msg: str) -> bool:
+        # Honor the code-side scope verdict (facts.py): a fact the scope
+        # checker ruled out can never explain the event, whatever the word
+        # overlap says.
+        if "[SCOPE MISMATCH" in fact:
+            return False
+        if "[scope verified" in fact:
+            return True
+        fact = fact.split(" [scope", 1)[0]  # strip remaining annotations
         fact_words = {w for w in fact.lower().split() if len(w) >= 4}
         msg_words = {w for w in msg.lower().split() if len(w) >= 4}
         return len(fact_words & msg_words) >= 2

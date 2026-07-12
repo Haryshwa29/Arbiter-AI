@@ -18,6 +18,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .facts import ScopedFact, render_all, texts
 from .guardrails import fact_downgrade, guardrail_check
 from .llm import LLMBackend
 from .schema import Decision, Event
@@ -29,7 +30,7 @@ class EvalCase:
     event: Event
     criticality: float
     history_summary: str
-    facts: list[str]
+    facts: list[ScopedFact]
     expected: Decision
     category: str
     notes: str = ""
@@ -42,7 +43,9 @@ class EvalCase:
             criticality=d.get("criticality", 1.0),
             history_summary=d.get("history_summary",
                                   "first occurrence of this signature"),
-            facts=d.get("facts", []),
+            # A fact may be a plain string (unscoped, legacy) or an object
+            # with scope constraints — see facts.ScopedFact.
+            facts=[ScopedFact.from_obj(f) for f in d.get("facts", [])],
             expected=Decision(d["expected"]),
             category=d["category"],
             notes=d.get("notes", ""),
@@ -89,15 +92,18 @@ def run_case(backend: LLMBackend, case: EvalCase,
     if use_guardrails:
         hit = guardrail_check(case.event)
         if hit is not None:
-            if fact_downgrade(hit, case.event, case.facts) is None:
+            if fact_downgrade(hit, case.event, texts(case.facts)) is None:
                 return CaseResult(case, Decision.ESCALATE, 1.0, 0.0,
                                   guardrail=hit.code)
             downgraded = hit
 
     start = time.monotonic()
     try:
+        # Scope-check facts against this event before the model sees them
+        # (mirrors triage.py) — the fact-overreach fix is code, not prompt.
         v = backend.triage(case.event, case.criticality,
-                           case.history_summary, case.facts)
+                           case.history_summary,
+                           render_all(case.facts, case.event))
     except Exception as exc:
         # Mirrors triage.py policy: a backend failure escalates, never
         # silently drops the event.
