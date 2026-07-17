@@ -11,10 +11,12 @@ import argparse
 import sys
 from pathlib import Path
 
+from .bench import cmd_bench
 from .eval import evaluate, load_cases, print_variance
 from .llm import get_backend
 from .memory import Memory
 from .respond import ActionMode, Responder
+from .review import cmd_review
 from .schema import Decision, Event
 from .triage import TriageEngine
 
@@ -136,6 +138,32 @@ def main():
                     help="repeat the eval N times and report cross-run "
                          "variance (flaky cases are latent misses)")
     ep.set_defaults(fn=cmd_eval)
+
+    vp = sub.add_parser("review",
+                        help="confirm/overrule recent verdicts "
+                             "(human feedback loop)")
+    vp.add_argument("--audit", default="audit.jsonl")
+    vp.add_argument("--decision", choices=["escalate", "suppress", "all"],
+                    default="all")
+    vp.add_argument("--limit", type=int, default=20,
+                    help="review at most N most-recent signatures")
+    vp.set_defaults(fn=cmd_review)
+
+    bp = sub.add_parser("bench",
+                        help="flood benchmark: triage latency under attack volume")
+    bp.add_argument("--rate", type=float, default=200.0,
+                    help="event arrival rate per second")
+    bp.add_argument("--duration", type=float, default=30.0,
+                    help="attack window length in seconds")
+    bp.add_argument("--backend", choices=["mock", "ollama"], default="mock")
+    bp.add_argument("--model", default="qwen3.5:4b")
+    bp.add_argument("--llm-latency", type=float, default=4.1,
+                    help="projected seconds per LLM call when backend=mock "
+                         "(measured qwen3.5:4b: 4.1)")
+    bp.add_argument("--dedup-window", type=float, default=60.0,
+                    help="signature dedup window (seconds) for the projection")
+    bp.add_argument("--seed", type=int, default=7)
+    bp.set_defaults(fn=cmd_bench)
 
     wp = sub.add_parser("serve", help="run the self-hosted dashboard")
     wp.add_argument("--host", default="127.0.0.1")

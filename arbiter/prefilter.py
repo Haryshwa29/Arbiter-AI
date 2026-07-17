@@ -39,7 +39,9 @@ def score_event(event: Event, memory: Memory) -> float:
     history = memory.history(event.signature)
 
     # History modifier: signatures that always turned out benign decay
-    # toward 0.5; ones humans overruled us on get boosted.
+    # toward 0.5; the boost applies ONLY to overruled suppressions (missed
+    # attacks). An overruled escalation is a false alarm — the human said
+    # benign — and feeds the decay via false_positive_rate instead.
     modifier = 1.0
     if history.total >= MIN_HISTORY_TO_SUPPRESS:
         modifier -= 0.5 * history.false_positive_rate
@@ -64,7 +66,9 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
     if (
         score < SUPPRESS_AT
         and history.total >= MIN_HISTORY_TO_SUPPRESS
-        and history.escalated <= MAX_FP_ESCALATIONS
+        # Standing escalations block cheap suppression — but escalations a
+        # human already overruled as false alarms don't count against it.
+        and history.escalated - history.false_alarms <= MAX_FP_ESCALATIONS
         and history.overruled == 0
     ):
         return PrefilterResult(
