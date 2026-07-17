@@ -55,11 +55,16 @@ class SignatureHistory:
     total: int = 0
     suppressed: int = 0
     escalated: int = 0
-    overruled: int = 0   # times a human overruled Arbiter — trust penalty
+    # Direction of a human overrule matters (feedback-loop fix):
+    overruled: int = 0      # overruled SUPPRESSIONS — missed attacks; boost
+    false_alarms: int = 0   # overruled ESCALATIONS — benign; decay, not boost
 
     @property
     def false_positive_rate(self) -> float:
-        return self.suppressed / self.total if self.total else 0.0
+        """Fraction of this signature judged benign: suppressions plus
+        escalations a human overruled as false alarms."""
+        return ((self.suppressed + self.false_alarms) / self.total
+                if self.total else 0.0)
 
 
 class Memory:
@@ -118,10 +123,12 @@ class Memory:
         for decision, label in rows:
             if decision == "suppress":
                 h.suppressed += 1
+                if label == "overruled":
+                    h.overruled += 1        # we suppressed a real attack
             else:
                 h.escalated += 1
-            if label == "overruled":
-                h.overruled += 1
+                if label == "overruled":
+                    h.false_alarms += 1     # we cried wolf on benign activity
         return h
 
     def label_verdicts(self, signature: str, label: str) -> None:
