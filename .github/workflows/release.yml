@@ -1,0 +1,92 @@
+name: Release
+
+# Tag a version to cut a release:
+#   git tag v0.2.0 && git push origin v0.2.0
+#
+# Produces the four artifacts the install page links to: the zipapp, both
+# bootstrap scripts, and SHA256SUMS. The install scripts read SHA256SUMS to
+# discover the version, so nothing here needs hardcoding.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tests must pass before anything ships
+        run: python -m unittest discover -s tests -v
+
+      # The web frontend was removed on 2026-07-26 for a from-scratch rebuild
+      # (see tools/build_release.py), so there's no frontend/ to build yet.
+      # When it lands, reinstate: actions/setup-node with npm cache, a build
+      # step (npm ci && npm run build), and a check that the committed
+      # build output matches a fresh build.
+
+      - name: Build release artifacts
+        run: python tools/build_release.py --clean
+
+      - name: Verify the built zipapp runs
+        run: |
+          PYZ=$(ls dist/arbiter-*.pyz)
+          python "$PYZ" --version
+          python "$PYZ" --status --prefix /tmp/arbiter-check || true
+          python "$PYZ" --install --dry-run --prefix /tmp/arbiter-check --backend mock
+
+      - name: Verify checksums match the artifacts
+        run: cd dist && sha256sum -c SHA256SUMS
+
+      - name: Tag version must match arbiter.__version__
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          CODE=$(python -c "import arbiter; print(arbiter.__version__)")
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$CODE" != "$TAG" ]; then
+            echo "tag $TAG does not match arbiter.__version__ $CODE"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: arbiter-release
+          path: dist/
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/arbiter-*.pyz
+            dist/install.sh
+            dist/install.ps1
+            dist/SHA256SUMS
+          generate_release_notes: true
+          body: |
+            ## Install
+
+            **Linux / macOS**
+            ```sh
+            curl -fsSLO https://github.com/${{ github.repository }}/releases/latest/download/install.sh
+            less install.sh      # read it first
+            sh install.sh
+            ```
+
+            **Windows (PowerShell)**
+            ```powershell
+            Invoke-WebRequest https://github.com/${{ github.repository }}/releases/latest/download/install.ps1 -OutFile install.ps1
+            notepad install.ps1  # read it first
+            powershell -ExecutionPolicy Bypass -File install.ps1
+            ```
+
+            Both scripts verify the download against `SHA256SUMS` before running it.
+            Add `--dry-run` to see every step without changing anything.
