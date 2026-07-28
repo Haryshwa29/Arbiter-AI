@@ -2,7 +2,46 @@
 
 The first vertical slice of the Arbiter concept (see `CONCEPT.md`): sample events in → cheap pre-filter → local LLM on ambiguous alerts → verdict with evidence or rationale → audit trail. No collector, no dashboard — just proof that the brain works.
 
-## Run it
+## Install it
+
+Released builds ship as a single zipapp plus a short, readable bootstrap script
+(ADR-002). Download, read the script, then run it — Arbiter's own prefilter
+escalates `curl | sh`, so the install instructions never ask you to do it.
+
+```bash
+# Linux / macOS
+curl -fsSLO https://github.com/Haryshwa29/arbiter/releases/latest/download/install.sh
+less install.sh
+sh install.sh --dry-run     # prints every step, changes nothing
+sh install.sh
+```
+
+```powershell
+# Windows
+Invoke-WebRequest https://github.com/Haryshwa29/arbiter/releases/latest/download/install.ps1 -OutFile install.ps1
+notepad install.ps1
+powershell -ExecutionPolicy Bypass -File install.ps1
+```
+
+Both scripts verify the download against `SHA256SUMS` before executing it and
+refuse to continue on a mismatch. The installer then handles preflight checks,
+directories, config, seeded databases, the first admin account, and a boot
+service (systemd / Task Scheduler). Other lifecycle commands:
+
+```bash
+python arbiter-x.y.z.pyz --status
+python arbiter-x.y.z.pyz --upgrade      # swaps the build, keeps all databases
+python arbiter-x.y.z.pyz --uninstall    # asks separately before deleting data
+```
+
+New installs default to shadow mode with response in dry-run: nothing is
+blocked until you have watched it and said so.
+
+Build the artifacts yourself with `python tools/build_release.py --clean` —
+the `.pyz` is a plain zip of readable source, so `unzip -l` shows everything
+that will run on your machine.
+
+## Run it from a checkout
 
 Requires Python 3.10+, no dependencies for the mock backend.
 
@@ -71,17 +110,9 @@ python -m arbiter eval samples/adversarial_suite.jsonl --backend mock --no-guard
 
 (Note: an earlier revision of this README claimed the 4B model scored 100% on fact-traps. The adversarial suite, with harder traps, showed that was over-optimistic — this is the corrected, guardrail-backed picture.)
 
-## Dashboard (self-hosted web UI)
+## Frontend (being rebuilt)
 
-A stdlib-only web dashboard (ADR-001) over the triage engine — no external dependencies, nothing loads from off the network.
-
-```bash
-python -m arbiter seed
-python -m arbiter serve                                   # http://127.0.0.1:8787
-python -m arbiter serve --backend ollama --model qwen3.5:4b   # real local model in the feed
-```
-
-On first run it prints one-time `admin` and `analyst` credentials. The logged-out page is deliberately zero-recon — only cumulative aggregate counts, no hosts/IPs/signatures/live feed. After sign-in, `analyst` and `admin` see the live feed (Server-Sent Events streaming real verdicts from the triage engine), overview, and audit; `admin` also sees settings/users/retention. Sessions are HMAC-signed cookies, passwords hashed with `hashlib.scrypt`, logins throttled, and a failed dashboard login is itself fed back into Arbiter as an event.
+The previous web layer — a stdlib `http.server` dashboard plus a Svelte SPA — was **removed on 2026-07-26** to rebuild the frontend from scratch. The backend it read from is retained: the triage engine, the `store.py` audit store, and `iam.py` (accounts, sessions, lockout). A new server/API will be added when the new frontend lands, at which point the `serve` command and the installer's service target will be rewired.
 
 ## Next steps
 

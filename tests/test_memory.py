@@ -52,6 +52,21 @@ class TestMemory(unittest.TestCase):
         self.assertIn("company uses tailscale", facts)
         self.assertNotIn("irrelevant", facts)
 
+    def test_list_assets_returns_all(self):
+        self.mem.upsert_asset("db-prod-01", 2.0, "prod db", confirmed=True)
+        self.mem.upsert_asset("ci-runner-01", 0.8, "CI runner")
+        hosts = {a["host"]: a for a in self.mem.list_assets()}
+        self.assertEqual(hosts["db-prod-01"]["criticality"], 2.0)
+        self.assertTrue(hosts["db-prod-01"]["confirmed"])
+        self.assertFalse(hosts["ci-runner-01"]["confirmed"])
+
+    def test_list_facts_includes_scope_columns(self):
+        self.mem.add_fact("backups run at 02:00", scope="db-prod-01",
+                          event_types=("io_anomaly",))
+        (f,) = self.mem.list_facts()
+        self.assertEqual(f["scope"], "db-prod-01")
+        self.assertEqual(f["event_types"], ["io_anomaly"])
+
     def test_scoped_fact_round_trips_constraints(self):
         self.mem.add_fact("backups run at 02:00", scope="db-prod-01",
                           user="postgres", path="/backup",

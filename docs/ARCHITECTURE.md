@@ -97,13 +97,13 @@ Arbiter gets smarter about *your* environment through a local, human-readable SQ
 
 Escalations can carry a recommended response action (block an IP, kill a session, lock an account, quarantine a host). Actions are **surgical, TTL-limited, and reversible** — never service-wide. Auto-execution is reserved for the deterministic prefilter tier; the LLM tier only ever *recommends*, and a human approves. Blocking requires stronger justification than alerting, mirroring the trust model.
 
-## Self-hosted dashboard
+## Frontend (being rebuilt)
 
-A stdlib-only web dashboard (see [`ADR-001`](ADR-001-dashboard-retention-iam.md)) fronts all of this: a zero-recon public splash, then two signed-in roles — **analyst** (see and act) and **admin** (also configure). The analyst confirms or overrules verdicts (which trains the memory layer), approves response actions, and resolves incidents with a note that Arbiter turns into a report. Raw audit detail is kept 30 days; the learned scoring history is never pruned.
+The first web layer — a stdlib-only dashboard plus a Svelte SPA (see [`ADR-001`](ADR-001-dashboard-retention-iam.md), now superseded) — was **removed on 2026-07-26** to rebuild the frontend from scratch. The backend it fronted is retained: the analyst/admin **IAM** (`iam.py`), the 30-day **audit store** (`store.py`), and the triage engine. The intended operator model is unchanged — two signed-in roles, **analyst** (see and act) and **admin** (also configure), the analyst confirming or overruling verdicts to train the memory layer — and a new server/API will re-expose it to the new frontend.
 
 ## What ships vs. what's deferred
 
-**In the current slice:** the Event/Verdict contract, the memory layer, both triage tiers (mock + local qwen), shadow mode, the JSONL/SQLite audit trail, the response actuator (dry-run), built-in IAM, and the dashboard.
+**In the current slice:** the Event/Verdict contract, the memory layer, both triage tiers (mock + local qwen), shadow mode, the JSONL/SQLite audit trail, the response actuator (dry-run), and built-in IAM. The web frontend has been removed pending a rebuild.
 
 **Deferred:** the shared threat-pattern feed (the network-effect moat — needs more than one customer, and ships anonymized *lessons*, never data), LoRA adaptation, and the collector-stack decision (Vector vs. Wazuh).
 

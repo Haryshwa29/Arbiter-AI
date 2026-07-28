@@ -9,6 +9,7 @@ learned environment facts.
 from __future__ import annotations
 
 import sqlite3
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -69,12 +70,22 @@ class SignatureHistory:
 
 class Memory:
     def __init__(self, db_path: str | Path = "arbiter_memory.db") -> None:
-        self.conn = sqlite3.connect(str(db_path))
-        self.conn.executescript(_SCHEMA)
-        self._migrate()
-        self.conn.commit()
+        # check_same_thread=False + a lock around every use, matching
+        # store.py: ThreadingHTTPServer serves each request on its own
+        # thread, and the demo feeder / triage engine can write from yet
+        # another. A bare check_same_thread=False without the lock would
+        # trade a loud cross-thread crash for a silent interleaved-write
+        # race — worse, since this is the layer the analyst's judgment
+        # accumulates in.
+        self.conn = sqlite3.connect(str(db_path), check_same_thread=False)
+        self._lock = threading.Lock()
+        with self._lock:
+            self.conn.executescript(_SCHEMA)
+            self._migrate()
+            self.conn.commit()
 
     def _migrate(self) -> None:
+        # Caller already holds self._lock.
         have = {row[1] for row in
                 self.conn.execute("PRAGMA table_info(facts)").fetchall()}
         for col in _FACT_SCOPE_COLUMNS:
@@ -85,40 +96,54 @@ class Memory:
     # -- assets ------------------------------------------------------------
     def upsert_asset(self, host: str, criticality: float, role: str = "",
                      confirmed: bool = False) -> None:
-        self.conn.execute(
-            "INSERT INTO assets (host, criticality, role, confirmed) VALUES (?,?,?,?) "
-            "ON CONFLICT(host) DO UPDATE SET criticality=?, role=?, confirmed=?",
-            (host, criticality, role, int(confirmed),
-             criticality, role, int(confirmed)),
-        )
-        self.conn.commit()
+        with self._lock:
+            self.conn.execute(
+                "INSERT INTO assets (host, criticality, role, confirmed) VALUES (?,?,?,?) "
+                "ON CONFLICT(host) DO UPDATE SET criticality=?, role=?, confirmed=?",
+                (host, criticality, role, int(confirmed),
+                 criticality, role, int(confirmed)),
+            )
+            self.conn.commit()
 
     def asset_criticality(self, host: str) -> float:
         """Unknown assets get 1.3, not 1.0 — an unrecognized machine emitting
         alerts is itself suspicious (triggers a micro-rescan in the full product)."""
-        row = self.conn.execute(
-            "SELECT criticality FROM assets WHERE host=?", (host,)
-        ).fetchone()
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT criticality FROM assets WHERE host=?", (host,)
+            ).fetchone()
         return row[0] if row else 1.3
 
     def is_known_asset(self, host: str) -> bool:
-        return self.conn.execute(
-            "SELECT 1 FROM assets WHERE host=?", (host,)
-        ).fetchone() is not None
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT 1 FROM assets WHERE host=?", (host,)
+            ).fetchone()
+        return row is not None
+
+    def list_assets(self) -> list[dict]:
+        with self._lock:
+            rows = self.conn.execute(
+                "SELECT host, criticality, role, confirmed FROM assets ORDER BY host"
+            ).fetchall()
+        return [{"host": h, "criticality": c, "role": r, "confirmed": bool(cf)}
+                for h, c, r, cf in rows]
 
     # -- verdict history ---------------------------------------------------
     def record_verdict(self, verdict: Verdict) -> None:
-        self.conn.execute(
-            "INSERT INTO verdict_history (signature, decision, ts) VALUES (?,?,?)",
-            (verdict.signature, verdict.decision.value, verdict.timestamp),
-        )
-        self.conn.commit()
+        with self._lock:
+            self.conn.execute(
+                "INSERT INTO verdict_history (signature, decision, ts) VALUES (?,?,?)",
+                (verdict.signature, verdict.decision.value, verdict.timestamp),
+            )
+            self.conn.commit()
 
     def history(self, signature: str) -> SignatureHistory:
-        rows = self.conn.execute(
-            "SELECT decision, human_label FROM verdict_history WHERE signature=?",
-            (signature,),
-        ).fetchall()
+        with self._lock:
+            rows = self.conn.execute(
+                "SELECT decision, human_label FROM verdict_history WHERE signature=?",
+                (signature,),
+            ).fetchall()
         h = SignatureHistory(total=len(rows))
         for decision, label in rows:
             if decision == "suppress":
@@ -133,11 +158,12 @@ class Memory:
 
     def label_verdicts(self, signature: str, label: str) -> None:
         """Human feedback loop: mark past verdicts confirmed/overruled."""
-        self.conn.execute(
-            "UPDATE verdict_history SET human_label=? WHERE signature=?",
-            (label, signature),
-        )
-        self.conn.commit()
+        with self._lock:
+            self.conn.execute(
+                "UPDATE verdict_history SET human_label=? WHERE signature=?",
+                (label, signature),
+            )
+            self.conn.commit()
 
     # -- environment facts ---------------------------------------------------
     def add_fact(self, fact: str, scope: str = "*", *, user: str = "",
@@ -150,18 +176,20 @@ class Memory:
         checking before the LLM sees them (see facts.py) — a fact only
         excuses the exact behavior it names.
         """
-        self.conn.execute(
-            "INSERT INTO facts (scope, fact, f_user, f_path, f_process, "
-            "f_events, f_window) VALUES (?,?,?,?,?,?,?)",
-            (scope, fact, user, path, process, ",".join(event_types), window),
-        )
-        self.conn.commit()
+        with self._lock:
+            self.conn.execute(
+                "INSERT INTO facts (scope, fact, f_user, f_path, f_process, "
+                "f_events, f_window) VALUES (?,?,?,?,?,?,?)",
+                (scope, fact, user, path, process, ",".join(event_types), window),
+            )
+            self.conn.commit()
 
     def facts_for(self, host: str, source: str) -> list[ScopedFact]:
-        rows = self.conn.execute(
-            "SELECT fact, scope, f_user, f_path, f_process, f_events, f_window "
-            "FROM facts WHERE scope IN (?,?,'*')", (host, source)
-        ).fetchall()
+        with self._lock:
+            rows = self.conn.execute(
+                "SELECT fact, scope, f_user, f_path, f_process, f_events, f_window "
+                "FROM facts WHERE scope IN (?,?,'*')", (host, source)
+            ).fetchall()
         return [ScopedFact(text=r[0], host=r[1], user=r[2] or "",
                            path=r[3] or "", process=r[4] or "",
                            event_types=tuple(t for t in (r[5] or "").split(",")
@@ -169,5 +197,17 @@ class Memory:
                            window=r[6] or "")
                 for r in rows]
 
+    def list_facts(self) -> list[dict]:
+        with self._lock:
+            rows = self.conn.execute(
+                "SELECT id, scope, fact, f_user, f_path, f_process, f_events, "
+                "f_window FROM facts ORDER BY id"
+            ).fetchall()
+        return [{"id": i, "scope": s, "fact": f, "user": u, "path": p,
+                 "process": pr, "event_types": [t for t in ev.split(",") if t],
+                 "window": w}
+                for i, s, f, u, p, pr, ev, w in rows]
+
     def close(self) -> None:
-        self.conn.close()
+        with self._lock:
+            self.conn.close()

@@ -1,6 +1,8 @@
 # ADR-001: Self-hosted dashboard, 30-day retention, and built-in IAM
 
-**Status:** Proposed
+> **Superseded (2026-07-26).** The web layer described here (stdlib dashboard, server-rendered UI, public splash) was removed to rebuild the frontend from scratch. Still in force: the **30-day retention** design (`store.py`) and the **built-in IAM** model (`iam.py`, analyst/admin roles, HMAC sessions, lockout) — both retained as backend the new frontend will reconnect to. Obsolete: everything about the specific dashboard UI and the zero-recon public tier.
+
+**Status:** Superseded (frontend portion) — see note above
 **Date:** 2026-07-04
 **Deciders:** Haryshwa
 **Related:** `CONCEPT.md` (product vision), `CLAUDE.md` (design invariants), `arbiter/triage.py`, `arbiter/respond.py`, `arbiter/memory.py`

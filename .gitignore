@@ -15,3 +15,8 @@ audit.jsonl
 # Local tool state
 .claude/
 .DS_Store
+
+# Front end build tooling (frontend/ is being rebuilt from scratch after
+# arbiter/web/ was removed — no build-output path decided yet).
+frontend/node_modules/
+frontend/.vite/

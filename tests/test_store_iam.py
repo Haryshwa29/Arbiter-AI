@@ -1,4 +1,4 @@
-"""Tests for the dashboard's store + IAM layers.
+"""Tests for the store + IAM layers underneath the API.
 
 Focus on the security-critical invariants from ADR-001:
 - the public aggregate view exposes no identifiers
@@ -11,7 +11,7 @@ import time
 import unittest
 from pathlib import Path
 
-from arbiter.iam import IAM
+from arbiter.iam import IAM, load_or_create_secret
 from arbiter.store import AuditStore
 from arbiter.schema import Decision, Event, Tier, Verdict
 
@@ -31,6 +31,7 @@ class StoreTests(unittest.TestCase):
         self.store = AuditStore(Path(self.tmp.name) / "s.db")
 
     def tearDown(self):
+        self.store.close()  # release the sqlite handle before rmtree (Windows)
         self.tmp.cleanup()
 
     def test_lifetime_counts_are_aggregate_only(self):
@@ -57,6 +58,31 @@ class StoreTests(unittest.TestCase):
         self.store.prune(days=30)
         self.assertEqual(self.store.lifetime_counts()["triaged"], 0)
 
+    def test_rows_since_only_returns_newer_ids(self):
+        r1 = self.store.record_verdict(*_verdict())
+        r2 = self.store.record_verdict(*_verdict())
+        since = self.store.rows_since(r1["id"])
+        self.assertEqual([r["id"] for r in since], [r2["id"]])
+        self.assertEqual(self.store.rows_since(r2["id"]), [])
+
+    def test_max_id_reflects_latest_row(self):
+        self.assertEqual(self.store.max_id(), 0)
+        row = self.store.record_verdict(*_verdict())
+        self.assertEqual(self.store.max_id(), row["id"])
+
+    def test_acknowledge_sets_actor_and_rejects_unknown_id(self):
+        row = self.store.record_verdict(*_verdict())
+        self.assertTrue(self.store.acknowledge(row["id"], "priya"))
+        acked = self.store.query(limit=1)[0]
+        self.assertEqual(acked["actor"], "priya")
+        self.assertFalse(self.store.acknowledge(999999, "priya"))
+
+    def test_day_buckets_are_zero_filled_and_cover_the_window(self):
+        self.store.record_verdict(*_verdict(decision=Decision.ESCALATE))
+        buckets = self.store.day_buckets(hours=6)
+        self.assertEqual(len(buckets), 6)
+        self.assertEqual(sum(b["escalated"] for b in buckets), 1)
+
 
 class IAMTests(unittest.TestCase):
     def setUp(self):
@@ -65,6 +91,7 @@ class IAMTests(unittest.TestCase):
         self.iam.create_user("priya", "correct horse", "analyst")
 
     def tearDown(self):
+        self.iam.close()  # release the sqlite handle before rmtree (Windows)
         self.tmp.cleanup()
 
     def test_auth_success_and_failure(self):
@@ -104,6 +131,39 @@ class IAMTests(unittest.TestCase):
         finally:
             iam_mod.SESSION_TTL = orig
         self.assertIsNone(self.iam.verify_session(tok))
+
+
+class SecretPersistenceTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_secret_is_stable_across_loads(self):
+        path = Path(self.tmp.name) / "iam.secret"
+        s1 = load_or_create_secret(path)
+        s2 = load_or_create_secret(path)
+        self.assertEqual(s1, s2)
+        self.assertEqual(len(s1), 32)
+
+    def test_sessions_survive_a_simulated_restart(self):
+        # This is the known issue from AGENTS.md: IAM(secret=None) used to
+        # pick a fresh random secret every process start, so every session
+        # died on restart. A persisted secret must keep it alive.
+        db = Path(self.tmp.name) / "iam.db"
+        secret_path = Path(self.tmp.name) / "iam.secret"
+
+        iam1 = IAM(db, secret=load_or_create_secret(secret_path))
+        iam1.create_user("priya", "correct horse", "analyst")
+        user = iam1.authenticate("priya", "correct horse")
+        tok = iam1.issue_session(user)
+        iam1.close()
+
+        # Simulate a restart: new IAM instance, secret reloaded from disk.
+        iam2 = IAM(db, secret=load_or_create_secret(secret_path))
+        self.assertEqual(iam2.verify_session(tok)["username"], "priya")
+        iam2.close()
 
 
 if __name__ == "__main__":

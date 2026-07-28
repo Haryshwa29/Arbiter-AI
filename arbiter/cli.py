@@ -103,15 +103,19 @@ def cmd_eval(args):
 
 
 def cmd_serve(args):
-    from .web.server import serve
+    from .api.server import serve
+
     serve(host=args.host, port=args.port, store_db=args.store_db,
-          iam_db=args.iam_db, mem_db=args.db, events=args.events,
-          backend=args.backend, model=args.model, interval=args.interval,
-          feed=not args.no_feed)
+          iam_db=args.iam_db, mem_db=args.db, demo_feed=args.demo_feed,
+          events=args.events, backend=args.backend, model=args.model,
+          demo_feed_interval=args.demo_feed_interval)
 
 
 def main():
+    from . import __version__
+
     p = argparse.ArgumentParser(prog="arbiter", description="Arbiter triage engine slice")
+    p.add_argument("--version", action="version", version=f"arbiter {__version__}")
     p.add_argument("--db", default="arbiter_memory.db", help="memory DB path")
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -165,16 +169,22 @@ def main():
     bp.add_argument("--seed", type=int, default=7)
     bp.set_defaults(fn=cmd_bench)
 
-    wp = sub.add_parser("serve", help="run the self-hosted dashboard")
+    wp = sub.add_parser("serve",
+                        help="run the JSON API the new frontend talks to")
     wp.add_argument("--host", default="127.0.0.1")
     wp.add_argument("--port", type=int, default=8787)
     wp.add_argument("--store-db", default="arbiter_audit.db")
     wp.add_argument("--iam-db", default="arbiter_iam.db")
-    wp.add_argument("--events", default="samples/events.jsonl")
-    wp.add_argument("--backend", choices=["mock", "ollama"], default="mock")
+    wp.add_argument("--events", default="samples/events.jsonl",
+                    help="JSONL replayed by --demo-feed; ignored otherwise")
+    wp.add_argument("--demo-feed", action="store_true",
+                    help="dev only, off by default: replay --events through "
+                         "the triage engine on a timer so the dashboard has "
+                         "data without a real collector wired up")
+    wp.add_argument("--demo-feed-interval", type=float, default=2.0)
+    wp.add_argument("--backend", choices=["mock", "ollama"], default="mock",
+                    help="backend for --demo-feed's triage engine")
     wp.add_argument("--model", default="qwen3.5:4b")
-    wp.add_argument("--interval", type=float, default=2.0)
-    wp.add_argument("--no-feed", action="store_true")
     wp.set_defaults(fn=cmd_serve)
 
     args = p.parse_args()

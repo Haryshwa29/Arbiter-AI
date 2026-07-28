@@ -17,6 +17,7 @@ import base64
 import hashlib
 import hmac
 import json
+import os
 import secrets
 import sqlite3
 import time
@@ -45,6 +46,39 @@ CREATE TABLE IF NOT EXISTS users (
 
 def _hash(password: str, salt: bytes) -> bytes:
     return hashlib.scrypt(password.encode(), salt=salt, **_SCRYPT)
+
+
+def load_or_create_secret(path: str | Path) -> bytes:
+    """Persist the HMAC session-signing secret across restarts.
+
+    Without this, `IAM(secret=None)` falls back to a fresh random value
+    every process start, silently invalidating every issued session cookie
+    on restart or upgrade. Written once, 0600, next to wherever the caller
+    keeps it (typically alongside the IAM database).
+    """
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():
+        data = path.read_bytes()
+        if len(data) == 32:
+            return data
+    secret = secrets.token_bytes(32)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    # Without O_BINARY, Windows' CRT opens in text mode and silently
+    # rewrites any 0x0A byte in the random secret to 0x0D 0x0A — corrupting
+    # roughly one in eight secrets so the next load's length check fails
+    # and a new one gets generated, defeating persistence intermittently.
+    flags |= getattr(os, "O_BINARY", 0)
+    fd = os.open(str(path), flags, 0o600)
+    try:
+        os.write(fd, secret)
+    finally:
+        os.close(fd)
+    try:
+        os.chmod(path, 0o600)
+    except OSError:
+        pass  # best-effort on platforms without POSIX permission bits
+    return secret
 
 
 class IAM:
