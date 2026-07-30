@@ -25,21 +25,110 @@
 import { useEffect, useRef } from "react";
 import { useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion";
 
-/** Dashboard tier semantics: the packet becomes the tier that handled it. */
-const TIER = {
-  neutral: [136, 135, 128],
-  prefilter: [55, 138, 221],
-  guardrail: [239, 159, 39],
-  llm: [127, 119, 221],
-  escalate: [226, 87, 75],
-} as const;
+/** Which of the two token sets (docs/THEME-BRIEF.md §1) the field is painting. */
+export type Scheme = "light" | "dark";
+
+export type TierKey = "neutral" | "prefilter" | "guardrail" | "llm" | "escalate" | "suppress";
+
+/**
+ * Dashboard tier semantics: the packet becomes the tier that handled it.
+ * Light/dark pair per THEME-BRIEF.md §2 — the canvas can't read CSS
+ * variables, so this is the one place these hexes are defined as numbers.
+ * `suppress` isn't used by any station (the flight's ending is escalate-only,
+ * §3), kept for parity with lib/theme.ts's DECISION_STYLE.
+ */
+export const TIER_COLOUR: Record<TierKey, Record<Scheme, readonly number[]>> = {
+  neutral: { light: [110, 109, 103], dark: [136, 135, 128] },
+  prefilter: { light: [33, 104, 184], dark: [55, 138, 221] },
+  guardrail: { light: [167, 107, 18], dark: [239, 159, 39] },
+  llm: { light: [90, 80, 184], dark: [127, 119, 221] },
+  escalate: { light: [194, 64, 47], dark: [226, 87, 75] },
+  suppress: { light: [46, 139, 103], dark: [93, 202, 165] },
+};
+
+/** The Arbiter mark's amber (index.css's --mark), duplicated as numbers — the
+ * canvas draws the mark at three scales and can't read the CSS variable. */
+const MARK_COLOUR: Record<Scheme, readonly number[]> = {
+  light: [180, 132, 31],
+  dark: [217, 169, 67],
+};
+
+/**
+ * Everything else the field needs per scheme (THEME-BRIEF.md §2a). Light is a
+ * second art direction, not an inversion of dark — see the three rendering
+ * changes in the frame loop that key off `scheme` alongside this palette:
+ * bloom is dropped for a normal-composite halo, the packet core inverts, and
+ * the vignette becomes a page-coloured wash.
+ *
+ * `ink`/`ink2`/`ink3`/`surface` mirror index.css's tokens of the same name —
+ * duplicated as rgb triples for the platform panel and station labels, which
+ * are canvas text/fills the CSS variables can't reach.
+ */
+const PALETTE: Record<
+  Scheme,
+  {
+    bg: string;
+    wall: readonly number[];
+    wallAlpha: number;
+    rail: readonly number[];
+    railAlpha: number;
+    glyph: readonly number[];
+    glyphAlpha: number;
+    haze: readonly number[];
+    hazeAlpha: number;
+    vignette: readonly number[];
+    vignetteAlpha: number;
+    core: readonly number[];
+    ink: readonly number[];
+    ink2: readonly number[];
+    ink3: readonly number[];
+    surface: readonly number[];
+  }
+> = {
+  light: {
+    bg: "#F5F3EF",
+    wall: [104, 118, 136],
+    wallAlpha: 0.62,
+    rail: [70, 84, 102],
+    railAlpha: 0.5,
+    glyph: [118, 130, 146],
+    glyphAlpha: 0.52,
+    haze: [168, 178, 192],
+    hazeAlpha: 0.16,
+    vignette: [245, 243, 239],
+    vignetteAlpha: 0.55,
+    core: [70, 50, 10],
+    ink: [20, 20, 15],
+    ink2: [74, 73, 69],
+    ink3: [110, 109, 103],
+    surface: [255, 255, 255],
+  },
+  dark: {
+    bg: "#080808",
+    wall: [74, 100, 126],
+    wallAlpha: 0.5,
+    rail: [52, 74, 98],
+    railAlpha: 0.4,
+    glyph: [110, 118, 126],
+    glyphAlpha: 0.46,
+    haze: [24, 38, 54],
+    hazeAlpha: 0.24,
+    vignette: [8, 8, 8],
+    vignetteAlpha: 0.68,
+    core: [255, 255, 255],
+    ink: [242, 241, 238],
+    ink2: [169, 168, 163],
+    ink3: [155, 154, 149],
+    surface: [12, 12, 11],
+  },
+};
 
 type Station = {
   title: string;
   asset: string;
   rows: [string, string][];
   verdict: string;
-  colour: readonly number[];
+  tier: TierKey;
 };
 
 /**
@@ -57,7 +146,7 @@ export const STATIONS: Station[] = [
       ["left the network", "no"],
     ],
     verdict: "read only",
-    colour: TIER.neutral,
+    tier: "neutral",
   },
   {
     title: "Triage",
@@ -68,7 +157,7 @@ export const STATIONS: Station[] = [
       ["seen before", "4 times"],
     ],
     verdict: "prefilter tier",
-    colour: TIER.prefilter,
+    tier: "prefilter",
   },
   {
     title: "Guardrails",
@@ -79,7 +168,7 @@ export const STATIONS: Station[] = [
       ["model override", "no"],
     ],
     verdict: "hard rule",
-    colour: TIER.guardrail,
+    tier: "guardrail",
   },
   {
     title: "Local model",
@@ -90,7 +179,7 @@ export const STATIONS: Station[] = [
       ["tokens billed", "0"],
     ],
     verdict: "ambiguous only",
-    colour: TIER.llm,
+    tier: "llm",
   },
   {
     title: "Decision",
@@ -101,7 +190,7 @@ export const STATIONS: Station[] = [
       ["rationale", "written"],
     ],
     verdict: "escalated",
-    colour: TIER.escalate,
+    tier: "escalate",
   },
 ];
 
@@ -120,7 +209,6 @@ const LOGO = Math.atan2(20.4 - 3.6, 9 - 15);
 const SPACING = 1000;
 const FAR = 2900;
 const NEAR = 30;
-const BG = "#080808";
 /** Frame the flight is held at when the visitor prefers reduced motion. */
 const HELD_FRAME = 0.42;
 
@@ -219,10 +307,19 @@ function scrollPhase(p: number): Phase {
   };
 }
 
-export function TransitField({ p }: { p: MotionValue<number> }) {
+export function TransitField({ p, scheme }: { p: MotionValue<number>; scheme: Scheme }) {
   const canvas = useRef<HTMLCanvasElement | null>(null);
   const target = useRef(0);
   const reduced = useReducedMotion();
+  // Read in the frame loop rather than a `useEffect` dependency: the effect
+  // below owns the canvas's whole lifetime (geometry, rAF loop, pings), and
+  // tearing all of that down on a theme toggle would reset mid-scroll state
+  // (the packet's position, its lerped colour) for a change that is only a
+  // palette swap. Same pattern as `target` for the scroll value.
+  const schemeRef = useRef(scheme);
+  useEffect(() => {
+    schemeRef.current = scheme;
+  }, [scheme]);
 
   useMotionValueEvent(p, "change", (v) => {
     target.current = v;
@@ -328,9 +425,11 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
       SC = cl(Math.min(H / 820, W / 1440), 0.85, 2.3);
       FL = 560 * SC;
       // Geometry centres in the same content band the copy is aligned to,
-      // otherwise it drifts to the far right of a wide viewport.
+      // otherwise it drifts to the far right of a wide viewport. At 50% now
+      // that the copy is centred too (THEME-BRIEF.md §2b) — it was 62% while
+      // the copy sat bottom-left, to keep the two from overlapping.
       const band = Math.min(W * 0.94, 1680);
-      CX = (W - band) / 2 + band * 0.62;
+      CX = (W - band) / 2 + band * 0.5;
       CY = H * 0.42;
     }
     fit();
@@ -400,7 +499,7 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
         const px = -dy / len;
         const py = dx / len;
         const h = w * 0.5;
-        ctx!.strokeStyle = `rgba(74,100,126,${v * dim * 0.5})`;
+        ctx!.strokeStyle = rgba(pal.wall, v * dim * pal.wallAlpha);
         ctx!.lineWidth = Math.max(0.3, w * 0.24);
         ctx!.beginPath();
         ctx!.moveTo(a.x + px * h, a.y + py * h);
@@ -410,7 +509,7 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
         ctx!.moveTo(a.x - px * h, a.y - py * h);
         ctx!.lineTo(b.x - px * h, b.y - py * h);
         ctx!.stroke();
-        ctx!.strokeStyle = `rgba(52,74,98,${v * dim * 0.4})`;
+        ctx!.strokeStyle = rgba(pal.rail, v * dim * pal.railAlpha);
         ctx!.lineWidth = Math.max(0.25, w * 0.16);
         ctx!.beginPath();
         ctx!.moveTo(a.x, a.y);
@@ -419,7 +518,7 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
       }
       const bend = project(kinkOf(origin, l));
       if (bend && bend.s > 0.05) {
-        ctx!.fillStyle = `rgba(110,138,166,${visible(bend.z) * dim * 0.45})`;
+        ctx!.fillStyle = rgba(pal.wall, visible(bend.z) * dim * 0.45);
         ctx!.fillRect(bend.x - SC, bend.y - SC, 2 * SC, 2 * SC);
       }
       for (const child of l.children) tunnel(kinkOf(origin, l), child, dim * 0.85);
@@ -482,8 +581,8 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
       const x = cl(x0, W * 0.3, W - pw - 18 * SC);
       const y = cl(y0, 16 * SC, H * 0.5);
       const pad = Math.round(13 * SC);
-      ctx!.fillStyle = `rgba(9,9,9,${0.92 * alpha})`;
-      ctx!.strokeStyle = `rgba(120,120,112,${0.4 * alpha})`;
+      ctx!.fillStyle = rgba(pal.surface, 0.92 * alpha);
+      ctx!.strokeStyle = rgba(pal.glyph, 0.4 * alpha);
       ctx!.lineWidth = Math.max(1, SC * 0.9);
       ctx!.beginPath();
       ctx!.rect(x, y, pw, ph);
@@ -493,15 +592,15 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
       ctx!.fillRect(x, y, Math.max(3, 3 * SC), ph);
       ctx!.font = `${(11 * SC).toFixed(1)}px ui-monospace, monospace`;
       ctx!.textAlign = "left";
-      ctx!.fillStyle = `rgba(232,231,226,${0.95 * alpha})`;
+      ctx!.fillStyle = rgba(pal.ink, 0.95 * alpha);
       ctx!.fillText(title.toLowerCase(), x + pad, y + 22 * SC);
       ctx!.font = `${(10 * SC).toFixed(1)}px ui-monospace, monospace`;
       rows.forEach((row, i) => {
         const yy = y + 40 * SC + i * rh;
-        ctx!.fillStyle = `rgba(138,137,130,${0.9 * alpha})`;
+        ctx!.fillStyle = rgba(pal.ink3, 0.9 * alpha);
         ctx!.fillText(row[0], x + pad, yy);
         ctx!.textAlign = "right";
-        ctx!.fillStyle = `rgba(214,213,206,${0.92 * alpha})`;
+        ctx!.fillStyle = rgba(pal.ink2, 0.92 * alpha);
         ctx!.fillText(row[1], x + pw - pad, yy);
         ctx!.textAlign = "left";
       });
@@ -519,7 +618,8 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
     let last = 0;
     let orbit = 0.6;
     let spin = 0;
-    let colour: number[] = [...TIER.neutral];
+    let colour: number[] = [...TIER_COLOUR.neutral[schemeRef.current]];
+    let pal = PALETTE[schemeRef.current];
     const pings: { p: Vec; t: number }[] = [];
     let pingAge = 0;
     let raf = 0;
@@ -529,17 +629,19 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
       const dt = last ? Math.min((ts - last) / 16.7, 3) : 1;
       last = ts;
       seconds += dt * 0.0167;
+      pal = PALETTE[schemeRef.current];
 
       const want = reduced ? HELD_FRAME : target.current;
       shown += (want - shown) * cl(0.09 * dt, 0, 1);
       const ph = scrollPhase(shown);
       const stage = STATIONS[ph.stop];
+      const stageColour = TIER_COLOUR[stage.tier][schemeRef.current];
 
       // The verdict lands part-way through the stop; the packet takes that
       // tier's colour and carries it down the line.
       if (ph.dwell > 0.55) {
         for (let i = 0; i < 3; i++) {
-          colour[i] = lerp(colour[i], stage.colour[i], cl(0.08 * dt, 0, 1));
+          colour[i] = lerp(colour[i], stageColour[i], cl(0.08 * dt, 0, 1));
         }
       }
       spin += (ph.dwell > 0 ? 0.07 : 0.012) * dt;
@@ -572,11 +674,11 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
       R = norm(cross([0, 1, 0], F));
       U = cross(F, R);
 
-      ctx!.fillStyle = BG;
+      ctx!.fillStyle = pal.bg;
       ctx!.fillRect(0, 0, W, H);
       const haze = ctx!.createRadialGradient(CX, CY, 10, CX, CY, H * 0.95);
-      haze.addColorStop(0, "rgba(24,38,54,0.24)");
-      haze.addColorStop(1, "rgba(24,38,54,0)");
+      haze.addColorStop(0, rgba(pal.haze, pal.hazeAlpha));
+      haze.addColorStop(1, rgba(pal.haze, 0));
       ctx!.fillStyle = haze;
       ctx!.fillRect(0, 0, W, H);
       ctx!.lineCap = "round";
@@ -606,8 +708,8 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
                 cl(at0.s * 30 * d.r, 1.5 * SC, 26 * SC),
                 0,
                 spin * 0.3 + node.phase,
-                [110, 118, 126],
-                visible(at0.z) * 0.28 * net,
+                pal.glyph,
+                visible(at0.z) * pal.glyphAlpha * net,
                 LOGO,
               );
             }
@@ -641,9 +743,9 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
           const h = w * 0.5;
           ctx!.strokeStyle = rgba(
             [
-              lerp(92, colour[0], glow * 0.85),
-              lerp(104, colour[1], glow * 0.85),
-              lerp(122, colour[2], glow * 0.85),
+              lerp(pal.wall[0], colour[0], glow * 0.85),
+              lerp(pal.wall[1], colour[1], glow * 0.85),
+              lerp(pal.wall[2], colour[2], glow * 0.85),
             ],
             v * net * (0.4 + 0.5 * glow),
           );
@@ -656,14 +758,14 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
           ctx!.moveTo(a.x - px * h, a.y - py * h);
           ctx!.lineTo(b.x - px * h, b.y - py * h);
           ctx!.stroke();
-          ctx!.strokeStyle = `rgba(70,84,100,${v * net * 0.4})`;
+          ctx!.strokeStyle = rgba(pal.rail, v * net * pal.railAlpha);
           ctx!.lineWidth = Math.max(0.3 * SC, w * 0.07);
           ctx!.beginPath();
           ctx!.moveTo(a.x, a.y);
           ctx!.lineTo(b.x, b.y);
           ctx!.stroke();
           if (k % 4 === 0) {
-            ctx!.strokeStyle = `rgba(84,98,116,${v * net * 0.38})`;
+            ctx!.strokeStyle = rgba(pal.rail, v * net * 0.38);
             ctx!.beginPath();
             ctx!.moveTo(b.x + px * h, b.y + py * h);
             ctx!.lineTo(b.x - px * h, b.y - py * h);
@@ -699,11 +801,11 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
           const v = visible(s.z) * net;
           if (v <= 0.02 || node === active) continue;
           const r = cl(s.s * 40, 2 * SC, 48 * SC);
-          mark(s, r, 0, spin * 0.25 + node.phase, [112, 120, 128], v * 0.5, LOGO);
+          mark(s, r, 0, spin * 0.25 + node.phase, pal.glyph, v * pal.glyphAlpha, LOGO);
           if (r > 13 * SC) {
             ctx!.font = `${(10 * SC).toFixed(1)}px ui-monospace, monospace`;
             ctx!.textAlign = "left";
-            ctx!.fillStyle = `rgba(120,119,112,${v * 0.55})`;
+            ctx!.fillStyle = rgba(pal.ink3, v * 0.55);
             ctx!.fillText(STATIONS[((node.i % N) + N) % N].asset, s.x + r * 1.6, s.y + 3);
           }
         }
@@ -733,7 +835,7 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
           if (r > 13 * SC) {
             ctx!.font = `${(10.5 * SC).toFixed(1)}px ui-monospace, monospace`;
             ctx!.textAlign = "left";
-            ctx!.fillStyle = `rgba(214,201,169,${v * 0.8})`;
+            ctx!.fillStyle = rgba(pal.ink, v * 0.8);
             ctx!.fillText(STATIONS[activeIndex].asset, gate.x + r * 1.5, gate.y + 3);
           }
         }
@@ -760,7 +862,9 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
           ctx!.beginPath();
           ctx!.ellipse(0, 0, len, wide, 0, 0, Math.PI * 2);
           ctx!.fill();
-          ctx!.fillStyle = `rgba(255,255,255,${v * 0.92})`;
+          // White-on-tier disappears on paper (THEME-BRIEF.md §2a): the core
+          // inverts to a dark fill under the tier colour in light mode.
+          ctx!.fillStyle = rgba(pal.core, v * 0.92);
           ctx!.beginPath();
           ctx!.ellipse(0, 0, len * 0.45, wide * 0.45, 0, 0, Math.PI * 2);
           ctx!.fill();
@@ -784,10 +888,10 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
               rows,
               stage.title,
               stage.verdict,
-              stage.colour,
+              stageColour,
               alpha,
             );
-            ctx!.strokeStyle = `rgba(120,120,112,${0.32 * alpha})`;
+            ctx!.strokeStyle = rgba(pal.glyph, 0.32 * alpha);
             ctx!.lineWidth = Math.max(1, SC * 0.9);
             ctx!.beginPath();
             ctx!.moveTo(gate.x, gate.y);
@@ -822,8 +926,9 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
         const oy = Math.sin(LOGO + Math.PI / 2) * r * 1.9 * open;
         ctx!.save();
         ctx!.translate(cx, cy);
+        const markColour = MARK_COLOUR[schemeRef.current];
         ctx!.lineWidth = 2.2 * SC;
-        ctx!.strokeStyle = `rgba(216,164,66,${alpha * 0.95})`;
+        ctx!.strokeStyle = rgba(markColour, alpha * 0.95);
         ctx!.beginPath();
         ctx!.arc(ox, oy, r, LOGO, LOGO + Math.PI * arc);
         ctx!.stroke();
@@ -836,12 +941,12 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
           ctx!.beginPath();
           ctx!.moveTo(Math.cos(LOGO) * r, Math.sin(LOGO) * r);
           ctx!.lineTo(Math.cos(LOGO) * r * (1 - 2 * chord), Math.sin(LOGO) * r * (1 - 2 * chord));
-          ctx!.strokeStyle = `rgba(216,164,66,${alpha * 0.92})`;
+          ctx!.strokeStyle = rgba(markColour, alpha * 0.92);
           ctx!.stroke();
         }
         if (ph.out > 0) {
           const seal = cl((ph.out - 0.35) / 0.4, 0, 1);
-          const verdictColour = STATIONS[N - 1].colour;
+          const verdictColour = TIER_COLOUR[STATIONS[N - 1].tier][schemeRef.current];
           if (ph.out < 0.7) {
             ctx!.fillStyle = rgba(verdictColour, (1 - ph.out / 0.7) * 0.9);
             ctx!.beginPath();
@@ -865,7 +970,7 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
             ctx!.fillRect(-tw / 2 - 9 * SC, r + 30 * SC, tw + 18 * SC, 20 * SC);
             ctx!.fillStyle = rgba(verdictColour, seal);
             ctx!.fillText(caption, 0, r + 44 * SC);
-            ctx!.fillStyle = `rgba(216,164,66,${seal * 0.9})`;
+            ctx!.fillStyle = rgba(markColour, seal * 0.9);
             ctx!.fillText("A R B I T E R", 0, -r - 26 * SC);
             ctx!.textAlign = "left";
           }
@@ -873,17 +978,27 @@ export function TransitField({ p }: { p: MotionValue<number> }) {
         ctx!.restore();
       }
 
+      // A page-coloured wash in light mode instead of black (THEME-BRIEF.md
+      // §2a): there's no seam to hide, so geometry dissolves into the page
+      // rather than into a shadow.
       const vignette = ctx!.createRadialGradient(CX, CY, H * 0.36, CX, CY, H * 1.1);
-      vignette.addColorStop(0, "rgba(8,8,8,0)");
-      vignette.addColorStop(1, "rgba(8,8,8,0.68)");
+      vignette.addColorStop(0, rgba(pal.vignette, 0));
+      vignette.addColorStop(1, rgba(pal.vignette, pal.vignetteAlpha));
       ctx!.fillStyle = vignette;
       ctx!.fillRect(0, 0, W, H);
     }
 
+    /**
+     * Bright elements composite from the half-res buffer. In dark mode that's
+     * an additive bloom (`lighter` — light stacking on light). In light mode
+     * `lighter` does nothing (light added to white is still white), so this
+     * drops to a normal composite: the same radial gradients read as a soft
+     * tier-coloured halo sitting behind the packet and the gate instead.
+     */
     function drawBloom() {
       ctx!.save();
       ctx!.filter = "blur(6px)";
-      ctx!.globalCompositeOperation = "lighter";
+      if (schemeRef.current === "dark") ctx!.globalCompositeOperation = "lighter";
       ctx!.drawImage(bloom, 0, 0, W, H);
       ctx!.restore();
     }

@@ -1,4 +1,4 @@
-# Theme brief — follow the visitor's system, keep the hero dark
+# Theme brief — the whole page follows the visitor's system
 
 **Decided 2026-07-30 with Haryshwa.** Applies to both the public landing and the
 dashboard behind `/app`, in one change, so signing in never crosses a theme boundary.
@@ -8,11 +8,11 @@ Two decisions:
 1. **The site follows `prefers-color-scheme`.** No toggle, no stored preference, no
    JavaScript. Light is what most systems default to, which is the point — the product
    should not feel like it only belongs in a darkened room.
-2. **The hero stays dark, in both schemes.** It is a deliberate full-bleed band, not a
-   theming failure. The field is a canvas scene lit for near-black: its bloom composites
-   additively (which does nothing on white), its tunnels are bright strokes on dark, and
-   the packet reads because it is the only warm thing in an abyss. Inverting that is a
-   second art direction, not a palette swap, and it is not being attempted now.
+2. **The field repaints with the page.** *(Revised the same day. A first pass kept the
+   hero dark in both schemes; reviewed against a light page it read as an unexplained
+   black hole rather than a deliberate band.)* A light field is a second art direction,
+   not an inversion — §2a specifies it — and both directions must now be maintained in
+   step. Every future change to `TransitField.tsx` gets checked in both schemes.
 
 ---
 
@@ -33,19 +33,13 @@ JS-driven theme has a flash of the wrong one, and this page is server-prerendere
 }
 ```
 
-**The dark band is a token scope, not a set of conditionals.** Re-declare the same
-token names inside it and every component within renders dark with no knowledge that it
-is doing so:
+No `.band-dark` scope is needed any more: the hero is the same theme as the page, so
+Landing's copy, the line map and the scroll hint all read the ordinary tokens.
 
-```css
-.band-dark {
-  color-scheme: dark;
-  /* the dark values, unconditionally, in both schemes */
-}
-```
-
-Wrap the sticky hero scope in `.band-dark`. Nothing inside it — Landing's copy, the
-line map, the scroll hint — needs a single theme branch.
+**The canvas cannot read CSS variables**, so `TransitField.tsx` needs the scheme as
+data. Match the media query once and pass it in — a `useSyncExternalStore` or a
+`matchMedia` listener in Landing, handed down as a prop — and re-render the field on
+change. Do not sample `getComputedStyle` per frame.
 
 A manual override toggle can be added later if wanted. It is deliberately out of scope:
 it would reintroduce the first-paint flash this design avoids.
@@ -89,20 +83,49 @@ backgrounds and several fail on white.
 | guardrail | `#A76B12` | `#EF9F27` |
 | neutral | `#6E6D67` | `#888780` |
 
-**The canvas keeps the dark values in both schemes** — it always renders on `#080808`.
-Only DOM chrome (verdict card chip, dashboard badges) switches.
+The canvas uses these too — the packet, the active gate and the platform panel all
+carry the tier colour, so they take the light variants on a light page. See §2a.
 
 ---
 
-## 3. The seam
+## 2a. The light field — a second art direction, not an inversion
 
-Where the dark hero band meets the light page, the hero's bottom scrim currently fades
-to `#080808`. In light mode that produces a dark smear against a light section.
+The dark field works because a bright thing moves through an abyss. On paper that
+mechanism is gone, and the read becomes precision rather than atmosphere. Three
+rendering changes, not just colours:
 
-Fix: the scrim fades to the **band's** background, and the band simply ends. A crisp
-edge between a dark hero and a light page is a deliberate, common composition — do not
-try to blend them. Check it in both schemes; it is the single most likely place for
-this change to look broken.
+- **The bloom pass is dropped in light mode.** It composites with `lighter`; adding
+  light to white does nothing. Replace it with a soft tier-coloured halo drawn normally
+  (`source-over`) behind the packet and the active gate.
+- **The packet's core inverts.** White-on-tier disappears on paper; light mode uses a
+  dark core (`70,50,10` under the tier colour) so the capsule still reads as lit.
+- **The vignette becomes a paper wash** — the page background at ~0.55 alpha at the
+  edges instead of black at 0.68, so geometry dissolves into the page rather than into
+  a shadow.
+
+| Element | Light | Dark |
+|---|---|---|
+| field background | `#F5F3EF` | `#080808` |
+| tunnel wall | `104,118,136` @ 0.62 | `74,100,126` @ 0.50 |
+| tunnel rail | `70,84,102` @ 0.50 | `52,74,98` @ 0.40 |
+| idle station glyph | `118,130,146` @ 0.52 | `110,118,126` @ 0.46 |
+| haze | `168,178,192` @ 0.16 | `24,38,54` @ 0.24 |
+| vignette | page bg @ 0.55 | `8,8,8` @ 0.68 |
+| packet / active gate | tier colour, light variant | tier colour, dark variant |
+
+Depth still works unchanged: `visible(z)` lowers alpha with distance, so far geometry
+fades toward whichever background it is on.
+
+**The seam is gone as a consequence.** The band's background is the page background, so
+there is no edge to hide and no scrim colour to get wrong — the scrim fades to the page
+background in both schemes.
+
+## 2b. Copy is centred
+
+The sections under the hero, and the hero caption itself, are centred in a `58ch`
+column rather than left-aligned against the gutter. Reviewed 2026-07-30: left-aligned
+copy under a centred field read as unbalanced on a wide viewport. This supersedes
+`HERO-TRANSIT-BRIEF.md` §5's "copy sits over it, bottom-left".
 
 ---
 
@@ -126,14 +149,18 @@ mechanical rather than delicate.
 
 ## 5. Done when
 
-1. Both schemes look deliberate at 1440×900, 2560×1080 and 390×844. Toggle the OS
-   setting with the page open; nothing should need a reload.
+1. Both schemes look deliberate at 1440×900, 2560×1080 and 390×844, **including the
+   field**. Toggle the OS setting with the page open; the page and the canvas both
+   change, and nothing needs a reload.
 2. No flash of the wrong theme on first paint, including on the prerendered `/`.
 3. Body text ≥ 4.5:1 and large text ≥ 3:1 against its background **in both schemes**.
    Check the mark's amber and every tier colour specifically — they are the failures
    waiting to happen.
-4. The hero band is dark in both schemes and its bottom edge is clean in light.
+4. The field repaints with the page and there is no visible seam where the hero ends —
+   the band and the page share a background.
 5. Sign-in does not cross a theme boundary: `/` and `/app` agree in both schemes.
 6. `grep -rn "#" frontend/src/site` returns only token definitions — no component
    holds a literal colour.
-7. The canvas is untouched by any of this. `TransitField.tsx` has no theme branch.
+7. `TransitField.tsx` has exactly one palette switch driven by a prop, checked in both
+   schemes. Its geometry constants (`HERO-TRANSIT-BRIEF.md` §8a) are untouched — this
+   pass changes colour, never timing, camera or composition.

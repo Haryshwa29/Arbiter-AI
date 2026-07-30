@@ -5,9 +5,10 @@
 still stands: React route in `frontend/src/site/`, zero authenticated calls, off by
 default on customer installs, no fear imagery, no fabricated screenshots.
 
-Reference implementation: **`docs/preview/hero-transit.html`** — a standalone canvas 2D
-prototype, approved as the target. It is a design preview, not the shipping code. Port
-its behaviour; do not link to it or serve it.
+Implemented in **`frontend/src/site/TransitField.tsx`** and `Landing.tsx`. It was ported
+from a standalone prototype, `docs/preview/hero-transit.html`, which was approved as the
+design target and then deleted once parity was confirmed — see §8a for that history and
+for the constants it established.
 
 ---
 
@@ -154,8 +155,9 @@ opacities so the prerendered HTML is complete.
 
 ## 5. Layout — immersive, not split
 
-The field is **full-bleed**. Copy sits over it, bottom-left, cross-fading in place; a
-`to top` scrim keeps it legible. A five-stop line map sits at the right edge, current
+The field is **full-bleed**. Copy sits over it, cross-fading in place; a `to top` scrim
+keeps it legible. *(Copy was bottom-left until 2026-07-30; it is now centred in a 58ch
+column — see `THEME-BRIEF.md` §2b.)* A five-stop line map sits at the right edge, current
 stop lit in its tier colour, the rest at 34%.
 
 **One content band** governs everything:
@@ -165,7 +167,9 @@ stop lit in its tier colour, the rest at 34%.
 --gutter: max(1.75rem, calc((100vw - var(--band)) / 2));
 ```
 
-Copy uses `--gutter`; the canvas centres its geometry at `62%` across the same band.
+Copy uses `--gutter`; the canvas centres its geometry across the same band — at `50%`
+now that the copy is centred (it was `62%` while the copy sat left, to keep the two from
+overlapping).
 Without this the geometry drifts to the far right of an ultrawide while the copy hugs
 the left, which is exactly how the first pass failed.
 
@@ -247,17 +251,25 @@ ping rings, kink markers. Grep the ported component for a bare numeric literal i
 
 ---
 
-## 8a. Parity with the preview — this is the acceptance target
+## 8a. The constants are the design — do not retune them
 
-`docs/preview/hero-transit.html` **is** the approved landing page. Confirmed by
-Haryshwa 2026-07-29: "this is exactly what I want my landing page to look [like]."
+**History.** `docs/preview/hero-transit.html` was a standalone canvas 2D prototype,
+approved by Haryshwa 2026-07-29 ("this is exactly what I want my landing page to look
+[like]") and used as the acceptance target for the port. Parity was confirmed in a
+browser and the preview was deleted on 2026-07-30, as intended — a second
+implementation of the same animation would have rotted into a misleading reference.
+It was never committed, so it is not recoverable from git history.
 
-The React build is a **port, not a reinterpretation.** Where this document and the
-preview disagree, the preview wins and this document is wrong. Do not improve the
-timing, the palette, the camera, or the composition on the way through — those were
-settled over a long iteration and every number in them is a decision.
+**What that means now.** `frontend/src/site/TransitField.tsx` is the only
+implementation and therefore the reference. The table below is the record of what the
+preview established; the component must continue to match it.
 
-Port the draw code with its constants intact. All of these must match exactly:
+These numbers are not defaults and they are not taste. Each was arrived at by
+iteration against a specific complaint — the tunnel gauge because the wires blew out,
+`SC` because the type was unreadable on an ultrawide, the camera offset because a
+centred camera read as being bolted to the track. **Do not retune them while working
+on something else.** Changing one is a design decision that needs the same scrutiny
+the original had.
 
 | Constant | Value | What it governs |
 |---|---|---|
@@ -268,7 +280,7 @@ Port the draw code with its constants intact. All of these must match exactly:
 | `FAR` / `NEAR` | `2900` / `30` | depth clip |
 | `FL` | `560 * SC` | focal length |
 | `SC` | `clamp(min(H/820, W/1440), 0.85, 2.3)` | scales every drawn dimension |
-| band / centre | `min(W*0.94, 1680)`, centre at `62%` of it, `CY = H*0.42` | geometry alignment |
+| band / centre | `min(W*0.94, 1680)`, centre at `50%` of it (was `62%` pre-centred copy), `CY = H*0.42` | geometry alignment |
 | camera | trails `0.3`, looks `+0.13` ahead (`+0.02` stopped), distance `340`/`430` × outro `(1 + out*1.4)`, eased `0.05`/frame | the drone |
 | `visible(z)` | `1 - (z/FAR)^0.6` | aerial perspective |
 | `LOGO` | `atan2(20.4 - 3.6, 9 - 15)` | chord angle, from Nav.tsx's SVG |
@@ -278,14 +290,13 @@ Draw order per frame is also load-bearing — backdrop, distant estate, station 
 the travelled line, pings, idle station marks, active gate, packet + bloom composite,
 platform panel, centred mark, vignette. Reordering it changes what occludes what.
 
-**Verify by side-by-side, not by memory.** Open the preview and `npm run dev` in two
-windows at 1440×900, 2560×1080 and 390×844, and step both through the same scroll
-positions. The preview's slider-free version is scroll-driven exactly as the page is,
-so the frames should correspond.
-
-**Keep `docs/preview/hero-transit.html` until that comparison passes.** Delete it only
-once parity is confirmed — at that point it becomes a second implementation of the same
-animation and will rot into a misleading reference.
+**Regression check, now that there is nothing to diff against:** scroll the hero at
+1440×900, 2560×1080 and 390×844 and confirm the doors open, five stations each stop the
+packet and print a panel, the packet carries each tier's colour onward, and the doors
+close centred on the escalate caption and hold. Scroll back up; it must run in reverse
+cleanly. The timeline maths is also worth unit-testing directly — beat ranges strictly
+ascending, `trav` never regressing, each beat at full opacity only while its own station
+is the active stop.
 
 ---
 

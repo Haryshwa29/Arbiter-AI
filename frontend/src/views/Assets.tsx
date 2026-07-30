@@ -12,8 +12,8 @@ function Constraint({ label, value }: { label: string; value: string }) {
     <span
       className={`rounded border px-1.5 py-0.5 text-xs ${
         isAny
-          ? "border-neutral-800 text-neutral-600"
-          : "border-neutral-700 text-neutral-300"
+          ? "border-neutral-200 text-neutral-400 dark:border-neutral-800 dark:text-neutral-600"
+          : "border-neutral-300 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300"
       }`}
     >
       {label}: {any(value)}
@@ -44,7 +44,7 @@ export function Assets() {
   return (
     <div className="flex max-w-4xl flex-col gap-8">
       <div>
-        <h1 className="text-lg font-medium text-neutral-100">Assets & facts</h1>
+        <h1 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">Assets & facts</h1>
         <p className="mt-1 text-sm text-neutral-500">
           What the engine knows about your environment.
         </p>
@@ -61,28 +61,28 @@ export function Assets() {
             {assets.map((a) => (
               <div
                 key={a.host}
-                className="flex items-center gap-4 rounded-lg border border-neutral-800 bg-neutral-900/40 px-4 py-2.5"
+                className="flex items-center gap-4 rounded-lg border border-neutral-200 bg-white px-4 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/40"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-neutral-100">{a.host}</p>
+                  <p className="truncate text-sm font-medium text-neutral-900 dark:text-neutral-100">{a.host}</p>
                   <p className="truncate text-xs text-neutral-500">{a.role}</p>
                 </div>
                 <div className="flex w-32 shrink-0 items-center gap-2">
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800">
                     <div
                       className="h-full rounded-full bg-neutral-400"
                       style={{ width: `${(a.criticality / maxCriticality) * 100}%` }}
                     />
                   </div>
-                  <span className="w-10 shrink-0 text-right text-xs tabular-nums text-neutral-400">
+                  <span className="w-10 shrink-0 text-right text-xs tabular-nums text-neutral-600 dark:text-neutral-400">
                     {a.criticality.toFixed(1)}×
                   </span>
                 </div>
                 <span
                   className={`shrink-0 rounded px-2 py-0.5 text-xs ${
                     a.confirmed
-                      ? "bg-emerald-500/10 text-emerald-400"
-                      : "bg-neutral-800 text-neutral-500"
+                      ? "bg-[#2E8B67]/10 text-[#2E8B67] dark:bg-[#5DCAA5]/10 dark:text-[#5DCAA5]"
+                      : "bg-neutral-200 text-neutral-500 dark:bg-neutral-800"
                   }`}
                 >
                   {a.confirmed ? "confirmed" : "unconfirmed"}
@@ -104,12 +104,12 @@ export function Assets() {
             {facts.map((f) => (
               <div
                 key={f.id}
-                className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-4 py-3"
+                className="rounded-lg border border-neutral-200 bg-white px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900/40"
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-sm font-medium text-neutral-100">{f.scope}</span>
+                  <span className="text-sm font-medium text-neutral-900 dark:text-neutral-100">{f.scope}</span>
                 </div>
-                <p className="mt-1 text-sm text-neutral-300">{f.fact}</p>
+                <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">{f.fact}</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   <Constraint label="user" value={f.user} />
                   <Constraint label="path" value={f.path} />

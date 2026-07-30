@@ -38,7 +38,7 @@ export function Overview() {
   return (
     <div className="flex max-w-4xl flex-col gap-8">
       <div>
-        <h1 className="text-lg font-medium text-neutral-100">Overview</h1>
+        <h1 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">Overview</h1>
         <p className="mt-1 text-sm text-neutral-500">
           How much this handled for you, and how much needed you.
         </p>
@@ -68,7 +68,7 @@ export function Overview() {
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-xs font-medium uppercase tracking-wide text-neutral-500">Volume</h2>
-          <div className="flex gap-1 rounded-md border border-neutral-800 p-0.5">
+          <div className="flex gap-1 rounded-md border border-neutral-200 p-0.5 dark:border-neutral-800">
             {WINDOWS.map((w) => (
               <button
                 key={w.hours}
@@ -76,8 +76,8 @@ export function Overview() {
                 onClick={() => setHours(w.hours)}
                 className={`rounded px-2 py-1 text-xs transition-colors ${
                   hours === w.hours
-                    ? "bg-neutral-800 text-neutral-100"
-                    : "text-neutral-500 hover:text-neutral-300"
+                    ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
                 }`}
               >
                 {w.label}
@@ -85,7 +85,7 @@ export function Overview() {
             ))}
           </div>
         </div>
-        <div className="rounded-lg border border-neutral-800 bg-neutral-900/40 p-4">
+        <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900/40">
           {loading ? (
             <p className="py-12 text-center text-sm text-neutral-500">Loading…</p>
           ) : (

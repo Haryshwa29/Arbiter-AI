@@ -38,9 +38,15 @@ export function VolumeChart({ buckets }: { buckets: DayBucket[] }) {
                 y={CHART_H - supH - escH}
                 width={BAR_W}
                 height={supH}
-                className="fill-emerald-500/60"
+                className="fill-[#2E8B67]/60 dark:fill-[#5DCAA5]/60"
               />
-              <rect x={x} y={CHART_H - escH} width={BAR_W} height={escH} className="fill-red-500/80" />
+              <rect
+                x={x}
+                y={CHART_H - escH}
+                width={BAR_W}
+                height={escH}
+                className="fill-[#C2402F]/80 dark:fill-[#E2574B]/80"
+              />
             </g>
           );
         })}
@@ -50,12 +56,12 @@ export function VolumeChart({ buckets }: { buckets: DayBucket[] }) {
           <span key={i}>{formatHour(buckets[i].bucket)}</span>
         ))}
       </div>
-      <div className="mt-3 flex items-center gap-4 text-xs text-neutral-400">
+      <div className="mt-3 flex items-center gap-4 text-xs text-neutral-600 dark:text-neutral-400">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-red-500" /> Escalated
+          <span className="h-2 w-2 rounded-full bg-[#C2402F] dark:bg-[#E2574B]" /> Escalated
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-emerald-500" /> Suppressed
+          <span className="h-2 w-2 rounded-full bg-[#2E8B67] dark:bg-[#5DCAA5]" /> Suppressed
         </span>
       </div>
     </div>

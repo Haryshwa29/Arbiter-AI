@@ -57,7 +57,7 @@ export function Audit() {
   return (
     <div className="flex max-w-5xl flex-col gap-4">
       <div>
-        <h1 className="text-lg font-medium text-neutral-100">Verdicts & audit</h1>
+        <h1 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">Verdicts & audit</h1>
         <p className="mt-1 text-sm text-neutral-500">Every verdict, filterable and reviewable.</p>
       </div>
 
@@ -68,7 +68,7 @@ export function Audit() {
             setOffset(0);
             setDecision(e.target.value as Decision | "");
           }}
-          className="rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-sm text-neutral-200 outline-none focus-visible:border-neutral-500 focus-visible:ring-2 focus-visible:ring-neutral-500/40"
+          className="rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-sm text-neutral-900 outline-none focus-visible:border-neutral-500 focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
         >
           <option value="">Any decision</option>
           <option value="escalate">Escalated</option>
@@ -81,7 +81,7 @@ export function Audit() {
             setOffset(0);
             setTier(e.target.value as Tier | "");
           }}
-          className="rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-sm text-neutral-200 outline-none focus-visible:border-neutral-500 focus-visible:ring-2 focus-visible:ring-neutral-500/40"
+          className="rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-sm text-neutral-900 outline-none focus-visible:border-neutral-500 focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200"
         >
           <option value="">Any tier</option>
           <option value="prefilter">Prefilter</option>
@@ -97,7 +97,7 @@ export function Audit() {
             setOffset(0);
             setHost(e.target.value);
           }}
-          className="rounded-md border border-neutral-700 bg-neutral-950 px-2.5 py-1.5 text-sm text-neutral-200 outline-none placeholder:text-neutral-600 focus-visible:border-neutral-500 focus-visible:ring-2 focus-visible:ring-neutral-500/40"
+          className="rounded-md border border-neutral-300 bg-white px-2.5 py-1.5 text-sm text-neutral-900 outline-none placeholder:text-neutral-400 focus-visible:border-neutral-500 focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:border-neutral-700 dark:bg-neutral-950 dark:text-neutral-200 dark:placeholder:text-neutral-600"
         />
         <datalist id="audit-hosts">
           {hosts.map((h) => (
@@ -120,7 +120,7 @@ export function Audit() {
             return (
               <div
                 key={row.id}
-                className="rounded-lg border border-neutral-800 bg-neutral-900/40"
+                className="rounded-lg border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900/40"
               >
                 <button
                   type="button"
@@ -130,7 +130,7 @@ export function Audit() {
                   <div className="flex min-w-0 items-center gap-2">
                     <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${d.dot}`} />
                     <span className={`text-sm font-medium ${d.text}`}>{d.label}</span>
-                    <span className="truncate text-sm text-neutral-400">{row.host}</span>
+                    <span className="truncate text-sm text-neutral-600 dark:text-neutral-400">{row.host}</span>
                     <span className={`shrink-0 text-xs ${t.text}`}>{t.label}</span>
                     {row.actor && (
                       <span className="shrink-0 text-xs text-neutral-500">
@@ -142,30 +142,30 @@ export function Audit() {
                 </button>
 
                 {isOpen && (
-                  <div className="border-t border-neutral-800 px-4 py-3 text-sm">
+                  <div className="border-t border-neutral-200 px-4 py-3 text-sm dark:border-neutral-800">
                     <p className="text-xs text-neutral-500">Signature</p>
-                    <p className="mb-2 break-all text-neutral-300">{row.signature}</p>
+                    <p className="mb-2 break-all text-neutral-700 dark:text-neutral-300">{row.signature}</p>
 
                     {row.rationale && (
                       <>
                         <p className="text-xs text-neutral-500">Rationale</p>
-                        <p className="mb-2 text-neutral-300">{row.rationale}</p>
+                        <p className="mb-2 text-neutral-700 dark:text-neutral-300">{row.rationale}</p>
                       </>
                     )}
                     {row.evidence && (
                       <>
                         <p className="text-xs text-neutral-500">Evidence</p>
-                        <p className="mb-2 text-neutral-300">{row.evidence}</p>
+                        <p className="mb-2 text-neutral-700 dark:text-neutral-300">{row.evidence}</p>
                       </>
                     )}
                     {detail && (
                       <>
                         <p className="text-xs text-neutral-500">Event</p>
-                        <p className="mb-2 text-neutral-300">
+                        <p className="mb-2 text-neutral-700 dark:text-neutral-300">
                           [{detail.source}] {detail.message} (severity {detail.severity})
                         </p>
                         {Object.keys(detail.fields).length > 0 && (
-                          <pre className="mb-2 overflow-x-auto rounded bg-neutral-950 p-2 text-xs text-neutral-400">
+                          <pre className="mb-2 overflow-x-auto rounded bg-neutral-100 p-2 text-xs text-neutral-700 dark:bg-neutral-950 dark:text-neutral-400">
                             {JSON.stringify(detail.fields, null, 2)}
                           </pre>
                         )}
@@ -177,7 +177,7 @@ export function Audit() {
                         <button
                           type="button"
                           onClick={() => handleAcknowledge(row.id)}
-                          className="rounded-md border border-neutral-700 px-2.5 py-1.5 text-xs text-neutral-300 transition-colors hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40"
+                          className="rounded-md border border-neutral-300 px-2.5 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                         >
                           Acknowledge
                         </button>
@@ -185,21 +185,21 @@ export function Audit() {
                       <button
                         type="button"
                         onClick={() => handleLabel(row.signature, "confirmed")}
-                        className="rounded-md border border-neutral-700 px-2.5 py-1.5 text-xs text-neutral-300 transition-colors hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40"
+                        className="rounded-md border border-neutral-300 px-2.5 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                       >
                         Confirm this was correct
                       </button>
                       <button
                         type="button"
                         onClick={() => handleLabel(row.signature, "overruled")}
-                        className="rounded-md border border-neutral-700 px-2.5 py-1.5 text-xs text-neutral-300 transition-colors hover:bg-neutral-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40"
+                        className="rounded-md border border-neutral-300 px-2.5 py-1.5 text-xs text-neutral-700 transition-colors hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
                       >
                         {row.decision === "escalate"
                           ? "This was a false alarm"
                           : "This should have been escalated"}
                       </button>
                     </div>
-                    <p className="mt-2 text-xs text-neutral-600">
+                    <p className="mt-2 text-xs text-neutral-500">
                       Applies to every verdict sharing this signature, not just this one.
                     </p>
                   </div>
@@ -214,7 +214,7 @@ export function Audit() {
           type="button"
           disabled={offset === 0}
           onClick={() => setOffset(Math.max(0, offset - PAGE_SIZE))}
-          className="rounded-md border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
           Previous
         </button>
@@ -223,7 +223,7 @@ export function Audit() {
           type="button"
           disabled={rows.length < PAGE_SIZE}
           onClick={() => setOffset(offset + PAGE_SIZE)}
-          className="rounded-md border border-neutral-700 px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:bg-neutral-800 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-md border border-neutral-300 px-3 py-1.5 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
         >
           Next
         </button>

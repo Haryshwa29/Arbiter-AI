@@ -7,7 +7,7 @@ import { DASH_BASE } from "../lib/routing";
 
 const REPO_URL = "https://github.com/Haryshwa29/Arbiter-AI";
 
-const linkClass = "no-underline transition-colors duration-200 hover:text-[#F2F1EE]";
+const linkClass = "no-underline transition-colors duration-200 hover:text-[var(--ink)]";
 
 export function Footer() {
   return (
@@ -47,7 +47,7 @@ const bar: React.CSSProperties = {
 
 const wordmark: React.CSSProperties = {
   fontSize: "var(--fs-ui)",
-  color: "#5F5E5A",
+  color: "var(--ink-4)",
 };
 
 const links: React.CSSProperties = {
@@ -57,6 +57,6 @@ const links: React.CSSProperties = {
 
 const link: React.CSSProperties = {
   fontSize: "var(--fs-ui)",
-  color: "#9b9a95",
+  color: "var(--ink-3)",
   textDecoration: "none",
 };

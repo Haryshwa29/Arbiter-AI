@@ -10,7 +10,7 @@ escalates `curl | sh`, so the install instructions never ask you to do it.
 
 ```bash
 # Linux / macOS
-curl -fsSLO https://github.com/Haryshwa29/arbiter/releases/latest/download/install.sh
+curl -fsSLO https://github.com/Haryshwa29/Arbiter-AI/releases/latest/download/install.sh
 less install.sh
 sh install.sh --dry-run     # prints every step, changes nothing
 sh install.sh
@@ -18,7 +18,7 @@ sh install.sh
 
 ```powershell
 # Windows
-Invoke-WebRequest https://github.com/Haryshwa29/arbiter/releases/latest/download/install.ps1 -OutFile install.ps1
+Invoke-WebRequest https://github.com/Haryshwa29/Arbiter-AI/releases/latest/download/install.ps1 -OutFile install.ps1
 notepad install.ps1
 powershell -ExecutionPolicy Bypass -File install.ps1
 ```

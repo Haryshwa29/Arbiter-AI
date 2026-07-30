@@ -6,10 +6,12 @@
  * inside it and never re-mounts.
  *
  * Immersive, not split: the field is full-bleed and the copy sits over it,
- * bottom-left, cross-fading in place. An earlier pass gave the copy its own
- * 44% lane, which read as two things side by side rather than one place you
- * are inside. A `to top` scrim keeps the type legible over the geometry, and
- * the line map at the right edge doubles as the section index.
+ * centred in a 58ch column, cross-fading in place (THEME-BRIEF.md §2b — this
+ * was bottom-left until 2026-07-30; left-aligned copy under a centred field
+ * read as unbalanced on a wide viewport). An earlier pass gave the copy its
+ * own 44% lane, which read as two things side by side rather than one place
+ * you are inside. A `to top` scrim keeps the type legible over the geometry,
+ * and the line map at the right edge doubles as the section index.
  *
  * Beat timing matches the station blocks in TransitField (INTRO, SPAN, DWELL),
  * so a caption is at full opacity exactly while the packet is standing at the
@@ -21,7 +23,7 @@
  * gets the entire page with the flight held at a readable frame.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   motion,
   useMotionValue,
@@ -31,11 +33,36 @@ import {
   useReducedMotion,
   type MotionValue,
 } from "framer-motion";
-import { TransitField, STATIONS } from "./TransitField";
+import { TransitField, STATIONS, TIER_COLOUR, type Scheme } from "./TransitField";
 
 const DESKTOP_QUERY = "(min-width: 900px)";
 const RELEASES_URL = "https://github.com/Haryshwa29/Arbiter-AI/releases";
 const REPO_URL = "https://github.com/Haryshwa29/Arbiter-AI";
+
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+function subscribeScheme(onChange: () => void) {
+  const mq = window.matchMedia(DARK_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+}
+function getScheme(): Scheme {
+  return window.matchMedia(DARK_QUERY).matches ? "dark" : "light";
+}
+/** index.css's :root block is light-first, so the prerendered/SSR frame must agree. */
+function getServerScheme(): Scheme {
+  return "light";
+}
+
+/**
+ * The canvas can't read CSS variables (THEME-BRIEF.md §1) — this is the one
+ * place the media query is matched, handed down as a prop so the field
+ * re-renders on a scheme change instead of sampling `getComputedStyle` per
+ * frame.
+ */
+function useScheme(): Scheme {
+  return useSyncExternalStore(subscribeScheme, getScheme, getServerScheme);
+}
 
 /** Must match TransitField: intro, five station blocks, outro. */
 const INTRO = 0.075;
@@ -86,6 +113,7 @@ function beatRange(k: number): [number, number, number, number] {
 
 export function Landing() {
   const reduced = useReducedMotion();
+  const scheme = useScheme();
   const [isDesktop, setIsDesktop] = useState(false);
   /** A frame mid-flight, for the stacked layout where nothing drives the field. */
   const still = useMotionValue(0.42);
@@ -112,11 +140,11 @@ export function Landing() {
   // the effect that reads it). Keeping the hook here, gated by `isDesktop`,
   // reproduced exactly that bug: the field would render its opening frame
   // and then never move again, however far the page was scrolled.
-  if (!isDesktop) return <Stacked still={still} />;
-  return <Flight reduced={reduced} />;
+  if (!isDesktop) return <Stacked still={still} scheme={scheme} />;
+  return <Flight reduced={reduced} scheme={scheme} />;
 }
 
-function Flight({ reduced }: { reduced: boolean | null }) {
+function Flight({ reduced, scheme }: { reduced: boolean | null; scheme: Scheme }) {
   const scope = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: scope, offset: ["start start", "end end"] });
 
@@ -127,14 +155,14 @@ function Flight({ reduced }: { reduced: boolean | null }) {
   const held = useTransform(smooth, (v) => (reduced ? 0.42 : v));
 
   return (
-    <div style={{ background: "#080808", color: "#F2F1EE" }}>
+    <div style={{ background: "var(--bg)", color: "var(--ink)" }}>
       {/* 726vh = 660vh * 1.1: 10% more scroll distance per the same normalized
           timeline, so the sequence reads 10% slower without touching any of
           the decided INTRO/SPAN/DWELL/OUTRO proportions. */}
       <div ref={scope} style={{ position: "relative", height: "726vh" }}>
         <div style={{ position: "sticky", top: 0, height: "100vh", overflow: "hidden" }}>
           <div style={{ position: "absolute", inset: 0 }}>
-            <TransitField p={held} />
+            <TransitField p={held} scheme={scheme} />
           </div>
 
           {/* Keeps the type legible where it overlaps the geometry. */}
@@ -145,7 +173,7 @@ function Flight({ reduced }: { reduced: boolean | null }) {
               zIndex: 2,
               pointerEvents: "none",
               background:
-                "linear-gradient(to top,#080808 2%,rgba(8,8,8,0.9) 22%,rgba(8,8,8,0.35) 46%,rgba(8,8,8,0) 68%)",
+                "linear-gradient(to top, var(--bg) 2%, color-mix(in srgb, var(--bg) 90%, transparent) 22%, color-mix(in srgb, var(--bg) 35%, transparent) 46%, transparent 68%)",
             }}
           />
 
@@ -155,8 +183,10 @@ function Flight({ reduced }: { reduced: boolean | null }) {
               inset: "auto 0 0 0",
               zIndex: 3,
               display: "grid",
+              justifyItems: "center",
               alignContent: "end",
               padding: "0 var(--gutter) 10vh",
+              textAlign: "center",
               pointerEvents: "none",
             }}
           >
@@ -166,7 +196,7 @@ function Flight({ reduced }: { reduced: boolean | null }) {
             ))}
           </div>
 
-          <LineMap p={held} />
+          <LineMap p={held} scheme={scheme} />
           <ScrollHint p={held} />
         </div>
       </div>
@@ -181,36 +211,36 @@ function Flight({ reduced }: { reduced: boolean | null }) {
  * every layer as ordinary prose. Used on narrow viewports and by the
  * prerender, so the indexed HTML is the complete page.
  */
-function Stacked({ still }: { still: MotionValue<number> }) {
+function Stacked({ still, scheme }: { still: MotionValue<number>; scheme: Scheme }) {
   return (
-    <div style={{ background: "#080808", color: "#F2F1EE" }}>
-      <div style={{ padding: "8vh var(--gutter) 0", maxWidth: "min(1180px, var(--band))", margin: "0 auto" }}>
+    <div style={{ background: "var(--bg)", color: "var(--ink)" }}>
+      <div style={{ padding: "8vh var(--gutter) 0", maxWidth: "58ch", margin: "0 auto", textAlign: "center" }}>
         <h1 style={h1}>
-          A shield you can raise <span style={{ color: "#6b6a66" }}>before you can afford an army.</span>
+          A shield you can raise <span style={{ color: "var(--ink-3)" }}>before you can afford an army.</span>
         </h1>
-        <p style={{ ...body, marginTop: "1em", maxWidth: "40ch" }}>
+        <p style={{ ...body, marginTop: "1em" }}>
           Arbiter is a self-hosted AI security analyst. It reads every line your systems write, inside
           your network, and only wakes you when something earns it.
         </p>
       </div>
 
       <div style={{ position: "relative", height: "52vh", margin: "6vh 0" }}>
-        <TransitField p={still} />
+        <TransitField p={still} scheme={scheme} />
         <div
           style={{
             position: "absolute",
             inset: 0,
             pointerEvents: "none",
             background:
-              "linear-gradient(to top,#080808 1%,rgba(8,8,8,0.55) 22%,rgba(8,8,8,0) 55%,rgba(8,8,8,0.6) 99%)",
+              "linear-gradient(to top, var(--bg) 1%, color-mix(in srgb, var(--bg) 55%, transparent) 22%, transparent 55%, color-mix(in srgb, var(--bg) 60%, transparent) 99%)",
           }}
         />
       </div>
 
       <section style={{ ...section, paddingTop: 0 }}>
-        <div style={{ ...grid, gap: "3.2em" }}>
+        <div style={{ ...grid, gap: "3.2em", justifyItems: "center" }}>
           {BEATS.map((b) => (
-            <div key={b.eyebrow} style={{ maxWidth: "46ch" }}>
+            <div key={b.eyebrow} style={{ maxWidth: "58ch", textAlign: "center" }}>
               <p style={eyebrowStyle}>{b.eyebrow}</p>
               <h2 style={h2}>{b.head}</h2>
               <p style={{ ...body, marginTop: "1em" }}>{b.body}</p>
@@ -228,9 +258,9 @@ function Hero({ p }: { p: MotionValue<number> }) {
   const opacity = useTransform(p, [0, INTRO * 0.55, INTRO * 1.1], [1, 1, 0]);
   const y = useTransform(p, [0, INTRO * 1.1], [0, -44]);
   return (
-    <motion.div style={{ gridArea: "1 / 1", opacity, y, maxWidth: "min(46ch, 42vw)" }}>
+    <motion.div style={{ gridArea: "1 / 1", opacity, y, maxWidth: "58ch" }}>
       <h1 style={h1}>
-        A shield you can raise <span style={{ color: "#6b6a66" }}>before you can afford an army.</span>
+        A shield you can raise <span style={{ color: "var(--ink-3)" }}>before you can afford an army.</span>
       </h1>
       <p style={{ ...body, marginTop: "1em" }}>
         Arbiter is a self-hosted AI security analyst. It reads every line your systems write, inside
@@ -260,7 +290,7 @@ function Beat({
   const opacity = useTransform(p, range, [0, 1, 1, 0]);
   const y = useTransform(p, range, [22, 0, 0, -22]);
   return (
-    <motion.div style={{ gridArea: "1 / 1", opacity, y, maxWidth: "min(46ch, 42vw)" }}>
+    <motion.div style={{ gridArea: "1 / 1", opacity, y, maxWidth: "58ch" }}>
       <p style={eyebrowStyle}>{eyebrow}</p>
       <h2 style={h2}>{head}</h2>
       <p style={{ ...body, marginTop: "1em" }}>{copy}</p>
@@ -269,7 +299,7 @@ function Beat({
 }
 
 /** Five stops down the right edge — the metaphor doing double duty as an index. */
-function LineMap({ p }: { p: MotionValue<number> }) {
+function LineMap({ p, scheme }: { p: MotionValue<number>; scheme: Scheme }) {
   return (
     <div
       style={{
@@ -287,7 +317,7 @@ function LineMap({ p }: { p: MotionValue<number> }) {
       }}
     >
       {STATIONS.map((s, i) => (
-        <Stop key={s.title} p={p} index={i} label={s.title.toLowerCase()} colour={s.colour} />
+        <Stop key={s.title} p={p} index={i} label={s.title.toLowerCase()} colour={TIER_COLOUR[s.tier][scheme]} />
       ))}
     </div>
   );
@@ -307,7 +337,7 @@ function Stop({
   const [a, b, c, d] = beatRange(index);
   const lit = useTransform(p, [a, b, c, d], [0, 1, 1, 0]);
   const opacity = useTransform(lit, (v) => 0.34 + v * 0.66);
-  const color = useTransform(lit, (v) => (v > 0.5 ? `rgb(${colour.join(",")})` : "#43433f"));
+  const color = useTransform(lit, (v) => (v > 0.5 ? `rgb(${colour.join(",")})` : "var(--ink-3)"));
   return (
     <motion.div
       style={{
@@ -349,7 +379,7 @@ function ScrollHint({ p }: { p: MotionValue<number> }) {
         fontFamily: "ui-monospace, monospace",
         fontSize: "var(--fs-tiny)",
         letterSpacing: "0.24em",
-        color: "#3f3f3c",
+        color: "var(--ink-4)",
         pointerEvents: "none",
       }}
     >
@@ -373,7 +403,7 @@ function useReveal(reduced: boolean | null, delay = 0) {
   };
 }
 
-const hairline = "border-t border-white/[0.07]";
+const hairline = "border-t border-[var(--hair)]";
 
 /**
  * Everything after the flight. Three sections, three different rhythms —
@@ -403,7 +433,10 @@ function Sections() {
             that reads as "AI startup blob". */}
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: "radial-gradient(60% 50% at 15% 0%, rgba(255,255,255,0.03), transparent)" }}
+          style={{
+            background:
+              "radial-gradient(60% 50% at 15% 0%, color-mix(in srgb, var(--ink) 6%, transparent), transparent)",
+          }}
         />
         <motion.div style={{ ...grid, position: "relative" }} {...useReveal(reduced)}>
           <p style={eyebrowStyle}>Why you can trust it</p>
@@ -419,20 +452,14 @@ function Sections() {
       </section>
 
       <section style={{ ...section, paddingBottom: "20vh" }} className={hairline}>
-        <motion.div
-          className="md:grid md:grid-cols-[1.1fr_0.9fr] md:items-end md:gap-10"
-          style={{ display: "grid", gap: "1.75rem", maxWidth: "min(1180px, var(--band))", margin: "0 auto" }}
-          {...useReveal(reduced)}
-        >
-          <div>
-            <h2 style={{ ...h2, maxWidth: "18ch" }}>Install it, read it, then run it.</h2>
-            <p style={{ ...body, maxWidth: "56ch", marginTop: "0.7em" }}>
-              Released builds ship as a single readable zipapp plus a short bootstrap script, verified
-              against published checksums. Arbiter's own prefilter would escalate a pipe-to-shell
-              one-liner, so the install instructions never ask you to run one.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3 md:justify-end">
+        <motion.div style={grid} {...useReveal(reduced)}>
+          <h2 style={{ ...h2, maxWidth: "18ch" }}>Install it, read it, then run it.</h2>
+          <p style={{ ...body, marginTop: "0.7em" }}>
+            Released builds ship as a single readable zipapp plus a short bootstrap script, verified
+            against published checksums. Arbiter's own prefilter would escalate a pipe-to-shell
+            one-liner, so the install instructions never ask you to run one.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
             <a href={RELEASES_URL} className={ctaClass}>
               Get the latest release
             </a>
@@ -463,7 +490,8 @@ function VerdictCard({ reduced }: { reduced: boolean | null }) {
     <div
       className="rounded-[10px] p-px"
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02))",
+        background:
+          "linear-gradient(180deg, color-mix(in srgb, var(--ink) 14%, transparent), color-mix(in srgb, var(--ink) 2%, transparent))",
         maxWidth: "min(560px, 46vw)",
         marginTop: "1rem",
       }}
@@ -471,16 +499,17 @@ function VerdictCard({ reduced }: { reduced: boolean | null }) {
       <div
         className="rounded-[10px]"
         style={{
-          background: "linear-gradient(180deg, #0e0e0d, #0b0b0a)",
+          background: "var(--surface)",
           padding: "1.3em 1.4em",
           fontFamily: "ui-monospace, monospace",
           fontSize: "var(--fs-ui)",
           lineHeight: 1.8,
-          color: "#9a998f",
+          color: "var(--ink-3)",
+          textAlign: "left",
         }}
       >
         <motion.div
-          style={{ color: "#cfcec8" }}
+          style={{ color: "var(--ink)" }}
           initial={reduced ? false : { opacity: 0, y: 6 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10% 0px" }}
@@ -515,13 +544,13 @@ function VerdictCard({ reduced }: { reduced: boolean | null }) {
               borderRadius: 4,
               fontSize: "var(--fs-tiny)",
               letterSpacing: "0.12em",
-              background: "rgba(226,87,75,0.16)",
-              color: "#E2574B",
+              background: "color-mix(in srgb, var(--tier-escalate) 16%, transparent)",
+              color: "var(--tier-escalate)",
             }}
           >
             ESCALATE
           </span>
-          <span style={{ marginLeft: "0.6em", color: "#6b6a66" }}>
+          <span style={{ marginLeft: "0.6em", color: "var(--ink-3)" }}>
             block ip /32 · ttl 30m · recommend
           </span>
         </motion.div>
@@ -537,7 +566,7 @@ function VerdictCard({ reduced }: { reduced: boolean | null }) {
  */
 function Lines({ lead, lines }: { lead: string; lines: string[] }) {
   return (
-    <div style={{ display: "grid", gap: "1.1em", maxWidth: "64ch" }}>
+    <div style={{ display: "grid", gap: "1.1em", maxWidth: "58ch" }}>
       <p style={{ ...leadStrong, margin: 0 }}>{lead}</p>
       {lines.map((l) => (
         <p key={l} style={{ ...body, margin: 0 }}>
@@ -550,12 +579,20 @@ function Lines({ lead, lines }: { lead: string; lines: string[] }) {
 
 const section: React.CSSProperties = { padding: "14vh var(--gutter)", position: "relative" };
 
+/**
+ * Sections read as one centred column of prose (THEME-BRIEF.md §2b), not
+ * left-aligned against the gutter — `justifyItems` centres each grid item
+ * (including a fixed-width artifact like the verdict card) and `textAlign`
+ * centres the prose inside it.
+ */
 const grid: React.CSSProperties = {
   display: "grid",
   gap: "1.6em",
   maxWidth: "min(1180px, var(--band))",
   margin: "0 auto",
   width: "100%",
+  justifyItems: "center",
+  textAlign: "center",
 };
 
 const h1: React.CSSProperties = {
@@ -577,7 +614,7 @@ const h2: React.CSSProperties = {
 const body: React.CSSProperties = {
   fontSize: "var(--fs-body)",
   lineHeight: 1.62,
-  color: "#a9a8a3",
+  color: "var(--ink-2)",
   margin: 0,
 };
 
@@ -588,7 +625,7 @@ const leadStrong: React.CSSProperties = {
   lineHeight: 1.55,
   fontWeight: 500,
   letterSpacing: "-0.01em",
-  color: "#d8d7d2",
+  color: "var(--ink)",
   margin: 0,
 };
 
@@ -596,12 +633,12 @@ const eyebrowStyle: React.CSSProperties = {
   fontFamily: "ui-monospace, monospace",
   fontSize: "var(--fs-eb)",
   letterSpacing: "0.2em",
-  color: "#5a5955",
+  color: "var(--ink-4)",
   margin: "0 0 1em",
 };
 
 const ctaClass =
-  "inline-flex items-center rounded-md bg-[#F2F1EE] px-[1.2em] py-[0.7em] text-[length:var(--fs-ui)] font-medium text-[#0b0b0b] no-underline transition-colors duration-200 hover:bg-white";
+  "inline-flex items-center rounded-md bg-[var(--cta-bg)] px-[1.2em] py-[0.7em] text-[length:var(--fs-ui)] font-medium text-[var(--cta-ink)] no-underline transition-opacity duration-200 hover:opacity-85";
 
 const ghostClass =
-  "inline-flex items-center rounded-md border border-[#2c2c28] px-[1.2em] py-[0.7em] text-[length:var(--fs-ui)] text-[#F2F1EE] no-underline transition-colors duration-200 hover:border-white/30 hover:bg-white/[0.04]";
+  "inline-flex items-center rounded-md border border-[var(--hair-2)] px-[1.2em] py-[0.7em] text-[length:var(--fs-ui)] text-[var(--ink)] no-underline transition-colors duration-200 hover:border-[var(--ink-3)] hover:bg-[color-mix(in_srgb,var(--ink)_4%,transparent)]";

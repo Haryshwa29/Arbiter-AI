@@ -26,16 +26,16 @@ export function LiveFeed() {
     <div className="flex max-w-3xl flex-col gap-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-medium text-neutral-100">Live feed</h1>
+          <h1 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">Live feed</h1>
           <p className="mt-1 text-sm text-neutral-500">Verdicts as they're triaged.</p>
         </div>
         <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-neutral-400">
+          <label className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <input
               type="checkbox"
               checked={escalationsOnly}
               onChange={(e) => setEscalationsOnly(e.target.checked)}
-              className="h-3.5 w-3.5 rounded border-neutral-600 bg-neutral-950 accent-neutral-400"
+              className="h-3.5 w-3.5 rounded border-neutral-400 bg-white accent-neutral-600 dark:border-neutral-600 dark:bg-neutral-950 dark:accent-neutral-400"
             />
             Escalations only
           </label>
@@ -61,13 +61,13 @@ export function LiveFeed() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25, ease: "easeOut" }}
-                className="rounded-lg border border-neutral-800 bg-neutral-900/40 px-4 py-2.5"
+                className="rounded-lg border border-neutral-200 bg-white px-4 py-2.5 dark:border-neutral-800 dark:bg-neutral-900/40"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${decision.dot}`} />
                     <span className={`text-sm font-medium ${decision.text}`}>{decision.label}</span>
-                    <span className="truncate text-sm text-neutral-400">{row.host}</span>
+                    <span className="truncate text-sm text-neutral-600 dark:text-neutral-400">{row.host}</span>
                     <span className={`shrink-0 text-xs ${tier.text}`}>{tier.label}</span>
                   </div>
                   <span className="shrink-0 text-xs text-neutral-500">{formatTime(row.ts)}</span>

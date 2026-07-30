@@ -8,7 +8,9 @@ body,
 
 body {
   margin: 0;
-  @apply bg-neutral-950 text-neutral-100 antialiased;
+  background: var(--bg);
+  color: var(--ink);
+  @apply antialiased;
 }
 
 /*
@@ -21,6 +23,33 @@ body {
  * unreadably small on a 34-inch ultrawide.
  */
 :root {
+  /*
+   * The whole page follows prefers-color-scheme (docs/THEME-BRIEF.md). Light
+   * is the default block below; the dark media query overrides it. No JS, no
+   * class toggle, no localStorage — that's what keeps the prerendered page
+   * correct on first paint.
+   */
+  color-scheme: light dark;
+
+  --bg: #FAF9F7;
+  --surface: #FFFFFF;
+  --ink: #14140F;
+  --ink-2: #4A4945;
+  --ink-3: #6E6D67;
+  --ink-4: #8A8981;
+  --hair: #E4E2DC;
+  --hair-2: #D6D3CB;
+  --cta-bg: #14140F;
+  --cta-ink: #FAF9F7;
+  --mark: #B4841F;
+
+  --tier-escalate: #C2402F;
+  --tier-suppress: #2E8B67;
+  --tier-prefilter: #2168B8;
+  --tier-llm: #5A50B8;
+  --tier-guardrail: #A76B12;
+  --tier-neutral: #6E6D67;
+
   --band: min(1680px, 94vw);
   --gutter: max(1.75rem, calc((100vw - var(--band)) / 2));
   --fs-h1: clamp(2.3rem, min(3.7vw, 8.4vh), 5.2rem);
@@ -30,4 +59,27 @@ body {
   --fs-eb: clamp(0.68rem, min(0.8vw, 1.6vh), 0.95rem);
   --fs-ui: clamp(0.82rem, min(0.92vw, 1.9vh), 1.08rem);
   --fs-tiny: clamp(0.6rem, min(0.66vw, 1.35vh), 0.85rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #080808;
+    --surface: #0c0c0b;
+    --ink: #F2F1EE;
+    --ink-2: #a9a8a3;
+    --ink-3: #9b9a95;
+    --ink-4: #5F5E5A;
+    --hair: #22221f;
+    --hair-2: #2a2a28;
+    --cta-bg: #F2F1EE;
+    --cta-ink: #0A0A0A;
+    --mark: #d9a943;
+
+    --tier-escalate: #E2574B;
+    --tier-suppress: #5DCAA5;
+    --tier-prefilter: #378ADD;
+    --tier-llm: #7F77DD;
+    --tier-guardrail: #EF9F27;
+    --tier-neutral: #888780;
+  }
 }
