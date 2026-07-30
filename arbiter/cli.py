@@ -108,7 +108,8 @@ def cmd_serve(args):
     serve(host=args.host, port=args.port, store_db=args.store_db,
           iam_db=args.iam_db, mem_db=args.db, demo_feed=args.demo_feed,
           events=args.events, backend=args.backend, model=args.model,
-          demo_feed_interval=args.demo_feed_interval)
+          demo_feed_interval=args.demo_feed_interval,
+          dev_accounts=args.dev_accounts)
 
 
 def main():
@@ -185,6 +186,10 @@ def main():
     wp.add_argument("--backend", choices=["mock", "ollama"], default="mock",
                     help="backend for --demo-feed's triage engine")
     wp.add_argument("--model", default="qwen3.5:4b")
+    wp.add_argument("--dev-accounts", action="store_true",
+                    help="dev only, off by default: force admin/admin123 and "
+                         "analyst/analyst123 on every boot, clearing any "
+                         "lockout. NEVER use outside localhost")
     wp.set_defaults(fn=cmd_serve)
 
     args = p.parse_args()

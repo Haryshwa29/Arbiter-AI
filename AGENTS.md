@@ -96,7 +96,29 @@ from talking to the triage engine directly.
 ## Frontend stack
 
 React + Vite + TypeScript + Tailwind, framer-motion for animation.
-Components generated via 21st.dev Magic, refined with ui-ux pro max.
+
+### Required tooling — use these, do not hand-roll components
+
+Both are installed in the CLI. Use them; do not write UI components from
+scratch when these apply.
+
+- **21st.dev Magic** (MCP server). Invoke `/ui <description>` to generate any
+  non-trivial component — cards, tables, forms, nav, modals. Generate first,
+  then adapt to the design language below.
+- **ui-ux pro max** (skill). Run it over every view before calling that view
+  done: layout, spacing, type scale, contrast, and accessibility. It is a
+  review-and-refine pass, not a generator.
+
+Sequence per view: Magic generates → you wire it to the API client → ui-ux pro
+max refines → then move on. State in your summary which of the two you used
+for each view, so it is visible when they were skipped.
+
+**Dependency caution.** Magic emits shadcn/ui, which pulls Radix primitives,
+`class-variance-authority`, `clsx`, and `tailwind-merge`. That runs against
+constraint 4 (minimal, reviewable dependencies — the customer audits this).
+Accept those four if Magic needs them; flag anything beyond them before
+installing. And check generated code for runtime CDN fetches — icon and font
+imports are the usual leak, and they violate constraints 1 and 2.
 
 Views to build: **Login**, **Overview** (KPI cards), **Live feed** (SSE,
 newest-first, "escalations only" filter, reconnect on drop), **Verdicts &
@@ -118,8 +140,18 @@ handled once: a 401 redirects to login.
    response logic stay out of the brain (`triage.py` gains no side effects).
 4. **Keep dependencies minimal and reviewable.** The customer is meant to be
    able to audit this. Justify every new runtime dependency.
-5. **No public/anonymous page.** Sign-in wall only; unauthenticated users get
-   the login screen. No zero-recon splash, no marketing routes.
+5. **The public landing page carries no data — zero-recon.** *(Revised
+   2026-07-28; see `docs/LANDING-BRIEF.md`.)* The app now serves a public
+   marketing landing at `/`, with the dashboard behind login at `/app`. The
+   landing is static copy only: no verdicts, no hosts, no counts, no live
+   state, and it must make **zero authenticated API calls**. Everything under
+   `/app` stays behind the sign-in wall exactly as before.
+
+   On a customer install the landing must be **off by default** — an install
+   serves the login screen at `/`, not marketing copy. The landing is for the
+   public site deployment. This is the one part of ADR-002 Decision 1 that
+   comes back, and only at the frontend; no public routes are added to
+   `arbiter/api/server.py`, whose auth gate stays as it is.
 
 ## Design language
 

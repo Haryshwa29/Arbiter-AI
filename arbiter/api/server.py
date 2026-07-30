@@ -365,15 +365,32 @@ def build_httpd(ctx: Ctx, host: str, port: int) -> ThreadingHTTPServer:
     return ThreadingHTTPServer((host, port), make_handler(ctx))
 
 
+DEV_ACCOUNTS = {"admin": ("admin123", "admin"),
+                "analyst": ("analyst123", "analyst")}
+
+
 def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
           demo_feed: bool = False, events: str | None = None,
           backend: str = "mock", model: str = "qwen3.5:4b",
-          demo_feed_interval: float = 2.0) -> None:
+          demo_feed_interval: float = 2.0,
+          dev_accounts: bool = False) -> None:
     store = AuditStore(store_db)
     secret_path = Path(iam_db).with_name(Path(iam_db).name + ".secret")
     secret = load_or_create_secret(secret_path)
     account = IAM(iam_db, secret=secret)
-    if not account.any_users():
+    if dev_accounts:
+        # Dev/trial convenience: fixed, known-weak credentials, reset on every
+        # boot so a lockout or a lost password never blocks local work.
+        # Off by default; the installed service never passes it (see
+        # install/service.py serve_argv, same treatment as --demo-feed).
+        for name, (pw, role) in DEV_ACCOUNTS.items():
+            if not account.set_password(name, pw):
+                account.create_user(name, pw, role)
+        print("!! --dev-accounts: passwords reset to KNOWN WEAK values")
+        for name, (pw, _role) in DEV_ACCOUNTS.items():
+            print(f"     {name:9}/ {pw}")
+        print("!! never run this on anything reachable from outside localhost")
+    elif not account.any_users():
         admin_pw = secrets.token_urlsafe(9)
         analyst_pw = secrets.token_urlsafe(9)
         account.create_user("admin", admin_pw, "admin")

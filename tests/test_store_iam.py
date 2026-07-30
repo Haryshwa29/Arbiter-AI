@@ -168,3 +168,47 @@ class SecretPersistenceTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_set_password_clears_lockout(tmp_path):
+    from arbiter.iam import IAM, MAX_FAILED
+    acct = IAM(tmp_path / "i.db")
+    acct.create_user("admin", "original", "admin")
+    for _ in range(MAX_FAILED):
+        assert acct.authenticate("admin", "wrong") is None
+    assert acct.is_locked("admin")
+    # right password is still refused while locked out — the ambiguity the
+    # login UI has to word around
+    assert acct.authenticate("admin", "original") is None
+
+    assert acct.set_password("admin", "admin123") is True
+    assert not acct.is_locked("admin")
+    assert acct.authenticate("admin", "admin123") == {
+        "username": "admin", "role": "admin"}
+    assert acct.authenticate("admin", "original") is None
+    assert acct.set_password("nobody", "x") is False
+
+
+def test_unlock_leaves_password_alone(tmp_path):
+    from arbiter.iam import IAM, MAX_FAILED
+    acct = IAM(tmp_path / "i.db")
+    acct.create_user("analyst", "keepme", "analyst")
+    for _ in range(MAX_FAILED):
+        acct.authenticate("analyst", "wrong")
+    assert acct.is_locked("analyst")
+    assert acct.unlock("analyst") is True
+    assert acct.authenticate("analyst", "keepme") is not None
+    assert acct.unlock("ghost") is False
+
+
+def test_dev_accounts_resets_existing_and_creates_missing(tmp_path):
+    from arbiter.iam import IAM, load_or_create_secret
+    from arbiter.api.server import DEV_ACCOUNTS
+    db = tmp_path / "i.db"
+    acct = IAM(db, secret=load_or_create_secret(tmp_path / "s"))
+    acct.create_user("admin", "somethingelse", "admin")
+    for name, (pw, role) in DEV_ACCOUNTS.items():
+        if not acct.set_password(name, pw):
+            acct.create_user(name, pw, role)
+    assert acct.authenticate("admin", "admin123")["role"] == "admin"
+    assert acct.authenticate("analyst", "analyst123")["role"] == "analyst"

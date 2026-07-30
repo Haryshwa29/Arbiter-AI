@@ -10,6 +10,7 @@ venv/
 # Arbiter runtime artifacts — never commit customer/demo state
 *.db
 *.db-journal
+*.db.secret
 audit.jsonl
 
 # Local tool state

@@ -41,7 +41,7 @@ Expected: backup IO spikes suppressed (LLM tier first, prefilter after 5 benign 
 
 ## Next steps (agreed with Haryshwa)
 
-0. **Build the new frontend** (React + Vite + TypeScript + Tailwind, per AGENTS.md) against the now-restored `arbiter/api/`. Supersedes the old ADR-001/ADR-002 dashboard-and-website plan.
+0. **Build the new frontend** (React + Vite + TypeScript + Tailwind, per AGENTS.md) against the now-restored `arbiter/api/`. Supersedes the old ADR-001/ADR-002 dashboard-and-website plan. The public landing's hero is built: `frontend/src/site/TransitField.tsx` + `Landing.tsx`, spec in `docs/HERO-TRANSIT-BRIEF.md` (which supersedes `docs/LANDING-BRIEF.md` §3a; `CyberField.tsx` and `ArbiterMark.tsx` are deleted). **The public positioning line changed 2026-07-29** — "a shield you can raise before you can afford an army"; no SIEM comparison and no pricing claim ships publicly. Dashboard views remain the open work.
 1. Labeled eval set to answer "minimum viable local model" — biggest open question.
 2. Human feedback loop CLI (confirm/overrule → `memory.label_verdicts`) — done via `arbiter review`; `/api/label` now exposes the same action to the frontend.
 3. Collector wrapper decision (Vector vs Wazuh) emitting the Event schema.

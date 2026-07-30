@@ -8,8 +8,8 @@ A self-hosted AI security analyst for companies too small to afford Splunk or a 
 
 ## The problem
 
-- Splunk-class SIEMs price per GB ingested (~$1,800/GB/yr, up to ~$50K with features) — absurd for startups with moderate-to-heavy data flow. Verify current pricing before publishing externally.
-- Free OSS SIEMs (Wazuh, Security Onion, Elastic) exist but are "free like a puppy": they need an analyst to write rules, tune noise, and watch dashboards. The target customer has no security hire.
+- Enterprise-class SIEMs price per GB ingested (~$1,800/GB/yr, up to ~$50K with features) — out of reach for startups with moderate-to-heavy data flow. **Internal note only: no pricing figure, comparison, or implication is published externally** (decided 2026-07-29), which is also why the old "verify current pricing before publishing" caveat no longer applies — nothing is published.
+- Free OSS SIEMs (Wazuh, Security Onion, Elastic) exist but are "free like a puppy": they need an analyst to write rules, tune noise, and watch dashboards. The target customer has no security hire. **This is the real gap, and the only one argued publicly: the tools are good, the seat is empty.**
 - Result: growing companies with real data flow are unprotected and increasingly targeted.
 - Validated signal (AWS Summit networking): these companies **will not ship their logs to a third party**. Any solution must run inside their environment.
 
@@ -19,11 +19,15 @@ Small companies / startups with moderate-to-heavy data flow, no dedicated securi
 
 ## Positioning
 
-Not "cheaper Splunk." **"The SIEM that doesn't need an analyst, because the analyst is built in."**
+**"A shield you can raise before you can afford an army."** *(Public line, decided 2026-07-29.)*
 
+Internally the shape is still "the SIEM that doesn't need an analyst, because the analyst is built in" — that sentence explains the product accurately and can be used in conversation with an engineer. It is **not** the public line: it swipes at a category the buyer may already own and like, and describes a competitor's shape rather than the buyer's problem.
+
+- **Externally, existing tooling is never the villain — the empty seat is.** Detection tooling is good; almost all of it assumes someone is reading it, and that someone is who the buyer doesn't have. Differences in shape, never in virtue.
+- **No pricing claim, comparison, or implication ships publicly** — see § The problem. Per-asset pricing is an internal counter-position, not a landing-page argument.
 - Collection layer = table stakes (wrap/fork an OSS stack; don't rebuild it).
 - The AI triage brain = the product.
-- Pricing counter-position: per asset / flat monthly, never per GB. "Your data volume is irrelevant, it never leaves your network."
+- Pricing counter-position (internal): per asset / flat monthly, never per GB. "Your data volume is irrelevant, it never leaves your network."
 
 ## Core product loop
 

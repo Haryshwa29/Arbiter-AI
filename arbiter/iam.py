@@ -107,6 +107,38 @@ class IAM:
     def any_users(self) -> bool:
         return self.conn.execute("SELECT 1 FROM users LIMIT 1").fetchone() is not None
 
+    def set_password(self, username: str, password: str) -> bool:
+        """Reset a password and clear any lockout. False if no such user.
+
+        Also zeroes `failed`/`locked_until`: an admin resetting a password is
+        resolving the situation that caused the lockout, so leaving the user
+        locked out afterwards is never the intent.
+        """
+        row = self.conn.execute(
+            "SELECT id FROM users WHERE username=?", (username,)).fetchone()
+        if row is None:
+            return False
+        salt = secrets.token_bytes(16)
+        self.conn.execute(
+            "UPDATE users SET salt=?, pw_hash=?, failed=0, locked_until=0 "
+            "WHERE id=?", (salt, _hash(password, salt), row["id"]))
+        self.conn.commit()
+        return True
+
+    def unlock(self, username: str) -> bool:
+        """Clear a lockout without touching the password. False if no user."""
+        cur = self.conn.execute(
+            "UPDATE users SET failed=0, locked_until=0 WHERE username=?",
+            (username,))
+        self.conn.commit()
+        return cur.rowcount > 0
+
+    def is_locked(self, username: str) -> bool:
+        row = self.conn.execute(
+            "SELECT locked_until FROM users WHERE username=?",
+            (username,)).fetchone()
+        return bool(row and row["locked_until"] > time.time())
+
     def authenticate(self, username: str, password: str) -> dict | None:
         row = self.conn.execute(
             "SELECT * FROM users WHERE username=?", (username,)).fetchone()
