@@ -5,9 +5,10 @@ dashboard behind `/app`, in one change, so signing in never crosses a theme boun
 
 Two decisions:
 
-1. **The site follows `prefers-color-scheme`.** No toggle, no stored preference, no
-   JavaScript. Light is what most systems default to, which is the point — the product
-   should not feel like it only belongs in a darkened room.
+1. **The site follows `prefers-color-scheme` by default, with a manual override.**
+   Light is what most systems default to, which is the point — the product should not
+   feel like it only belongs in a darkened room. The override is specified in §1a;
+   it is an override, never a replacement for the media query.
 2. **The field repaints with the page.** *(Revised the same day. A first pass kept the
    hero dark in both schemes; reviewed against a light page it read as an unexplained
    black hole rather than a deliberate band.)* A light field is a second art direction,
@@ -41,8 +42,27 @@ data. Match the media query once and pass it in — a `useSyncExternalStore` or 
 `matchMedia` listener in Landing, handed down as a prop — and re-render the field on
 change. Do not sample `getComputedStyle` per frame.
 
-A manual override toggle can be added later if wanted. It is deliberately out of scope:
-it would reintroduce the first-paint flash this design avoids.
+## 1a. The override toggle
+
+*(Added 2026-07-30. An earlier revision ruled a toggle out for flashing the wrong theme
+on a prerendered page. That risk is real and the blocking script below is what removes
+it — do not ship the toggle without it.)*
+
+A three-state control in the nav, immediately left of Sign in, cycling
+**System → Light → Dark** and starting at System, so a visitor can always get back to
+"whatever my OS says" without clearing storage.
+
+- The button writes `data-theme="light" | "dark"` on `<html>`, or removes the attribute
+  for System, and mirrors the choice to `localStorage`.
+- CSS gains `[data-theme="dark"] :root`-equivalent overrides alongside the media query.
+  The media query stays the default; the attribute only overrides it when present.
+- **A tiny blocking script in `index.html`'s `<head>`** — before any stylesheet — reads
+  `localStorage` and sets the attribute. It must be inline and synchronous; a module
+  import runs too late and the flash comes back.
+- The canvas reads the resolved scheme, not the media query directly, so the field
+  follows the override too.
+- Label the state, don't just show an icon: an icon alone can't say whether you are in
+  System or in an explicit mode.
 
 ---
 
@@ -120,12 +140,46 @@ fades toward whichever background it is on.
 there is no edge to hide and no scrim colour to get wrong — the scrim fades to the page
 background in both schemes.
 
-## 2b. Copy is centred
+## 2b. Alignment: hero left, sections centred
 
-The sections under the hero, and the hero caption itself, are centred in a `58ch`
-column rather than left-aligned against the gutter. Reviewed 2026-07-30: left-aligned
-copy under a centred field read as unbalanced on a wide viewport. This supersedes
-`HERO-TRANSIT-BRIEF.md` §5's "copy sits over it, bottom-left".
+**The hero's copy is left-aligned** against `--gutter`, bottom of the sticky viewport —
+the headline, the lead, and each station beat. **The sections below the flight are
+centred.** Settled 2026-07-30 after trying both: centred display type over a centred
+field left nothing for the eye to start from, and the hero is the one place with a
+moving object to balance against.
+
+Because the hero copy is left again, the field's projection centre goes back to `62%`
+of the band (`HERO-TRANSIT-BRIEF.md` §5 and §8a updated to match). At `50%` the
+geometry sits behind the copy instead of beside it.
+
+## 2c. Measure — the typography bug this pass must fix
+
+Shipped state is broken: one `58ch` column wraps everything, and `ch` resolves against
+**the element's own font size**. Body text at ~11px per character gives a ~640px box;
+the `h1` then inherits that box at 71px type, which is about nine characters per line.
+The headline currently stacks into two-word lines and reads as a poem.
+
+**Measure is set per element, in that element's own units.** Never once on a shared
+wrapper.
+
+| Element | Measure | Notes |
+|---|---|---|
+| hero `h1` | `max-width: 14ch` | ~14 characters of *its own* size; 2–3 lines at every width |
+| hero lead | `max-width: 42ch` | |
+| beat `h2` | `max-width: 20ch` | |
+| beat body | `max-width: 46ch` | |
+| section prose | `max-width: 62ch` | |
+
+Also:
+
+- `text-wrap: balance` on every heading, so the last line is never a single word.
+- `text-wrap: pretty` on paragraphs.
+- Headline size keys off **both** axes — `clamp(2rem, min(6.4vw, 9.5vh), 5.4rem)` — or a
+  short laptop window gets a headline taller than the viewport it sits in.
+
+Check by counting lines, not by eyeballing size: the headline holds 2–3 lines at 390,
+834, 1440 and 2560 wide. If it hits five, the measure is inherited from the wrong
+element again.
 
 ---
 

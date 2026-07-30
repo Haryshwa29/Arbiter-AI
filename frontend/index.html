@@ -5,6 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Arbiter AI</title>
+    <!--
+      Blocking, synchronous, before any stylesheet (THEME-BRIEF.md §1a). This
+      is what makes the manual override safe on a prerendered page: a module
+      import runs after first paint and the wrong theme flashes for a frame.
+      Keep this in sync with frontend/src/lib/scheme.ts's storage key and
+      choice values — it can't import that module, it has to run before it.
+    -->
+    <script>
+      (function () {
+        try {
+          var v = localStorage.getItem("arbiter-theme");
+          if (v === "light" || v === "dark") {
+            document.documentElement.setAttribute("data-theme", v);
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

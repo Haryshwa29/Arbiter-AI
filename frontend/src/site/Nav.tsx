@@ -12,10 +12,36 @@
  * It sits in normal document flow (not fixed/sticky) — it scrolls away once
  * the pinned field takes over, which is the same behaviour any non-fixed nav
  * has above a sticky hero.
+ *
+ * The theme toggle sits immediately left of Sign in (THEME-BRIEF.md §1a): an
+ * override on top of prefers-color-scheme, not a replacement for it — see
+ * lib/scheme.ts for the System → Light → Dark cycle and the localStorage/
+ * data-theme mechanics, and index.html's inline head script for the piece
+ * that keeps a prerendered page from flashing the wrong theme once the
+ * override can disagree with the media query.
  */
 import { DASH_BASE } from "../lib/routing";
+import { nextChoice, setThemeChoice, useThemeChoice } from "../lib/scheme";
 
 const RELEASES_URL = "https://github.com/Haryshwa29/Arbiter-AI/releases";
+
+const CHOICE_LABEL = { system: "System", light: "Light", dark: "Dark" } as const;
+
+function ThemeToggle() {
+  const choice = useThemeChoice();
+  const label = CHOICE_LABEL[choice];
+  return (
+    <button
+      type="button"
+      onClick={() => setThemeChoice(nextChoice(choice))}
+      style={themeToggle}
+      aria-label={`Theme: ${label}. Click to switch to ${CHOICE_LABEL[nextChoice(choice)]}.`}
+      title="Cycles System → Light → Dark"
+    >
+      {label}
+    </button>
+  );
+}
 
 export function Nav() {
   return (
@@ -28,6 +54,7 @@ export function Nav() {
         <span style={wordmark}>Arbiter</span>
       </span>
       <span style={actions}>
+        <ThemeToggle />
         <a href={`${DASH_BASE}/`} style={ghost}>
           Sign in
         </a>
@@ -65,6 +92,20 @@ const actions: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   gap: "1.4rem",
+};
+
+const themeToggle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  padding: "0.5em 0.9em",
+  borderRadius: 6,
+  border: "1px solid var(--hair-2)",
+  background: "transparent",
+  fontSize: "var(--fs-tiny)",
+  letterSpacing: "0.04em",
+  color: "var(--ink-3)",
+  cursor: "pointer",
+  font: "inherit",
 };
 
 const ghost: React.CSSProperties = {

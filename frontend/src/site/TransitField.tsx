@@ -24,9 +24,9 @@
 
 import { useEffect, useRef } from "react";
 import { useMotionValueEvent, useReducedMotion, type MotionValue } from "framer-motion";
+import type { Scheme } from "../lib/scheme";
 
-/** Which of the two token sets (docs/THEME-BRIEF.md §1) the field is painting. */
-export type Scheme = "light" | "dark";
+export type { Scheme };
 
 export type TierKey = "neutral" | "prefilter" | "guardrail" | "llm" | "escalate" | "suppress";
 
@@ -425,11 +425,12 @@ export function TransitField({ p, scheme }: { p: MotionValue<number>; scheme: Sc
       SC = cl(Math.min(H / 820, W / 1440), 0.85, 2.3);
       FL = 560 * SC;
       // Geometry centres in the same content band the copy is aligned to,
-      // otherwise it drifts to the far right of a wide viewport. At 50% now
-      // that the copy is centred too (THEME-BRIEF.md §2b) — it was 62% while
-      // the copy sat bottom-left, to keep the two from overlapping.
+      // otherwise it drifts to the far right of a wide viewport. At 62% so
+      // the geometry sits beside the left-aligned hero copy rather than
+      // behind it (THEME-BRIEF.md §2b) — briefly 50% on 2026-07-30 while the
+      // copy was centred, moved back the same day.
       const band = Math.min(W * 0.94, 1680);
-      CX = (W - band) / 2 + band * 0.5;
+      CX = (W - band) / 2 + band * 0.62;
       CY = H * 0.42;
     }
     fit();

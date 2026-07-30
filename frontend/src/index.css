@@ -24,10 +24,14 @@ body {
  */
 :root {
   /*
-   * The whole page follows prefers-color-scheme (docs/THEME-BRIEF.md). Light
-   * is the default block below; the dark media query overrides it. No JS, no
-   * class toggle, no localStorage — that's what keeps the prerendered page
-   * correct on first paint.
+   * The whole page follows prefers-color-scheme by default (docs/THEME-BRIEF.md
+   * §1), with a manual override (§1a). Light is the block below; the dark
+   * media query overrides it for a dark system. `[data-theme]`, written by
+   * the nav toggle and mirrored to localStorage, overrides *that* — it wins
+   * on specificity (an attribute selector beats a bare `:root`) regardless of
+   * source order. The blocking script in index.html's <head> sets the
+   * attribute before any stylesheet runs, so there is still no first-paint
+   * flash even with the override in play.
    */
   color-scheme: light dark;
 
@@ -52,7 +56,7 @@ body {
 
   --band: min(1680px, 94vw);
   --gutter: max(1.75rem, calc((100vw - var(--band)) / 2));
-  --fs-h1: clamp(2.3rem, min(3.7vw, 8.4vh), 5.2rem);
+  --fs-h1: clamp(2rem, min(6.4vw, 9.5vh), 5.4rem);
   --fs-h2: clamp(1.45rem, min(2.35vw, 5vh), 3.1rem);
   --fs-body: clamp(1rem, min(1.08vw, 2.3vh), 1.35rem);
   --fs-lead: clamp(1.02rem, min(1.2vw, 2.5vh), 1.45rem);
@@ -82,4 +86,54 @@ body {
     --tier-guardrail: #EF9F27;
     --tier-neutral: #888780;
   }
+}
+
+/* The override (THEME-BRIEF.md §1a). Same two token sets, duplicated rather
+   than shared with the blocks above: each rule is then self-contained, and
+   an attribute selector's higher specificity wins over the media query
+   above without needing a `:not([data-theme])` escape hatch on either side. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #FAF9F7;
+  --surface: #FFFFFF;
+  --ink: #14140F;
+  --ink-2: #4A4945;
+  --ink-3: #6E6D67;
+  --ink-4: #8A8981;
+  --hair: #E4E2DC;
+  --hair-2: #D6D3CB;
+  --cta-bg: #14140F;
+  --cta-ink: #FAF9F7;
+  --mark: #B4841F;
+
+  --tier-escalate: #C2402F;
+  --tier-suppress: #2E8B67;
+  --tier-prefilter: #2168B8;
+  --tier-llm: #5A50B8;
+  --tier-guardrail: #A76B12;
+  --tier-neutral: #6E6D67;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #080808;
+  --surface: #0c0c0b;
+  --ink: #F2F1EE;
+  --ink-2: #a9a8a3;
+  --ink-3: #9b9a95;
+  --ink-4: #5F5E5A;
+  --hair: #22221f;
+  --hair-2: #2a2a28;
+  --cta-bg: #F2F1EE;
+  --cta-ink: #0A0A0A;
+  --mark: #d9a943;
+
+  --tier-escalate: #E2574B;
+  --tier-suppress: #5DCAA5;
+  --tier-prefilter: #378ADD;
+  --tier-llm: #7F77DD;
+  --tier-guardrail: #EF9F27;
+  --tier-neutral: #888780;
 }

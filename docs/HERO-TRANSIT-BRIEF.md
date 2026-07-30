@@ -155,9 +155,10 @@ opacities so the prerendered HTML is complete.
 
 ## 5. Layout — immersive, not split
 
-The field is **full-bleed**. Copy sits over it, cross-fading in place; a `to top` scrim
-keeps it legible. *(Copy was bottom-left until 2026-07-30; it is now centred in a 58ch
-column — see `THEME-BRIEF.md` §2b.)* A five-stop line map sits at the right edge, current
+The field is **full-bleed**. Copy sits over it, bottom-left against `--gutter`,
+cross-fading in place; a `to top` scrim keeps it legible. *(It was briefly centred on
+2026-07-30 and moved back — see `THEME-BRIEF.md` §2b for why, and §2c for the measure
+rules that make the headline wrap correctly.)* A five-stop line map sits at the right edge, current
 stop lit in its tier colour, the rest at 34%.
 
 **One content band** governs everything:
@@ -167,9 +168,8 @@ stop lit in its tier colour, the rest at 34%.
 --gutter: max(1.75rem, calc((100vw - var(--band)) / 2));
 ```
 
-Copy uses `--gutter`; the canvas centres its geometry across the same band — at `50%`
-now that the copy is centred (it was `62%` while the copy sat left, to keep the two from
-overlapping).
+Copy uses `--gutter`; the canvas centres its geometry at `62%` across the same band, so
+the geometry sits beside the left-aligned copy rather than behind it.
 Without this the geometry drifts to the far right of an ultrawide while the copy hugs
 the left, which is exactly how the first pass failed.
 
@@ -280,7 +280,7 @@ the original had.
 | `FAR` / `NEAR` | `2900` / `30` | depth clip |
 | `FL` | `560 * SC` | focal length |
 | `SC` | `clamp(min(H/820, W/1440), 0.85, 2.3)` | scales every drawn dimension |
-| band / centre | `min(W*0.94, 1680)`, centre at `50%` of it (was `62%` pre-centred copy), `CY = H*0.42` | geometry alignment |
+| band / centre | `min(W*0.94, 1680)`, centre at `62%` of it, `CY = H*0.42` | geometry alignment |
 | camera | trails `0.3`, looks `+0.13` ahead (`+0.02` stopped), distance `340`/`430` × outro `(1 + out*1.4)`, eased `0.05`/frame | the drone |
 | `visible(z)` | `1 - (z/FAR)^0.6` | aerial perspective |
 | `LOGO` | `atan2(20.4 - 3.6, 9 - 15)` | chord angle, from Nav.tsx's SVG |

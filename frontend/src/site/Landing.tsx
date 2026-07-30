@@ -6,12 +6,21 @@
  * inside it and never re-mounts.
  *
  * Immersive, not split: the field is full-bleed and the copy sits over it,
- * centred in a 58ch column, cross-fading in place (THEME-BRIEF.md §2b — this
- * was bottom-left until 2026-07-30; left-aligned copy under a centred field
- * read as unbalanced on a wide viewport). An earlier pass gave the copy its
- * own 44% lane, which read as two things side by side rather than one place
- * you are inside. A `to top` scrim keeps the type legible over the geometry,
- * and the line map at the right edge doubles as the section index.
+ * bottom-left against --gutter, cross-fading in place (THEME-BRIEF.md §2b —
+ * briefly centred on 2026-07-30 and moved back the same day: centred display
+ * type over a centred field left nothing for the eye to start from). The
+ * sections below the flight ARE centred — see `Sections()` — it's only the
+ * hero that isn't. An earlier pass gave the copy its own 44% lane, which
+ * read as two things side by side rather than one place you are inside. A
+ * `to top` scrim keeps the type legible over the geometry, and the line map
+ * at the right edge doubles as the section index.
+ *
+ * Measure (THEME-BRIEF.md §2c) is set per element in that element's own
+ * units — `ch` resolves against the element's own font size, so a measure
+ * set once on a shared wrapper is inherited by every font size nested
+ * inside it. That was the bug: one 58ch wrapper computed from ~11px body
+ * text, inherited by a 71px h1, wrapped the headline to nine characters a
+ * line. `h1`/`lead`/`h2`/`body` below each carry their own max-width.
  *
  * Beat timing matches the station blocks in TransitField (INTRO, SPAN, DWELL),
  * so a caption is at full opacity exactly while the packet is standing at the
@@ -23,7 +32,7 @@
  * gets the entire page with the flight held at a readable frame.
  */
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   motion,
   useMotionValue,
@@ -33,36 +42,12 @@ import {
   useReducedMotion,
   type MotionValue,
 } from "framer-motion";
-import { TransitField, STATIONS, TIER_COLOUR, type Scheme } from "./TransitField";
+import { TransitField, STATIONS, TIER_COLOUR } from "./TransitField";
+import { useResolvedScheme, type Scheme } from "../lib/scheme";
 
 const DESKTOP_QUERY = "(min-width: 900px)";
 const RELEASES_URL = "https://github.com/Haryshwa29/Arbiter-AI/releases";
 const REPO_URL = "https://github.com/Haryshwa29/Arbiter-AI";
-
-const DARK_QUERY = "(prefers-color-scheme: dark)";
-
-function subscribeScheme(onChange: () => void) {
-  const mq = window.matchMedia(DARK_QUERY);
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
-}
-function getScheme(): Scheme {
-  return window.matchMedia(DARK_QUERY).matches ? "dark" : "light";
-}
-/** index.css's :root block is light-first, so the prerendered/SSR frame must agree. */
-function getServerScheme(): Scheme {
-  return "light";
-}
-
-/**
- * The canvas can't read CSS variables (THEME-BRIEF.md §1) — this is the one
- * place the media query is matched, handed down as a prop so the field
- * re-renders on a scheme change instead of sampling `getComputedStyle` per
- * frame.
- */
-function useScheme(): Scheme {
-  return useSyncExternalStore(subscribeScheme, getScheme, getServerScheme);
-}
 
 /** Must match TransitField: intro, five station blocks, outro. */
 const INTRO = 0.075;
@@ -113,7 +98,7 @@ function beatRange(k: number): [number, number, number, number] {
 
 export function Landing() {
   const reduced = useReducedMotion();
-  const scheme = useScheme();
+  const scheme = useResolvedScheme();
   const [isDesktop, setIsDesktop] = useState(false);
   /** A frame mid-flight, for the stacked layout where nothing drives the field. */
   const still = useMotionValue(0.42);
@@ -183,10 +168,9 @@ function Flight({ reduced, scheme }: { reduced: boolean | null; scheme: Scheme }
               inset: "auto 0 0 0",
               zIndex: 3,
               display: "grid",
-              justifyItems: "center",
+              justifyItems: "start",
               alignContent: "end",
               padding: "0 var(--gutter) 10vh",
-              textAlign: "center",
               pointerEvents: "none",
             }}
           >
@@ -214,11 +198,11 @@ function Flight({ reduced, scheme }: { reduced: boolean | null; scheme: Scheme }
 function Stacked({ still, scheme }: { still: MotionValue<number>; scheme: Scheme }) {
   return (
     <div style={{ background: "var(--bg)", color: "var(--ink)" }}>
-      <div style={{ padding: "8vh var(--gutter) 0", maxWidth: "58ch", margin: "0 auto", textAlign: "center" }}>
-        <h1 style={h1}>
+      <div style={{ padding: "8vh var(--gutter) 0" }}>
+        <h1 style={{ ...h1, maxWidth: "14ch" }}>
           A shield you can raise <span style={{ color: "var(--ink-3)" }}>before you can afford an army.</span>
         </h1>
-        <p style={{ ...body, marginTop: "1em" }}>
+        <p style={{ ...body, maxWidth: "42ch", marginTop: "1em" }}>
           Arbiter is a self-hosted AI security analyst. It reads every line your systems write, inside
           your network, and only wakes you when something earns it.
         </p>
@@ -238,12 +222,12 @@ function Stacked({ still, scheme }: { still: MotionValue<number>; scheme: Scheme
       </div>
 
       <section style={{ ...section, paddingTop: 0 }}>
-        <div style={{ ...grid, gap: "3.2em", justifyItems: "center" }}>
+        <div style={{ display: "grid", gap: "3.2em", maxWidth: "min(1180px, var(--band))", margin: "0 auto" }}>
           {BEATS.map((b) => (
-            <div key={b.eyebrow} style={{ maxWidth: "58ch", textAlign: "center" }}>
+            <div key={b.eyebrow}>
               <p style={eyebrowStyle}>{b.eyebrow}</p>
-              <h2 style={h2}>{b.head}</h2>
-              <p style={{ ...body, marginTop: "1em" }}>{b.body}</p>
+              <h2 style={{ ...h2, maxWidth: "20ch" }}>{b.head}</h2>
+              <p style={{ ...body, maxWidth: "46ch", marginTop: "1em" }}>{b.body}</p>
             </div>
           ))}
         </div>
@@ -258,11 +242,11 @@ function Hero({ p }: { p: MotionValue<number> }) {
   const opacity = useTransform(p, [0, INTRO * 0.55, INTRO * 1.1], [1, 1, 0]);
   const y = useTransform(p, [0, INTRO * 1.1], [0, -44]);
   return (
-    <motion.div style={{ gridArea: "1 / 1", opacity, y, maxWidth: "58ch" }}>
-      <h1 style={h1}>
+    <motion.div style={{ gridArea: "1 / 1", opacity, y }}>
+      <h1 style={{ ...h1, maxWidth: "14ch" }}>
         A shield you can raise <span style={{ color: "var(--ink-3)" }}>before you can afford an army.</span>
       </h1>
-      <p style={{ ...body, marginTop: "1em" }}>
+      <p style={{ ...body, maxWidth: "42ch", marginTop: "1em" }}>
         Arbiter is a self-hosted AI security analyst. It reads every line your systems write, inside
         your network, and only wakes you when something earns it.
       </p>
@@ -290,10 +274,10 @@ function Beat({
   const opacity = useTransform(p, range, [0, 1, 1, 0]);
   const y = useTransform(p, range, [22, 0, 0, -22]);
   return (
-    <motion.div style={{ gridArea: "1 / 1", opacity, y, maxWidth: "58ch" }}>
+    <motion.div style={{ gridArea: "1 / 1", opacity, y }}>
       <p style={eyebrowStyle}>{eyebrow}</p>
-      <h2 style={h2}>{head}</h2>
-      <p style={{ ...body, marginTop: "1em" }}>{copy}</p>
+      <h2 style={{ ...h2, maxWidth: "20ch" }}>{head}</h2>
+      <p style={{ ...body, maxWidth: "46ch", marginTop: "1em" }}>{copy}</p>
     </motion.div>
   );
 }
@@ -454,7 +438,7 @@ function Sections() {
       <section style={{ ...section, paddingBottom: "20vh" }} className={hairline}>
         <motion.div style={grid} {...useReveal(reduced)}>
           <h2 style={{ ...h2, maxWidth: "18ch" }}>Install it, read it, then run it.</h2>
-          <p style={{ ...body, marginTop: "0.7em" }}>
+          <p style={{ ...body, maxWidth: "62ch", marginTop: "0.7em" }}>
             Released builds ship as a single readable zipapp plus a short bootstrap script, verified
             against published checksums. Arbiter's own prefilter would escalate a pipe-to-shell
             one-liner, so the install instructions never ask you to run one.
@@ -566,10 +550,10 @@ function VerdictCard({ reduced }: { reduced: boolean | null }) {
  */
 function Lines({ lead, lines }: { lead: string; lines: string[] }) {
   return (
-    <div style={{ display: "grid", gap: "1.1em", maxWidth: "58ch" }}>
-      <p style={{ ...leadStrong, margin: 0 }}>{lead}</p>
+    <div style={{ display: "grid", gap: "1.1em" }}>
+      <p style={{ ...leadStrong, maxWidth: "62ch", margin: 0 }}>{lead}</p>
       {lines.map((l) => (
-        <p key={l} style={{ ...body, margin: 0 }}>
+        <p key={l} style={{ ...body, maxWidth: "62ch", margin: 0 }}>
           {l}
         </p>
       ))}
@@ -580,10 +564,12 @@ function Lines({ lead, lines }: { lead: string; lines: string[] }) {
 const section: React.CSSProperties = { padding: "14vh var(--gutter)", position: "relative" };
 
 /**
- * Sections read as one centred column of prose (THEME-BRIEF.md §2b), not
- * left-aligned against the gutter — `justifyItems` centres each grid item
- * (including a fixed-width artifact like the verdict card) and `textAlign`
- * centres the prose inside it.
+ * Sections below the flight read as one centred column of prose
+ * (THEME-BRIEF.md §2b) — unlike the hero above them, which is left-aligned.
+ * `justifyItems` centres each grid item (including a fixed-width artifact
+ * like the verdict card) and `textAlign` centres the prose inside it. Each
+ * child still carries its own measure (§2c) rather than relying on this
+ * wrapper's width.
  */
 const grid: React.CSSProperties = {
   display: "grid",
@@ -601,6 +587,7 @@ const h1: React.CSSProperties = {
   letterSpacing: "-0.035em",
   fontWeight: 500,
   margin: 0,
+  textWrap: "balance",
 };
 
 const h2: React.CSSProperties = {
@@ -609,6 +596,7 @@ const h2: React.CSSProperties = {
   letterSpacing: "-0.02em",
   fontWeight: 500,
   margin: 0,
+  textWrap: "balance",
 };
 
 const body: React.CSSProperties = {
@@ -616,6 +604,7 @@ const body: React.CSSProperties = {
   lineHeight: 1.62,
   color: "var(--ink-2)",
   margin: 0,
+  textWrap: "pretty",
 };
 
 /** The one line each section opens on — a step up in size and weight so
@@ -627,6 +616,7 @@ const leadStrong: React.CSSProperties = {
   letterSpacing: "-0.01em",
   color: "var(--ink)",
   margin: 0,
+  textWrap: "pretty",
 };
 
 const eyebrowStyle: React.CSSProperties = {
