@@ -29,7 +29,7 @@ import json
 import queue
 import secrets
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -126,6 +126,40 @@ def start_tail_poller(ctx: Ctx, interval: float = 1.0) -> threading.Thread:
     return t
 
 
+def load_feed_events(events_path: str) -> list["Event"]:
+    """Read a JSONL file of events for the demo feed, tolerating both shapes
+    that exist in `samples/`.
+
+    `samples/events.jsonl` is one bare Event per line. The eval suites
+    (`realistic_suite.jsonl`, `adversarial_suite.jsonl`, ...) wrap each event
+    in a labelled case: `{"event": {...}, "expected": ..., "facts": [...]}`.
+    Pointing --demo-feed at a suite used to raise TypeError on the first line
+    and kill the feeder thread, leaving the dashboard empty with the reason
+    only in the server log — so unwrap the labelled shape here.
+
+    Unparseable lines are reported and skipped rather than taking the whole
+    feed down; this is dev scaffolding, not the ingest path a collector uses.
+    """
+    from ..schema import Event
+
+    events: list[Event] = []
+    for n, line in enumerate(
+            Path(events_path).read_text(encoding="utf-8").splitlines(), start=1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        try:
+            data = json.loads(line)
+            # A labelled eval case carries the event under "event"; a bare
+            # event never has that key (it is not a field on Event).
+            if isinstance(data, dict) and isinstance(data.get("event"), dict):
+                data = data["event"]
+            events.append(Event(**data))
+        except (json.JSONDecodeError, TypeError, ValueError) as exc:
+            print(f"!! --demo-feed: {events_path}:{n} skipped: {exc}")
+    return events
+
+
 def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
                    model: str, interval: float,
                    stop: threading.Event | None = None) -> None:
@@ -140,24 +174,26 @@ def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
     import os
 
     from ..llm import get_backend
-    from ..schema import Event
     from ..triage import TriageEngine
 
-    lines = [ln for ln in Path(events_path).read_text(encoding="utf-8").splitlines()
-             if ln.strip() and not ln.startswith("#")]
-    if not lines:
+    events = load_feed_events(events_path)
+    if not events:
+        print(f"!! --demo-feed: no usable events in {events_path}, "
+              "feed not started", flush=True)
         return
+    print(f"-- demo feed: {len(events)} events from {events_path}", flush=True)
     engine = TriageEngine(memory=mem, llm=get_backend(backend, model=model),
                           audit_path=os.devnull, shadow=True)
     stop = stop or threading.Event()
     i = 0
     while not stop.is_set():
-        event = Event.from_json(lines[i % len(lines)])
-        event.id = ""
-        event.timestamp = ""
-        event.__post_init__()
-        verdict = engine.triage(event)
-        ctx.store.record_verdict(event, verdict)
+        event = replace(events[i % len(events)], id="", timestamp="")
+        try:
+            verdict = engine.triage(event)
+            ctx.store.record_verdict(event, verdict)
+        except Exception as exc:  # one bad event must not kill the thread
+            print(f"!! --demo-feed: {event.signature} failed to triage: "
+                  f"{exc!r}", flush=True)
         i += 1
         stop.wait(interval)
 

@@ -7,6 +7,8 @@ cookie, and CSRF double-submit logic — not mocks of them.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import tempfile
 import threading
@@ -16,7 +18,7 @@ from http.client import HTTPConnection
 from pathlib import Path
 
 from arbiter.api.server import (Ctx, Hub, build_httpd, demo_feed_loop,
-                                require_admin, tail_poller)
+                                load_feed_events, require_admin, tail_poller)
 from arbiter.iam import IAM
 from arbiter.memory import Memory
 from arbiter.schema import Decision, Event, Tier, Verdict
@@ -278,6 +280,62 @@ class DemoFeedTests(unittest.TestCase):
             self.assertGreaterEqual(store.lifetime_counts()["triaged"], 1)
             store.close()
             mem.close()
+
+
+class LoadFeedEventsTests(unittest.TestCase):
+    """--demo-feed used to raise TypeError on the first line of any eval
+    suite and take the feeder thread down with it, leaving the dashboard
+    empty and the reason buried in the server log. Both sample shapes have
+    to load."""
+
+    def _write(self, root: Path, *lines: str) -> str:
+        p = root / "feed.jsonl"
+        p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        return str(p)
+
+    def test_bare_events_load(self):
+        with tempfile.TemporaryDirectory() as td:
+            ev, _ = _verdict()
+            path = self._write(Path(td), "# a comment", "", ev.to_json())
+            events = load_feed_events(path)
+            self.assertEqual(len(events), 1)
+            self.assertEqual(events[0].signature, ev.signature)
+
+    def test_eval_suite_wrapper_is_unwrapped(self):
+        with tempfile.TemporaryDirectory() as td:
+            ev, _ = _verdict()
+            case = json.dumps({"event": json.loads(ev.to_json()),
+                               "expected": "escalate",
+                               "category": "brute force",
+                               "facts": [], "notes": "labelled case"})
+            path = self._write(Path(td), "# realistic suite", case)
+            events = load_feed_events(path)
+            self.assertEqual(len(events), 1)
+            self.assertEqual(events[0].signature, ev.signature)
+
+    def test_unparseable_lines_are_skipped_not_fatal(self):
+        with tempfile.TemporaryDirectory() as td:
+            ev, _ = _verdict()
+            path = self._write(Path(td),
+                               "{not json",
+                               json.dumps({"source": "sshd"}),  # missing fields
+                               ev.to_json())
+            with contextlib.redirect_stdout(io.StringIO()):
+                events = load_feed_events(path)
+            self.assertEqual(len(events), 1)
+
+    def test_real_sample_files_all_load(self):
+        root = Path(__file__).resolve().parent.parent / "samples"
+        for name in ("events.jsonl", "realistic_suite.jsonl",
+                     "adversarial_suite.jsonl"):
+            path = root / name
+            if not path.exists():
+                continue
+            with self.subTest(sample=name):
+                with contextlib.redirect_stdout(io.StringIO()) as out:
+                    events = load_feed_events(str(path))
+                self.assertGreater(len(events), 0)
+                self.assertNotIn("skipped", out.getvalue())
 
 
 class RequireAdminTests(unittest.TestCase):

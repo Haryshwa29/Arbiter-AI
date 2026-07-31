@@ -123,7 +123,9 @@ python -m arbiter serve                       # http://127.0.0.1:8000
 python -m arbiter serve --demo-feed --events samples/realistic_suite.jsonl
 ```
 
-`--demo-feed` is development-only and off by default: it replays events through the triage engine on a timer so the dashboard has something to show before a collector is wired up. The installed service never passes it. Neither does it pass `--dev-accounts`, which resets passwords to known weak values and prints a warning saying so.
+`--demo-feed` is development-only and off by default: it replays events through the triage engine on a timer so the dashboard has something to show before a collector is wired up. It accepts either sample shape — bare events (`samples/events.jsonl`) or labelled eval cases (`samples/realistic_suite.jsonl` and the other suites). The installed service never passes it. Neither does it pass `--dev-accounts`, which resets passwords to known weak values and prints a warning saying so.
+
+Add `--backend ollama` if you want the feed to look like a real deployment. On the default mock backend the feed escalates almost everything: the mock has no judgement, so no signature ever accumulates the benign history the prefilter needs before it will suppress, and the escalations feed back into the history that would have earned suppression.
 
 The React frontend (`frontend/`, Vite + TypeScript + Tailwind) is partly built — the public landing page ships, the dashboard views are in progress.
 
