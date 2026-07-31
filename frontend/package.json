@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:site": "vite --mode public",
     "build": "tsc -b && vite build",
     "build:public": "tsc -b && vite build --mode public && vite build --ssr src/entry-server.tsx --mode public && node scripts/prerender.mjs",
     "lint": "oxlint",

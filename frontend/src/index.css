@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/*
+ * Tailwind v4's `dark:` keys off prefers-color-scheme unless told otherwise.
+ * The theme override (THEME-BRIEF.md §1a) and the dashboard pin (§4) both
+ * work by setting `data-theme`, not by changing the OS preference — so
+ * `dark:` has to follow the attribute instead, on whichever element carries
+ * it (<html> for the toggle, a nested subtree for the dashboard pin), or it
+ * silently keeps following the OS for every `dark:`-styled component while
+ * the CSS custom properties below correctly follow the attribute. That
+ * mismatch is what made the toggle set Light on a dark system and get a
+ * white page with a still-dark login card.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 html,
 body,
 #root {

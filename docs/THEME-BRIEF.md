@@ -183,21 +183,34 @@ element again.
 
 ---
 
-## 4. The dashboard
+## 4. The dashboard is dark, always
 
-Same change, per the decision. `/app` is five views of Tailwind classes, so this is
-mechanical rather than delicate.
+**Decided 2026-07-30, reversing this section's original "same change" plan.** The
+landing follows the visitor's system; `/app` does not. An incident surface is read at
+3am and dark is what it should be, so the dashboard is pinned rather than themed.
 
-- `index.css` — `body` currently hardcodes `bg-neutral-950 text-neutral-100`. Move it
-  to the tokens above.
-- Tailwind v4's `dark:` variant already keys off `prefers-color-scheme` with no config,
-  so `text-red-600 dark:text-red-400` is the pattern throughout.
-- `lib/theme.ts` — `DECISION_STYLE` and `TIER_STYLE` hardcode `text-red-400`,
-  `bg-emerald-500`, etc. Each becomes a light/dark pair using the table above. This is
-  the one file where getting it wrong silently breaks the product's colour language, so
-  do it first and check every badge in both schemes.
-- The dark app is not being abandoned — dark is still what an incident surface should
-  look like at 3am, and a visitor whose system is dark gets exactly that.
+*Why this is a code change and not just a note:* Tailwind v4's `dark:` variant keys off
+`prefers-color-scheme` unless told otherwise, so today the dashboard renders in its
+**light** variants for a visitor whose system is light — the opposite of the decision.
+Two things fix it together:
+
+```css
+/* index.css — make the variant follow the attribute, not the OS */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+```
+
+and the dashboard subtree carries `data-theme="dark"` unconditionally, so every `dark:`
+pair in the five views resolves the same way regardless of OS or of what the landing's
+toggle is set to.
+
+The same `@custom-variant` line is what makes the landing's override work at all: the
+toggle writes `data-theme`, and without it *any* Tailwind-styled element ignores the
+toggle and follows the OS instead. It was found by setting `data-theme="light"` on a
+dark system and watching the page go white while the login card stayed dark.
+
+Keep the light/dark pairs already written into `lib/theme.ts` and the views. They cost
+nothing once pinned, and they are what makes a light dashboard a decision to revisit
+rather than a rewrite.
 
 ---
 
@@ -212,7 +225,9 @@ mechanical rather than delicate.
    waiting to happen.
 4. The field repaints with the page and there is no visible seam where the hero ends —
    the band and the page share a background.
-5. Sign-in does not cross a theme boundary: `/` and `/app` agree in both schemes.
+5. `/app` is dark in **both** system settings and at every toggle position — pinned,
+   per §4. Crossing from a light landing into a dark dashboard is the intended
+   boundary; a light dashboard is the bug.
 6. `grep -rn "#" frontend/src/site` returns only token definitions — no component
    holds a literal colour.
 7. `TransitField.tsx` has exactly one palette switch driven by a prop, checked in both

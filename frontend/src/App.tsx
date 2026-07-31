@@ -47,27 +47,40 @@ function LoginRoute() {
 // to it in App(). The landing must make zero authenticated API calls
 // (docs/LANDING-BRIEF.md §1) — scoping AuthProvider here is what guarantees
 // that rather than relying on discipline elsewhere.
+//
+// `data-theme="dark"` is pinned here rather than on <html> (THEME-BRIEF.md
+// §4): an incident surface is read at 3am, so the dashboard is dark in both
+// system settings and at every position of the landing's toggle, not
+// themed. index.css's `@custom-variant dark` binds every `dark:` utility in
+// the five views to this attribute, so pinning it here — rather than
+// relying on prefers-color-scheme — is what makes `dark:` fire
+// unconditionally. The explicit bg/text classes (not the --bg/--ink tokens)
+// cover the parts of the layout no view paints over — AppShell's <main> and
+// Login's own wrapper are both bare — so the page never shows the toggle's
+// light background through the gaps around a dark card.
 function Dashboard() {
   return (
-    <AuthProvider>
-      <Routes>
-        <Route path="login" element={<LoginRoute />} />
-        <Route
-          element={
-            <RequireAuth>
-              <AppShell />
-            </RequireAuth>
-          }
-        >
-          <Route path="overview" element={<Overview />} />
-          <Route path="live" element={<LiveFeed />} />
-          <Route path="audit" element={<Audit />} />
-          <Route path="assets" element={<Assets />} />
-          <Route index element={<Navigate to={`${DASH_BASE}/overview`} replace />} />
-          <Route path="*" element={<Navigate to={`${DASH_BASE}/overview`} replace />} />
-        </Route>
-      </Routes>
-    </AuthProvider>
+    <div data-theme="dark" className="min-h-full bg-neutral-950 text-neutral-100">
+      <AuthProvider>
+        <Routes>
+          <Route path="login" element={<LoginRoute />} />
+          <Route
+            element={
+              <RequireAuth>
+                <AppShell />
+              </RequireAuth>
+            }
+          >
+            <Route path="overview" element={<Overview />} />
+            <Route path="live" element={<LiveFeed />} />
+            <Route path="audit" element={<Audit />} />
+            <Route path="assets" element={<Assets />} />
+            <Route index element={<Navigate to={`${DASH_BASE}/overview`} replace />} />
+            <Route path="*" element={<Navigate to={`${DASH_BASE}/overview`} replace />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
+    </div>
   );
 }
 

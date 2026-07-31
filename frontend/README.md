@@ -1,32 +1,54 @@
-# React + TypeScript + Vite
+# Arbiter frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+React + Vite + TypeScript + Tailwind. Two things live here: the public landing
+(`src/site/`) and the dashboard (`src/views/`), selected by a build mode.
 
-Currently, two official plugins are available:
+## Running it locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Two processes. The API serves data; Vite serves the app and proxies `/api` to it on the
+same origin, which is what keeps the `SameSite=Strict` session and CSRF cookies working
+without adding CORS to the backend.
 
-## React Compiler
+```bash
+# terminal 1 — the JSON API on :8787, with sample data and throwaway logins
+python -m arbiter --db arbiter_memory.db serve --dev-accounts --demo-feed
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+# terminal 2 — landing at /, dashboard at /app
+cd frontend && npm run dev:site
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+`--dev-accounts` prints two known-weak logins and resets them on every boot; it is off
+by default and the installed service never passes it. `--demo-feed` replays
+`samples/events.jsonl` through the triage engine on a timer so the views have something
+to show.
+
+### Why `dev:site` and not `dev`
+
+`npm run dev` runs in the default mode, where `VITE_PUBLIC_LANDING` is unset. That is
+the **customer install** shape: the dashboard is at `/` and the landing route is not
+registered at all (see `App.tsx` and `src/lib/routing.ts`). Use it when you are working
+on the dashboard.
+
+`npm run dev:site` is `vite --mode public`: the landing takes `/`, the dashboard moves
+to `/app`. Use it when you are working on the landing, or when you want to see both.
+
+## Building
+
+```bash
+npm run build         # customer-install bundle: dashboard at /, no landing routes
+npm run build:public  # public site: client + SSR + prerender of /
+npm run preview       # serve the last build — use this to check the prerender
+```
+
+`build:public` is the one to check theme and first-paint behaviour against, since the
+prerendered HTML is where a wrong-theme flash or a missing-copy bug would show up.
+
+## Where the specs live
+
+- `docs/LANDING-BRIEF.md` — what the landing must do, and the three rules that keep the
+  public build from touching authenticated routes
+- `docs/HERO-TRANSIT-BRIEF.md` — the hero sequence, its constants, and the layout band
+- `docs/THEME-BRIEF.md` — tokens, the light/dark field, measure, the override toggle
+- `docs/FRONTEND-BRIEF.md` — the dashboard views and the API client
+- `docs/ADR-003-public-hosting-and-onboarding.md` — how this gets hosted, and why the
+  public build has no login

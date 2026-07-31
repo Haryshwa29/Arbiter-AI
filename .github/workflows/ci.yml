@@ -32,3 +32,44 @@ jobs:
       - name: Eval report (mock backend, non-blocking)
         continue-on-error: true
         run: python -m arbiter --db /tmp/eval.db eval samples/eval_set.jsonl
+
+  # The frontend was untested by CI until 2026-07-30: a broken tsc, a bad
+  # import or a prerender that throws would all have merged green, and would
+  # only have surfaced the next time someone ran a build by hand.
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc -b
+
+      - name: Lint
+        run: npx oxlint
+
+      # build:public is the strictest of the three builds: client bundle, SSR
+      # bundle, then the prerender script that renders Site() to static HTML.
+      # If the landing throws during SSR, this is where it shows up.
+      - name: Build public site
+        run: npm run build:public
+
+      # The landing must never name a competitor or make a pricing claim
+      # (docs/LANDING-BRIEF.md §2). Cheap to state as a rule, easy to
+      # reintroduce by accident in a copy edit — so the rule is a test.
+      - name: No competitor or pricing copy in the built site
+        run: |
+          if grep -rniE "siem|splunk|gigabyte|per gb" dist --include=*.html --include=*.js; then
+            echo "::error::forbidden positioning copy found in the built site"
+            exit 1
+          fi
