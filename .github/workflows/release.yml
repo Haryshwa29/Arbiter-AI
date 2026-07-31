@@ -27,11 +27,11 @@ jobs:
       - name: Tests must pass before anything ships
         run: python -m unittest discover -s tests -v
 
-      # The web frontend was removed on 2026-07-26 for a from-scratch rebuild
-      # (see tools/build_release.py), so there's no frontend/ to build yet.
-      # When it lands, reinstate: actions/setup-node with npm cache, a build
-      # step (npm ci && npm run build), and a check that the committed
-      # build output matches a fresh build.
+      # The rebuilt frontend/ now exists and CI typechecks, lints and builds it
+      # (see ci.yml), but the zipapp still ships backend-only: the dashboard
+      # views aren't finished, so there is no build output worth bundling yet.
+      # When they land, add here: actions/setup-node with npm cache, npm ci &&
+      # npm run build, and have build_release.py fold dist/ into the .pyz.
 
       - name: Build release artifacts
         run: python tools/build_release.py --clean

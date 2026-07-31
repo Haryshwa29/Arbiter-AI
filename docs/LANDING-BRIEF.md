@@ -75,8 +75,8 @@ Copy source of truth is `CONCEPT.md`. Do not invent claims. Specifically:
 - **No pricing claim, comparison, or implication ships on this page at all.** Not a
   number, not "priced per gigabyte", not an implication about who that punishes. This
   also retires the "verify current pricing before publishing externally" hazard —
-  there is nothing to verify because nothing is published. Arbiter's own per-asset
-  pricing stays an internal positioning note in `CONCEPT.md`.
+  there is nothing to verify because nothing is published. Arbiter's own pricing shape
+  is a commercial decision, not a landing-page argument.
 - **Existing tooling is not the villain — the empty seat is.** Detection tooling is
   good; almost all of it assumes someone is reading it. That someone is who the buyer
   does not have. Frame every comparison as a difference in shape, never in virtue.
@@ -88,7 +88,7 @@ Copy source of truth is `CONCEPT.md`. Do not invent claims. Specifically:
 | Section | Content |
 |---|---|
 | Hero | Positioning line, one-sentence explanation, primary CTA (Install) + secondary (Sign in) |
-| The problem | Per-GB SIEM pricing; OSS SIEMs need an analyst you don't have; you're the target now |
+| The problem | The tools assume an analyst you don't have; alerts pile up unread; you're the target now. **No pricing or competitor content in this section** — superseded by the 2026-07-29 rule above, which the CI copy check enforces |
 | How it works | The triage loop: collect → cheap prefilter → LLM only on ambiguous cases → escalate with evidence or suppress with a written rationale |
 | Why you can trust it | Nothing leaves the network; local open-weights inference; every suppression carries a rationale; shadow mode first; memory is a readable database, not fine-tuned weights |
 | Install | Link to GitHub Releases for the `.pyz` + `SHA256SUMS`. **Never publish a pipe-to-shell one-liner** — Arbiter's own prefilter escalates that pattern, and publishing it would be self-refuting |

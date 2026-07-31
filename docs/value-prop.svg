@@ -6,9 +6,9 @@
 <text x="44" y="52" class="t" fill="#f0a482">without Arbiter</text>
 <text x="44" y="98" class="big" fill="#f0a482">3,000</text>
 <text x="44" y="118" class="s">alerts a day, no one to read them</text>
-<text x="44" y="158" class="s">✕  hire a $120k analyst you can't afford</text>
-<text x="44" y="184" class="s">✕  or a per-GB SIEM + someone to watch it</text>
-<text x="44" y="210" class="s">✕  free OSS SIEM needs rules &amp; tuning</text>
+<text x="44" y="158" class="s">✕  hire an analyst you can't afford yet</text>
+<text x="44" y="184" class="s">✕  or buy a tool that still needs watching</text>
+<text x="44" y="210" class="s">✕  open-source stacks need rules &amp; tuning</text>
 <text x="44" y="236" class="s">✕  alerts pile up, unread</text>
 <text x="44" y="288" class="s" fill="#c9906f" font-size="13">result: growing, targeted, unprotected</text>
 
@@ -21,7 +21,7 @@
 <text x="382" y="158" class="s">✓  triaged 24/7 on your own hardware</text>
 <text x="382" y="184" class="s">✓  ~99% suppressed, each with a reason</text>
 <text x="382" y="210" class="s">✓  the few that matter, with a fix</text>
-<text x="382" y="236" class="s">✓  flat monthly · data never leaves</text>
+<text x="382" y="236" class="s">✓  runs in your network · data never leaves</text>
 <text x="382" y="288" class="s" fill="#7fd4b3" font-size="13">result: the analyst is built in</text>
 
 <rect x="24" y="340" width="632" height="106" rx="10" fill="#161b22" stroke="#30363d"/>

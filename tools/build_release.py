@@ -35,9 +35,10 @@ PACKAGING = ROOT / "packaging"
 EXCLUDE_DIRS = {"__pycache__", ".git", ".github", "tests", "dist", "build"}
 EXCLUDE_SUFFIXES = {".pyc", ".pyo", ".db", ".db-journal", ".jsonl"}
 
-# The web frontend was removed on 2026-07-26 for a from-scratch rebuild, so
-# there is no compiled front end to bundle. When the new frontend + server
-# land, reinstate a build-output check here.
+# frontend/ exists again and CI builds it, but the dashboard views aren't
+# finished, so the zipapp still ships backend-only and there is no compiled
+# front end to bundle. When those land, fold the Vite dist/ in here and
+# reinstate a build-output check.
 
 # Top-level __main__.py for the zipapp. Routes lifecycle flags to the
 # installer and everything else to the normal CLI, so one artifact is both

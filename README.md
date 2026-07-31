@@ -1,6 +1,10 @@
-# Arbiter AI - Triage
+# Arbiter AI
 
-The first vertical slice of the Arbiter concept (see `CONCEPT.md`): sample events in → cheap pre-filter → local LLM on ambiguous alerts → verdict with evidence or rationale → audit trail. No collector, no dashboard — just proof that the brain works.
+**A shield you can raise before you can afford an army.**
+
+A self-hosted AI security analyst for companies with no security team. Events in → cheap pre-filter → local LLM on ambiguous alerts → verdict with evidence or a written rationale → audit trail. Nothing in that path calls the cloud. See `CONCEPT.md` for the full product vision and `docs/ARCHITECTURE.md` for how the pieces fit.
+
+**Status: pre-release.** The triage brain, the response actuator, the audit store, built-in IAM, a JSON API and the installer all work and are covered by tests. Still missing: a real collector (events are replayed from JSONL today) and the dashboard views on top of the API.
 
 ## Install it
 
@@ -110,17 +114,30 @@ python -m arbiter eval samples/adversarial_suite.jsonl --backend mock --no-guard
 
 (Note: an earlier revision of this README claimed the 4B model scored 100% on fact-traps. The adversarial suite, with harder traps, showed that was over-optimistic — this is the corrected, guardrail-backed picture.)
 
-## Frontend (being rebuilt)
+## API and dashboard
 
-The previous web layer — a stdlib `http.server` dashboard plus a Svelte SPA — was **removed on 2026-07-26** to rebuild the frontend from scratch. The backend it read from is retained: the triage engine, the `store.py` audit store, and `iam.py` (accounts, sessions, lockout). A new server/API will be added when the new frontend lands, at which point the `serve` command and the installer's service target will be rewired.
+`arbiter/api/server.py` is a thin JSON API over the audit store, IAM and memory layers — stdlib `http.server`, session cookie plus CSRF double-submit, security headers, and an SSE stream that fans out new audit rows as they land. It never talks to the triage engine directly, so it doesn't care whether a real collector or `arbiter run` wrote the row.
+
+```bash
+python -m arbiter serve                       # http://127.0.0.1:8000
+python -m arbiter serve --demo-feed --events samples/realistic_suite.jsonl
+```
+
+`--demo-feed` is development-only and off by default: it replays events through the triage engine on a timer so the dashboard has something to show before a collector is wired up. The installed service never passes it. Neither does it pass `--dev-accounts`, which resets passwords to known weak values and prints a warning saying so.
+
+The React frontend (`frontend/`, Vite + TypeScript + Tailwind) is partly built — the public landing page ships, the dashboard views are in progress.
 
 ## Next steps
 
-1. Evaluate real local models against the mock: build a labeled eval set, answer "minimum viable local model" (the biggest open question).
-2. Human feedback loop CLI: confirm/overrule escalations → `memory.label_verdicts`.
+1. Dashboard views against the JSON API.
+2. Answer "minimum viable local model" with a labeled eval run on real hardware — the biggest open question.
 3. Wrap a real collector (Vector/Wazuh decision) emitting the `Event` schema.
 4. Event-triggered micro-rescans when unknown assets appear.
 
+## Security
+
+Found a vulnerability? Please don't open a public issue — see [`SECURITY.md`](SECURITY.md) for private reporting and what's in scope.
+
 ## License
 
-Not yet licensed — all rights reserved. A license will be chosen when the product is ready to open up.
+[GNU Affero General Public License v3.0 or later](LICENSE). You may run, study, modify and redistribute Arbiter; if you distribute a modified version, or run one as a network service, you must make your changes available under the same terms.

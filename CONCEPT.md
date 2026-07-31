@@ -4,30 +4,27 @@
 
 ## One-liner
 
-A self-hosted AI security analyst for companies too small to afford Splunk or a SOC. Your data never leaves your network. Attack knowledge does — anonymized, validated, and shared so everyone gets safer.
+A self-hosted AI security analyst for companies with no security team. Your data never leaves your network. Attack knowledge does — anonymized, validated, and shared so everyone gets safer.
 
 ## The problem
 
-- Enterprise-class SIEMs price per GB ingested (~$1,800/GB/yr, up to ~$50K with features) — out of reach for startups with moderate-to-heavy data flow. **Internal note only: no pricing figure, comparison, or implication is published externally** (decided 2026-07-29), which is also why the old "verify current pricing before publishing" caveat no longer applies — nothing is published.
-- Free OSS SIEMs (Wazuh, Security Onion, Elastic) exist but are "free like a puppy": they need an analyst to write rules, tune noise, and watch dashboards. The target customer has no security hire. **This is the real gap, and the only one argued publicly: the tools are good, the seat is empty.**
+- **The detection tooling is good; the seat in front of it is empty.** Existing tools — commercial and open source alike — assume somebody is reading the output: writing rules, tuning noise, watching dashboards, deciding what an alert means. The target customer has no security hire, so that assumption quietly fails.
+- Free OSS stacks (Wazuh, Security Onion, Elastic) are capable but "free like a puppy" — the software is the easy part, the ongoing human attention is not.
 - Result: growing companies with real data flow are unprotected and increasingly targeted.
 - Validated signal (AWS Summit networking): these companies **will not ship their logs to a third party**. Any solution must run inside their environment.
 
 ## Target user
 
-Small companies / startups with moderate-to-heavy data flow, no dedicated security team, no budget for enterprise SIEM or outsourced SOC. For them Arbiter isn't reducing analyst fatigue — **it is the analyst**.
+Small companies / startups with moderate-to-heavy data flow, no dedicated security team, and no realistic path to hiring one soon. For them Arbiter isn't reducing analyst fatigue — **it is the analyst**.
 
 ## Positioning
 
-**"A shield you can raise before you can afford an army."** *(Public line, decided 2026-07-29.)*
+**"A shield you can raise before you can afford an army."**
 
-Internally the shape is still "the SIEM that doesn't need an analyst, because the analyst is built in" — that sentence explains the product accurately and can be used in conversation with an engineer. It is **not** the public line: it swipes at a category the buyer may already own and like, and describes a competitor's shape rather than the buyer's problem.
-
-- **Externally, existing tooling is never the villain — the empty seat is.** Detection tooling is good; almost all of it assumes someone is reading it, and that someone is who the buyer doesn't have. Differences in shape, never in virtue.
-- **No pricing claim, comparison, or implication ships publicly** — see § The problem. Per-asset pricing is an internal counter-position, not a landing-page argument.
+- **Existing tooling is never the villain — the empty seat is.** Differences in shape, never in virtue. Arbiter is not positioned against any other product, and no comparison or cost claim is made.
 - Collection layer = table stakes (wrap/fork an OSS stack; don't rebuild it).
 - The AI triage brain = the product.
-- Pricing counter-position (internal): per asset / flat monthly, never per GB. "Your data volume is irrelevant, it never leaves your network."
+- Whatever it costs a customer, the argument is never about their data volume — the data never leaves their network in the first place.
 
 ## Core product loop
 
@@ -76,7 +73,7 @@ No relevance filtering on distribution — attackers reuse playbooks across indu
 - Customers own their agents and models; **you own the collective brain** — curation, the pattern feed, and reporting are the subscription.
 - Value compounds with every customer (network effect moat).
 - Back-channel to vendor: monthly report + attack-possibility notices + anonymized patterns only.
-- Pricing: flat / per-asset monthly. "Less than a day of a consultant's time."
+- Billing is tied to what Arbiter watches, never to how much data it reads — data volume is irrelevant when the data never leaves the customer's network.
 
 ## MVP scope (GitHub-first)
 
@@ -97,8 +94,10 @@ Defer: shared pattern feed (needs >1 customer), LoRA adaptation, compliance-grad
 - Anonymization guarantees for pattern extraction — what's "provable" in practice?
 - Onboarding friction: how much human criticality-tagging is acceptable before drop-off?
 
-## Competitive landscape (as of mid-2026 — re-verify)
+## Neighbouring tools (as of mid-2026 — re-verify)
 
-- AI SOC triage (enterprise-focused): Dropzone AI, Radiant Security, Prophet Security, Microsoft Security Copilot — validate the pain, don't serve this segment self-hosted.
-- Free OSS SIEM: Wazuh, Security Onion, Elastic — the real alternative; Arbiter's edge is the built-in analyst.
-- Attack surface management (Axonius, runZero, Wiz) — deliberately **not** competing; assessment is scoped to just-enough-to-power-triage.
+Listed to place Arbiter on the map, not to argue against anything here. All of it is good software solving a differently-shaped problem.
+
+- **AI SOC triage** (Dropzone AI, Radiant Security, Prophet Security, Microsoft Security Copilot) — built for teams that already have a SOC. They validate that alert triage is worth automating; Arbiter's difference is self-hosted, for the buyer with no team at all.
+- **OSS detection stacks** (Wazuh, Security Onion, Elastic) — the closest neighbours, and a likely thing to build *on* rather than against. They assume an operator; Arbiter supplies one.
+- **Attack surface management** (Axonius, runZero, Wiz) — a different job entirely. Arbiter's asset assessment is deliberately scoped to just-enough-to-power-triage, not compliance-grade inventory.

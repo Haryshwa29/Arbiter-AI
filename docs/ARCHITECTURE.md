@@ -1,6 +1,6 @@
 # Arbiter AI — architecture & positioning
 
-> A self-hosted AI security analyst for companies too small to afford a SOC.
+> A self-hosted AI security analyst for companies with no security team.
 > Your data never leaves your network. For the full product vision see [`CONCEPT.md`](../CONCEPT.md).
 
 ![Arbiter architecture](architecture.svg)
@@ -9,9 +9,9 @@
 
 ![Why it helps a startup](value-prop.svg)
 
-Growing startups generate real log volume and are increasingly targeted, but they have no security hire. Their options today are all bad: hire an analyst they can't afford, buy a per-GB SIEM (Splunk-class) and *still* need someone to watch it, or run a free OSS SIEM that is "free like a puppy" — it needs someone to write rules and tune noise. So most run unprotected.
+Growing startups generate real log volume and are increasingly targeted, but they have no security hire. The detection tooling available to them is genuinely good — and nearly all of it assumes somebody is reading the output, writing the rules, and tuning the noise. That somebody is exactly who these companies don't have, so the alerts pile up unread and most run effectively unprotected.
 
-Arbiter's position isn't "cheaper Splunk." It's **the SIEM that doesn't need an analyst, because the analyst is built in.** The collection layer is table stakes; the AI triage brain is the product.
+**A shield you can raise before you can afford an army.** Arbiter supplies the missing analyst rather than another dashboard for one to watch. The collection layer is table stakes; the AI triage brain is the product.
 
 ## How it works
 
@@ -97,9 +97,14 @@ Arbiter gets smarter about *your* environment through a local, human-readable SQ
 
 Escalations can carry a recommended response action (block an IP, kill a session, lock an account, quarantine a host). Actions are **surgical, TTL-limited, and reversible** — never service-wide. Auto-execution is reserved for the deterministic prefilter tier; the LLM tier only ever *recommends*, and a human approves. Blocking requires stronger justification than alerting, mirroring the trust model.
 
-## Frontend (being rebuilt)
+## API and frontend
 
-The first web layer — a stdlib-only dashboard plus a Svelte SPA (see [`ADR-001`](ADR-001-dashboard-retention-iam.md), now superseded) — was **removed on 2026-07-26** to rebuild the frontend from scratch. The backend it fronted is retained: the analyst/admin **IAM** (`iam.py`), the 30-day **audit store** (`store.py`), and the triage engine. The intended operator model is unchanged — two signed-in roles, **analyst** (see and act) and **admin** (also configure), the analyst confirming or overruling verdicts to train the memory layer — and a new server/API will re-expose it to the new frontend.
+The first web layer — a stdlib-only dashboard plus a Svelte SPA (see [`ADR-001`](ADR-001-dashboard-retention-iam.md), now superseded) — was removed on 2026-07-26 and rebuilt. What replaced it:
+
+- **`arbiter/api/server.py`** — a thin JSON API over `store.py`, `iam.py` and `memory.py`. Still stdlib `http.server`; session cookie plus CSRF double-submit and security headers; a background thread polls the audit store and fans new rows out over SSE (`/api/stream`). It never talks to the triage engine directly, so it is indifferent to whether a collector, `arbiter run`, or the development-only `--demo-feed` produced the row.
+- **`frontend/`** — React + Vite + TypeScript + Tailwind. The public landing page ships; the dashboard views are in progress.
+
+The operator model is unchanged from ADR-001: two signed-in roles, **analyst** (see and act) and **admin** (also configure), with the analyst confirming or overruling verdicts to train the memory layer.
 
 ## What ships vs. what's deferred
 
