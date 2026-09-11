@@ -17,6 +17,11 @@ export function AppShell() {
 
   return (
     <div className="flex h-full flex-col">
+      {user?.demo && (
+        <div role="status" className="shrink-0 bg-amber-950 px-4 py-2 text-center text-sm text-amber-200">
+          Sample event demonstration · Local AI analysis · This computer is not being monitored
+        </div>
+      )}
       {/* Every view has the same failure mode when the backend is
           unreachable — one banner here beats each view inventing its own.
           Views still show their own retry inline (see Overview/Audit/Assets)

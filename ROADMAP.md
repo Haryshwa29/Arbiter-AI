@@ -38,6 +38,15 @@ Arbiter can receive representative security events, identify important activity 
 
 STATUS: NEXT IMMEDIATE TARGET
 
+IMPLEMENTATION STATUS (2026-09-11): The first Windows x64 portable bundle is
+implemented and passes an automated relocated-folder test using bundled Python,
+bundled Ollama, and a bundled Qwen 4B model. It provides Start/Stop executables,
+keeps Arbiter-owned data in the portable folder, disables Ollama cloud features,
+labels the current JSONL feed as sample data, and completes real local inference.
+The milestone remains in progress until it is tested from physical portable
+storage on a clean supported Windows machine. Live host monitoring and the
+permanent hardware-guided installer remain subsequent work.
+
 Objective:
 
 > Make Arbiter easy to carry and launch in authorized demonstrations and lab environments.

@@ -70,7 +70,10 @@ import sys
 
 INSTALL_FLAGS = {"--install", "--upgrade", "--uninstall", "--status"}
 
-if INSTALL_FLAGS & set(sys.argv[1:]):
+if "--portable" in sys.argv[1:]:
+    sys.argv.remove("--portable")
+    from arbiter.portable import main
+elif INSTALL_FLAGS & set(sys.argv[1:]):
     from arbiter.install.cli import main
 else:
     from arbiter.cli import main

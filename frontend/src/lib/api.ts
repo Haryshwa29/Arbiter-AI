@@ -31,6 +31,7 @@ export class UnreachableError extends Error {
 export interface User {
   username: string;
   role: "analyst" | "admin";
+  demo?: boolean;
 }
 
 // Set by AuthProvider on mount. Fires when an authenticated request comes

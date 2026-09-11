@@ -54,6 +54,13 @@ The public-site build is rejected by the release builder. This package still
 requires Python; a bundled Windows runtime, local model and USB launchers
 are the next portability work, not included yet.
 
+A first Windows portable demo can now be assembled separately with
+`tools/build_portable.py`. It includes the runtime and local model, with
+`Start Arbiter.exe` and `Stop Arbiter.exe`. See `docs/PORTABLE.md` for the
+supported environment, build inputs, and remaining clean-machine validation.
+This is a sample-event demo; live host monitoring and the permanent installation
+EXE are separate upcoming milestones.
+
 ## Run it from a checkout
 
 Requires Python 3.10+, no dependencies for the mock backend.

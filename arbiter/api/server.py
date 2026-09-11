@@ -62,6 +62,7 @@ class Ctx:
     iam: IAM
     memory: Memory
     hub: "Hub"
+    demo: bool = False
 
 
 class Hub:
@@ -167,7 +168,8 @@ def load_feed_events(events_path: str) -> list["Event"]:
 
 def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
                    model: str, interval: float,
-                   stop: threading.Event | None = None) -> None:
+                   stop: threading.Event | None = None,
+                   ollama_url: str = "http://localhost:11434") -> None:
     """Dev-only: replay `events_path` through a real TriageEngine on a timer
     so the dashboard has something to show without a real collector wired
     up yet. Never started unless `arbiter serve --demo-feed` is passed.
@@ -178,7 +180,7 @@ def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
     """
     import os
 
-    from ..llm import get_backend
+    from ..llm import get_backend, OllamaBackend
     from ..triage import TriageEngine
 
     events = load_feed_events(events_path)
@@ -187,7 +189,8 @@ def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
               "feed not started", flush=True)
         return
     print(f"-- demo feed: {len(events)} events from {events_path}", flush=True)
-    engine = TriageEngine(memory=mem, llm=get_backend(backend, model=model),
+    llm = OllamaBackend(model=model, url=ollama_url) if backend == "ollama" else get_backend(backend, model=model)
+    engine = TriageEngine(memory=mem, llm=llm,
                           audit_path=os.devnull, shadow=True)
     stop = stop or threading.Event()
     i = 0
@@ -292,7 +295,7 @@ def make_handler(ctx: Ctx):
             if path == "/api/me":
                 if not user:
                     return self._send_json(401, {"error": "unauthenticated"})
-                return self._send_json(200, user)
+                return self._send_json(200, {**user, "demo": True} if ctx.demo else user)
             if not user:
                 return self._send_json(401, {"error": "unauthenticated"})
 
@@ -361,7 +364,7 @@ def make_handler(ctx: Ctx):
             token = ctx.iam.issue_session(user)
             cookie = (f"{SESSION_COOKIE}={token}; HttpOnly; SameSite=Strict; "
                      f"Path=/; Max-Age={SESSION_TTL}")
-            return self._send_json(200, user, extra_cookies=[cookie])
+            return self._send_json(200, {**user, "demo": True} if ctx.demo else user, extra_cookies=[cookie])
 
         def _logout(self, user: dict) -> None:
             ctx.store.record_iam(user["username"], "logout")
