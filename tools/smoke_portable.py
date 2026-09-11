@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import queue
 import re
+import shutil
 import subprocess
 import tempfile
 import threading
@@ -81,11 +82,25 @@ def main():
                 time.sleep(1)
             else:
                 raise RuntimeError("No successful local-model verdict arrived.")
+            template = root / "Demo Test Cases" / "Templates" / "00-new-live-case.json"
+            active = root / "Demo Test Cases" / "Active"
+            if len(list(active.glob("*.json"))) != 16 or not template.is_file():
+                raise RuntimeError("Named demonstration cases are missing.")
+            shutil.copy2(template, active / "00-smoke-test-live-reload.json")
+            deadline = time.monotonic() + 150
+            while time.monotonic() < deadline:
+                with client.open(address + "/api/record") as response: rows = json.load(response)["rows"]
+                if any(row["host"] == "requested-demo-host" for row in rows):
+                    break
+                time.sleep(1)
+            else:
+                raise RuntimeError("A demonstration case added while running was not processed.")
             duplicate = subprocess.run([str(root / "Start Arbiter.exe"), "--no-browser"],
                                        cwd=root, env=env, stdin=subprocess.DEVNULL,
                                        capture_output=True, timeout=15)
             assert duplicate.returncode != 0
-            print("PASS: relocated path with spaces, bundled runtimes, login, demo flag, assets, real inference, duplicate guard.")
+            print("PASS: relocated path with spaces, bundled runtimes, login, demo flag, "
+                  "named cases, live case reload, assets, real inference, duplicate guard.")
         finally:
             subprocess.run([str(root / "Stop Arbiter.exe")], cwd=root, env=env,
                            stdin=subprocess.DEVNULL, capture_output=True, timeout=10)

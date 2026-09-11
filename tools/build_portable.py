@@ -77,10 +77,10 @@ def main():
     (out / "models" / "blobs").mkdir()
     for source, _, _ in blobs:
         shutil.copy2(source, out / "models" / "blobs" / source.name)
-    for directory in ("app", "config", "samples", "data", "logs", "licenses"):
+    for directory in ("app", "config", "data", "logs", "licenses"):
         (out / directory).mkdir(exist_ok=True)
     shutil.copy2(args.release, out / "app" / "arbiter.pyz")
-    shutil.copy2(ROOT / "samples" / "events.jsonl", out / "samples" / "events.jsonl")
+    shutil.copytree(ROOT / "samples" / "demo_cases", out / "Demo Test Cases")
     shutil.copy2(ROOT / "LICENSE", out / "licenses" / "Arbiter-LICENSE")
     shutil.copy2(args.ollama_license, out / "licenses" / "Ollama-LICENSE")
     manifest_data = json.loads(target.read_text(encoding="utf-8"))

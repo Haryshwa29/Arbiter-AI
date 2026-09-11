@@ -14,6 +14,21 @@ No firewall changes, response execution, service registration, or model download
 occur. The dashboard displays a sample-data banner. There is no mock fallback
 if local AI is unavailable.
 
+## Live demonstration cases
+
+The 16 named scenarios are in `Demo Test Cases/Active`. Arbiter watches that
+folder while it is running and automatically reloads `.json` and `.jsonl` files
+when they are added, edited, renamed, or removed. The Start Arbiter window prints
+the folder path and reports every successful reload.
+
+Open `Demo Test Cases/README.md` for the scenario catalogue and intended results.
+To add a request during a presentation, copy
+`Demo Test Cases/Templates/00-new-live-case.json` into `Active`, rename it with a
+descriptive `00-...` filename, edit the simulated event, and save it. The `00-`
+prefix places it first after reload. These files are demonstration inputs; they
+are processed through the real guardrails, local model, memory, audit store, and
+dashboard.
+
 ## Supported first target
 
 - Intel/AMD 64-bit Windows 10 22H2 or Windows 11.

@@ -1,0 +1,1 @@
+{"name":"SYN flood against HTTPS","expected":"escalate","notes":"Kernel reports tens of thousands of half-open connections.","event":{"source":"kernel","host":"web-prod-01","event_type":"syn_flood","message":"possible SYN flooding on port 443, 48,000 half-open connections, SYN cookies engaged","severity":6.0,"fields":{"port":443,"half_open":48000,"case_name":"SYN flood"}}}

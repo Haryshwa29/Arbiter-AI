@@ -1,0 +1,1 @@
+{"name":"Unknown host creates a privileged user","expected":"escalate","notes":"An unfamiliar asset creates a UID 0 account.","event":{"source":"auditd","host":"unknown-host-99","event_type":"user_created","message":"new user 'support_tmp' created with uid 0","severity":5.0,"fields":{"user":"support_tmp","uid":0,"case_name":"Unknown host creates root user"}}}

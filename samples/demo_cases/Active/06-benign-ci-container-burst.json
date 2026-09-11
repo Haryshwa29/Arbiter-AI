@@ -1,0 +1,1 @@
+{"name":"Expected CI container process burst","expected":"suppress","notes":"A scoped environment fact explains normal container churn.","event":{"source":"auditd","host":"ci-runner-01","event_type":"process_burst","message":"212 short-lived containers spawned in 10m by runner process churn","severity":4.0,"fields":{"count":212,"case_name":"Benign CI container burst"}}}

@@ -134,13 +134,32 @@ def start_tail_poller(ctx: Ctx, interval: float = 1.0) -> threading.Thread:
     return t
 
 
+def _feed_paths(events_path: str) -> list[Path]:
+    path = Path(events_path)
+    if path.is_dir():
+        return sorted(p for p in path.iterdir()
+                      if p.is_file() and p.suffix.lower() in (".json", ".jsonl"))
+    return [path]
+
+
+def _feed_revision(events_path: str) -> tuple:
+    """Cheap change token used by the portable live-editable demo folder."""
+    try:
+        return tuple((str(path), path.stat().st_mtime_ns, path.stat().st_size)
+                     for path in _feed_paths(events_path))
+    except OSError:
+        return ()
+
+
 def load_feed_events(events_path: str) -> list["Event"]:
-    """Read a JSONL file of events for the demo feed, tolerating both shapes
-    that exist in `samples/`.
+    """Read a JSON/JSONL file or directory, tolerating both sample shapes.
 
     `samples/events.jsonl` is one bare Event per line. The eval suites
     (`realistic_suite.jsonl`, `adversarial_suite.jsonl`, ...) wrap each event
     in a labelled case: `{"event": {...}, "expected": ..., "facts": [...]}`.
+    A `.json` file may contain one such object or a list of objects. A directory
+    loads its top-level `.json` and `.jsonl` files in filename order, which is
+    how the portable demo exposes individually named, editable scenarios.
     Pointing --demo-feed at a suite used to raise TypeError on the first line
     and kill the feeder thread, leaving the dashboard empty with the reason
     only in the server log — so unwrap the labelled shape here.
@@ -151,27 +170,40 @@ def load_feed_events(events_path: str) -> list["Event"]:
     from ..schema import Event
 
     events: list[Event] = []
-    for n, line in enumerate(
-            Path(events_path).read_text(encoding="utf-8").splitlines(), start=1):
-        line = line.strip()
-        if not line or line.startswith("#"):
-            continue
+    for path in _feed_paths(events_path):
         try:
-            data = json.loads(line)
-            # A labelled eval case carries the event under "event"; a bare
-            # event never has that key (it is not a field on Event).
-            if isinstance(data, dict) and isinstance(data.get("event"), dict):
-                data = data["event"]
-            events.append(Event(**data))
-        except (json.JSONDecodeError, TypeError, ValueError) as exc:
-            print(f"!! --demo-feed: {events_path}:{n} skipped: {exc}")
+            if path.suffix.lower() == ".json":
+                decoded = json.loads(path.read_text(encoding="utf-8"))
+                objects = decoded if isinstance(decoded, list) else [decoded]
+            else:
+                objects = []
+                for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    try:
+                        objects.append(json.loads(line))
+                    except json.JSONDecodeError as exc:
+                        print(f"!! --demo-feed: {path}:{n} skipped: {exc}")
+            for n, data in enumerate(objects, start=1):
+                try:
+                    # A labelled case carries the event under "event"; a bare
+                    # event never has that key (it is not a field on Event).
+                    if isinstance(data, dict) and isinstance(data.get("event"), dict):
+                        data = data["event"]
+                    events.append(Event(**data))
+                except (TypeError, ValueError) as exc:
+                    print(f"!! --demo-feed: {path}:{n} skipped: {exc}")
+        except (json.JSONDecodeError, OSError, TypeError, ValueError) as exc:
+            print(f"!! --demo-feed: {path} skipped: {exc}")
     return events
 
 
 def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
                    model: str, interval: float,
                    stop: threading.Event | None = None,
-                   ollama_url: str = "http://localhost:11434") -> None:
+                   ollama_url: str = "http://localhost:11434",
+                   reload_on_change: bool = False) -> None:
     """Dev-only: replay `events_path` through a real TriageEngine on a timer
     so the dashboard has something to show without a real collector wired
     up yet. Never started unless `arbiter serve --demo-feed` is passed.
@@ -196,7 +228,21 @@ def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
                           audit_path=os.devnull, shadow=True)
     stop = stop or threading.Event()
     i = 0
+    revision = _feed_revision(events_path)
     while not stop.is_set():
+        if reload_on_change:
+            current = _feed_revision(events_path)
+            if current != revision:
+                refreshed = load_feed_events(events_path)
+                if refreshed:
+                    events = refreshed
+                    i = 0
+                    print(f"-- demo feed reloaded: {len(events)} events from {events_path}",
+                          flush=True)
+                else:
+                    print("!! --demo-feed: change detected but no usable events; "
+                          "keeping the previous set", flush=True)
+                revision = current
         event = replace(events[i % len(events)], id="", timestamp="")
         try:
             verdict = engine.triage(event)

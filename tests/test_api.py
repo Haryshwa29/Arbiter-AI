@@ -281,6 +281,46 @@ class DemoFeedTests(unittest.TestCase):
             store.close()
             mem.close()
 
+    def test_live_demo_folder_reloads_when_a_case_is_added(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            cases = root / "Active"
+            cases.mkdir()
+            first, _ = _verdict(host="first-demo-host")
+            (cases / "01-first.json").write_text(
+                json.dumps({"name": "First", "event": json.loads(first.to_json())}),
+                encoding="utf-8")
+            store = AuditStore(root / "audit.db")
+            mem = Memory(root / "mem.db")
+            ctx = Ctx(store=store, iam=None, memory=mem, hub=Hub())
+            stop = threading.Event()
+            thread = threading.Thread(
+                target=demo_feed_loop,
+                args=(ctx, mem, str(cases), "mock", "m", 0.01, stop),
+                kwargs={"reload_on_change": True})
+            thread.start()
+            try:
+                deadline = time.monotonic() + 2
+                while store.lifetime_counts()["triaged"] < 1 and time.monotonic() < deadline:
+                    time.sleep(0.01)
+                added, _ = _verdict(host="new-live-demo-host")
+                (cases / "00-added-live.json").write_text(
+                    json.dumps({"name": "Added live", "event": json.loads(added.to_json())}),
+                    encoding="utf-8")
+                deadline = time.monotonic() + 2
+                while time.monotonic() < deadline:
+                    if any(row["host"] == "new-live-demo-host"
+                           for row in store.query(limit=100)):
+                        break
+                    time.sleep(0.01)
+                else:
+                    self.fail("new case was not picked up after the folder changed")
+            finally:
+                stop.set()
+                thread.join(timeout=2)
+                store.close()
+                mem.close()
+
 
 class LoadFeedEventsTests(unittest.TestCase):
     """--demo-feed used to raise TypeError on the first line of any eval
@@ -336,6 +376,14 @@ class LoadFeedEventsTests(unittest.TestCase):
                     events = load_feed_events(str(path))
                 self.assertGreater(len(events), 0)
                 self.assertNotIn("skipped", out.getvalue())
+
+    def test_named_demo_case_folder_loads_all_events(self):
+        root = Path(__file__).resolve().parent.parent / "samples" / "demo_cases" / "Active"
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            events = load_feed_events(str(root))
+        self.assertEqual(len(events), 22)
+        self.assertNotIn("skipped", out.getvalue())
+        self.assertTrue(all(event.fields.get("case_name") for event in events))
 
 
 class RequireAdminTests(unittest.TestCase):

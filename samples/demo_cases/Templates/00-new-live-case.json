@@ -1,0 +1,17 @@
+{
+  "name": "Requested demonstration case",
+  "expected": "escalate",
+  "notes": "Describe why this event should be escalated or suppressed.",
+  "event": {
+    "source": "custom-demo-source",
+    "host": "requested-demo-host",
+    "event_type": "custom_security_event",
+    "message": "Replace this with the requested simulated security event.",
+    "severity": 5.0,
+    "fields": {
+      "user": "demo-user",
+      "src_ip": "203.0.113.10",
+      "case_name": "Requested demonstration case"
+    }
+  }
+}

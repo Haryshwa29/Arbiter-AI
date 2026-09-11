@@ -109,6 +109,32 @@ class OwnedJob:
             self.handle = None
 
 
+def seed_demo_memory(memory: Memory) -> None:
+    """Add missing context required by the named demo cases, without
+    replacing facts or asset settings the presenter has already edited."""
+    existing_assets = {asset["host"] for asset in memory.list_assets()}
+    for host, criticality, role in (
+        ("db-prod-01", 2.0, "sample production database"),
+        ("web-prod-01", 1.6, "sample public web server"),
+        ("ci-runner-01", 0.8, "sample CI runner"),
+        ("dev-laptop-42", 0.5, "sample developer laptop"),
+    ):
+        if host not in existing_assets:
+            memory.upsert_asset(host, criticality, role, True)
+
+    facts = (
+        ("backups run at 02:00; nightly IO spike is normal", "db-prod-01",
+         ("io_anomaly",)),
+        ("ci-runner-01 spawns many short-lived containers; process churn is expected",
+         "ci-runner-01", ("process_anomaly", "process_burst", "process_exec")),
+    )
+    existing_facts = {(fact["scope"], fact["fact"])
+                      for fact in memory.list_facts()}
+    for fact, scope, event_types in facts:
+        if (scope, fact) not in existing_facts:
+            memory.add_fact(fact, scope=scope, event_types=event_types)
+
+
 def run(root: Path, open_browser=True, check_only=False) -> int:
     if platform.system() != "Windows" or platform.machine().lower() not in ("amd64", "x86_64"):
         raise ValueError("This bundle requires 64-bit Windows on an Intel/AMD computer.")
@@ -181,21 +207,25 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
             iam.create_user("admin", password, "admin")
             print(f"First sign-in: admin\nPassword: {password}\nKeep this password for the next launch.", flush=True)
         memory = Memory(data / "arbiter_memory.db")
-        if not memory.list_assets():
-            memory.upsert_asset("db-prod-01", 2.0, "sample database", True)
-            memory.add_fact("backups run at 02:00; nightly IO spike is normal", scope="db-prod-01", event_types=("io_anomaly",))
+        seed_demo_memory(memory)
         ctx = Ctx(store, iam, memory, Hub(), demo=True, shutdown=stop.set)
         httpd = build_httpd(ctx, "127.0.0.1", 0)
         for target, args in (
             (httpd.serve_forever, ()),
             (tail_poller, (ctx, 1.0, stop)),
-            (demo_feed_loop, (ctx, memory, str(root / "samples" / "events.jsonl"), "ollama", model, 3.0, stop, url)),
+            (demo_feed_loop, (ctx, memory, str(root / "Demo Test Cases" / "Active"),
+                              "ollama", model, 3.0, stop, url, True)),
         ):
             thread = threading.Thread(target=target, args=args, daemon=True)
             thread.start(); threads.append(thread)
         address = f"http://127.0.0.1:{httpd.server_port}"
         (data / "session.json").write_text(json.dumps({"url": address, "model": model}), encoding="utf-8")
-        print(f"SAMPLE EVENTS ONLY - this computer is not monitored.\nDashboard: {address}\nUse Stop Arbiter.exe or Ctrl+C before removing the USB.", flush=True)
+        print(f"SAMPLE EVENTS ONLY - this computer is not monitored.\n"
+              f"Live cases: {root / 'Demo Test Cases' / 'Active'}\n"
+              f"Dashboard: {address}\n"
+              "Use Sign out & shut down in the dashboard when finished.\n"
+              "Stop Arbiter.exe or Ctrl+C is available if the browser was closed.",
+              flush=True)
         if open_browser:
             webbrowser.open(address)
         while not stop.wait(.5) and not request.exists():

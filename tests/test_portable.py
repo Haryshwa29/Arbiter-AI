@@ -8,11 +8,25 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from arbiter.portable import OwnedJob, model_files, ollama_environment
+from arbiter.memory import Memory
+from arbiter.portable import (OwnedJob, model_files, ollama_environment,
+                              seed_demo_memory)
 from tests import test_api
 
 
 class PortableFilesTests(unittest.TestCase):
+    def test_demo_memory_adds_only_missing_context(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            memory = Memory(Path(tmp) / "memory.db")
+            memory.upsert_asset("db-prod-01", 0.4, "presenter override", True)
+            seed_demo_memory(memory)
+            seed_demo_memory(memory)
+            assets = {asset["host"]: asset for asset in memory.list_assets()}
+            self.assertEqual(len(assets), 4)
+            self.assertEqual(assets["db-prod-01"]["criticality"], 0.4)
+            self.assertEqual(len(memory.list_facts()), 2)
+            memory.close()
+
     @unittest.skipUnless(sys.platform == "win32", "Windows process ownership")
     def test_job_closes_owned_process_only(self):
         process = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])

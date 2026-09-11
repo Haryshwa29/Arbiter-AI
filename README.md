@@ -59,7 +59,9 @@ A first Windows portable demo can now be assembled separately with
 `Start Arbiter.exe` and `Stop Arbiter.exe`. See `docs/PORTABLE.md` for the
 supported environment, build inputs, and remaining clean-machine validation.
 This is a sample-event demo; live host monitoring and the permanent installation
-EXE are separate upcoming milestones.
+EXE are separate upcoming milestones. Its 16 individually named, live-editable
+scenarios are under `samples/demo_cases/Active`; the portable builder exposes
+them as `Demo Test Cases/Active` beside the launchers.
 
 ## Run it from a checkout
 

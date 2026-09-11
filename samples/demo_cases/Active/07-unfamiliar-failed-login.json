@@ -1,0 +1,1 @@
+{"name":"Unfamiliar failed SSH login","expected":"escalate","notes":"Without benign history Arbiter should err toward review.","event":{"source":"sshd","host":"web-prod-01","event_type":"auth_failure","message":"failed password for invalid user admin from 203.0.113.9","severity":3.0,"fields":{"src_ip":"203.0.113.9","user":"admin","case_name":"Unfamiliar failed login"}}}
