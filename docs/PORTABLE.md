@@ -3,9 +3,11 @@
 Copy the entire folder to a writable USB drive or portable SSD. Open
 **Start Arbiter.exe**. It checks the bundled model, starts its own local AI,
 prints your initial admin password, and opens the dashboard. Keep the password
-for future launches. Use **Stop Arbiter.exe** and wait for the start window to
-report **Stopped** before ejecting the drive. Ctrl+C in the start window also
-requests a clean stop. Do not pull the USB while analysis is running.
+for future launches. In the portable dashboard, **Sign out & shut down** clears
+the browser session and stops Arbiter. Wait for the start window to report
+**Stopped** before ejecting the drive. **Stop Arbiter.exe** remains available
+if the browser is closed or unavailable; Ctrl+C in the start window also requests
+a clean stop. Do not pull the USB while analysis is running.
 
 This is a **sample-event demonstration**, not monitoring of the host computer.
 No firewall changes, response execution, service registration, or model downloads

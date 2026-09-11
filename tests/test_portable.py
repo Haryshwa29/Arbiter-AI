@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import subprocess
 import sys
+import threading
 import unittest
 from unittest.mock import patch
 
@@ -69,3 +70,13 @@ class PortableApiTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertTrue(body["demo"])
         self.assertTrue(client.get("/api/me")[1]["demo"])
+
+    def test_portable_logout_requests_shutdown_after_response(self):
+        stopped = threading.Event()
+        self.ctx.demo = True
+        self.ctx.shutdown = stopped.set
+        client, status, _ = self._login()
+        self.assertEqual(status, 200)
+        status, body = client.post("/api/logout", {})
+        self.assertEqual((status, body), (200, {"ok": True}))
+        self.assertTrue(stopped.wait(1))

@@ -184,7 +184,7 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
         if not memory.list_assets():
             memory.upsert_asset("db-prod-01", 2.0, "sample database", True)
             memory.add_fact("backups run at 02:00; nightly IO spike is normal", scope="db-prod-01", event_types=("io_anomaly",))
-        ctx = Ctx(store, iam, memory, Hub(), demo=True)
+        ctx = Ctx(store, iam, memory, Hub(), demo=True, shutdown=stop.set)
         httpd = build_httpd(ctx, "127.0.0.1", 0)
         for target, args in (
             (httpd.serve_forever, ()),

@@ -37,6 +37,7 @@ from dataclasses import dataclass, replace
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import Callable
 from urllib.parse import parse_qs, urlparse
 
 from ..iam import IAM, SESSION_TTL, load_or_create_secret
@@ -63,6 +64,7 @@ class Ctx:
     memory: Memory
     hub: "Hub"
     demo: bool = False
+    shutdown: Callable[[], None] | None = None
 
 
 class Hub:
@@ -369,7 +371,15 @@ def make_handler(ctx: Ctx):
         def _logout(self, user: dict) -> None:
             ctx.store.record_iam(user["username"], "logout")
             dead = f"{SESSION_COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"
-            return self._send_json(200, {"ok": True}, extra_cookies=[dead])
+            self._send_json(200, {"ok": True}, extra_cookies=[dead])
+            # Portable Arbiter is a single-user foreground application. Give
+            # the logout response time to reach the browser, then tell its
+            # supervisor to stop. Installed/server deployments leave this
+            # callback unset and continue serving other users normally.
+            if ctx.shutdown is not None:
+                timer = threading.Timer(0.25, ctx.shutdown)
+                timer.daemon = True
+                timer.start()
 
         def _label(self, user: dict, body: dict) -> None:
             signature = str(body.get("signature", ""))
