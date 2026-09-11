@@ -41,9 +41,18 @@ python arbiter-x.y.z.pyz --uninstall    # asks separately before deleting data
 New installs default to shadow mode with response in dry-run: nothing is
 blocked until you have watched it and said so.
 
-Build the artifacts yourself with `python tools/build_release.py --clean` —
+Build the customer dashboard first with `cd frontend`, `npm ci`, and
+`npm run build`, then return to the repository root. Build the artifacts
+with `python tools/build_release.py` —
 the `.pyz` is a plain zip of readable source, so `unzip -l` shows everything
 that will run on your machine.
+
+The release now includes the dashboard and serves it from the same process
+as the API. Run `python dist/arbiter-0.1.0.pyz serve` and open the address
+printed in the terminal. First-run credentials are printed there too.
+The public-site build is rejected by the release builder. This package still
+requires Python; a bundled Windows runtime, local model and USB launchers
+are the next portability work, not included yet.
 
 ## Run it from a checkout
 

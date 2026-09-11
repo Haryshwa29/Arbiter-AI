@@ -1,4 +1,8 @@
-"""Thin JSON API over the retained backend (store.py, iam.py, memory.py).
+"""JSON API and bundled dashboard over store.py, iam.py, memory.py.
+
+Release archives serve the self-hosted SPA on the API's origin (ADR-003).
+Only bundled static resources are public; operational API routes require
+a session. Source development can continue using the Vite proxy.
 
 stdlib `http.server` only — deliberately, not FastAPI. See AGENTS.md: the
 dependency-minimalism rule (this product's sales argument is that a customer
@@ -38,6 +42,7 @@ from urllib.parse import parse_qs, urlparse
 from ..iam import IAM, SESSION_TTL, load_or_create_secret
 from ..memory import Memory
 from ..store import AuditStore
+from .static import CSP, dashboard_resource
 
 SESSION_COOKIE = "arb_session"
 CSRF_COOKIE = "arb_csrf"
@@ -265,6 +270,20 @@ def make_handler(ctx: Ctx):
         def do_GET(self) -> None:
             path = urlparse(self.path).path
             query = parse_qs(urlparse(self.path).query)
+
+            if path != "/api" and not path.startswith("/api/"):
+                resource = dashboard_resource(path)
+                if resource is None:
+                    return self._send_json(404, {"error": "dashboard resource not found"})
+                body, content_type = resource
+                self.send_response(200)
+                self.send_header("Content-Type", content_type)
+                for key, value in SEC_HEADERS.items():
+                    self.send_header(key, CSP if key == "Content-Security-Policy" else value)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
 
             if path == "/api/stream":
                 return self._stream()

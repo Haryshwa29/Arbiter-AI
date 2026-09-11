@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import shutil
 import sys
 import zipapp
@@ -35,10 +36,30 @@ PACKAGING = ROOT / "packaging"
 EXCLUDE_DIRS = {"__pycache__", ".git", ".github", "tests", "dist", "build"}
 EXCLUDE_SUFFIXES = {".pyc", ".pyo", ".db", ".db-journal", ".jsonl"}
 
-# frontend/ exists again and CI builds it, but the dashboard views aren't
-# finished, so the zipapp still ships backend-only and there is no compiled
-# front end to bundle. When those land, fold the Vite dist/ in here and
-# reinstate a build-output check.
+FRONTEND = ROOT / "frontend" / "dist"
+
+
+def check_frontend(frontend: Path) -> None:
+    try:
+        target = json.loads((frontend / "arbiter-build.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        raise SystemExit("Build the dashboard first: cd frontend && npm run build")
+    if target.get("target") != "self-hosted" or not (frontend / "index.html").is_file():
+        raise SystemExit("Release requires the self-hosted dashboard: npm run build (not build:public)")
+
+
+def stage_frontend(stage: Path, frontend: Path = FRONTEND) -> int:
+    check_frontend(frontend)
+    count = 0
+    for src in frontend.rglob("*"):
+        rel = src.relative_to(frontend)
+        if not src.is_file() or "server" in rel.parts or src.suffix == ".map":
+            continue
+        dest = stage / "arbiter" / "static" / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dest)
+        count += 1
+    return count
 
 # Top-level __main__.py for the zipapp. Routes lifecycle flags to the
 # installer and everything else to the normal CLI, so one artifact is both
@@ -110,6 +131,7 @@ def main() -> int:
     args = ap.parse_args()
 
     version = read_version()
+    check_frontend(FRONTEND)
 
     out = (ROOT / args.out).resolve()
     if args.clean and out.exists():
@@ -121,7 +143,7 @@ def main() -> int:
         shutil.rmtree(stage)
     stage.mkdir(parents=True)
 
-    n = stage_source(stage)
+    n = stage_source(stage) + stage_frontend(stage)
     pyz = out / f"arbiter-{version}.pyz"
     if pyz.exists():
         pyz.unlink()

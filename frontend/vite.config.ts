@@ -3,8 +3,14 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
-export default defineConfig(({ isSsrBuild }) => ({
-  plugins: [react(), tailwindcss()],
+export default defineConfig(({ isSsrBuild, mode }) => ({
+  plugins: [react(), tailwindcss(), {
+    name: 'arbiter-build-target',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'arbiter-build.json',
+        source: JSON.stringify({ target: mode === 'public' ? 'public' : 'self-hosted' }) });
+    },
+  }],
   // Same-origin so SameSite=Strict cookies (session + CSRF) work. Do not add
   // CORS to the backend instead — see docs/FRONTEND-BRIEF.md.
   //
