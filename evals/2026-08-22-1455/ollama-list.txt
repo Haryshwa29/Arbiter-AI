@@ -1,0 +1,9 @@
+NAME                                                        ID              SIZE      MODIFIED    
+qwen3.5:4b                                                  2a654d98e6fb    3.4 GB    6 weeks ago    
+hf.co/Jiunsong/supergemma4-26b-uncensored-gguf-v2:Q4_K_M    1689b9526bf1    16 GB     7 weeks ago    
+nemotron-3-super:cloud                                      be3943c5a818    -         7 weeks ago    
+qwen3.6:35b                                                 07d35212591f    23 GB     7 weeks ago    
+qwen3-vl:8b                                                 901cae732162    6.1 GB    7 weeks ago    
+gemma4:12b                                                  4eb23ef187e2    7.6 GB    7 weeks ago    
+gemma4:26b                                                  5571076f3d70    17 GB     7 weeks ago    
+

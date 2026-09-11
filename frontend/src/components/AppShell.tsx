@@ -13,52 +13,68 @@ const NAV_ITEMS = [
 ];
 
 export function AppShell() {
-  const { user, logout } = useAuth();
+  const { user, logout, reachable } = useAuth();
 
   return (
-    <div className="flex min-h-full">
-      <aside className="flex w-56 shrink-0 flex-col border-r border-neutral-200 bg-white px-3 py-4 dark:border-neutral-800 dark:bg-neutral-900/40">
-        <p className="mb-6 px-2 text-sm font-medium tracking-wide text-neutral-600 dark:text-neutral-400">
-          Arbiter AI
-        </p>
+    <div className="flex h-full flex-col">
+      {/* Every view has the same failure mode when the backend is
+          unreachable — one banner here beats each view inventing its own.
+          Views still show their own retry inline (see Overview/Audit/Assets)
+          for which of their own requests failed; this just says why. */}
+      {!reachable && (
+        <div
+          role="status"
+          className="shrink-0 border-b border-[#A76B12]/30 bg-[#A76B12]/10 px-4 py-2 text-center text-sm text-[#A76B12] dark:border-[#EF9F27]/30 dark:bg-[#EF9F27]/10 dark:text-[#EF9F27]"
+        >
+          Can't reach the backend — check that <code className="font-mono">arbiter serve</code> is
+          running, then retry below. This clears on its own once a request gets through again.
+        </div>
+      )}
 
-        <nav className="flex flex-1 flex-col gap-0.5">
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                `rounded-md px-2 py-1.5 text-sm transition-colors ${
-                  isActive
-                    ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
-                    : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
-                }`
-              }
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
+      <div className="flex min-h-0 flex-1">
+        <aside className="flex w-56 shrink-0 flex-col border-r border-neutral-200 bg-white px-3 py-4 dark:border-neutral-800 dark:bg-neutral-900/40">
+          <p className="mb-6 px-2 text-sm font-medium tracking-wide text-neutral-600 dark:text-neutral-400">
+            Arbiter AI
+          </p>
 
-        {user && (
-          <div className="flex flex-col gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
-            <p className="truncate px-2 text-xs text-neutral-500">
-              {user.username} · {user.role}
-            </p>
-            <button
-              type="button"
-              onClick={() => void logout()}
-              className="rounded-md px-2 py-1.5 text-left text-sm text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
-            >
-              Sign out
-            </button>
-          </div>
-        )}
-      </aside>
+          <nav className="flex flex-1 flex-col gap-0.5">
+            {NAV_ITEMS.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `rounded-md px-2 py-1.5 text-sm transition-colors ${
+                    isActive
+                      ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+                      : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
+                  }`
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
 
-      <main className="min-w-0 flex-1 overflow-y-auto p-6">
-        <Outlet />
-      </main>
+          {user && (
+            <div className="flex flex-col gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+              <p className="truncate px-2 text-xs text-neutral-500">
+                {user.username} · {user.role}
+              </p>
+              <button
+                type="button"
+                onClick={() => void logout()}
+                className="rounded-md px-2 py-1.5 text-left text-sm text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+        </aside>
+
+        <main className="min-w-0 flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

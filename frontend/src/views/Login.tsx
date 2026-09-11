@@ -37,7 +37,7 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center px-4">
+    <div className="flex h-full items-center justify-center px-4">
       <motion.div
         initial={reduceMotion ? false : { opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}

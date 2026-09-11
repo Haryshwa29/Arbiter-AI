@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getDay, getSummary } from "../lib/api";
 import type { DayBucket, SummaryResponse } from "../lib/api";
 import { StatTile } from "../components/StatTile";
 import { VolumeChart } from "../components/VolumeChart";
+import { ErrorNotice } from "../components/ErrorNotice";
 
 const WINDOWS = [
   { hours: 24 as const, label: "24h" },
@@ -12,23 +13,32 @@ const WINDOWS = [
 
 export function Overview() {
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
+  const [summaryError, setSummaryError] = useState(false);
   const [buckets, setBuckets] = useState<DayBucket[]>([]);
+  const [bucketsError, setBucketsError] = useState(false);
   const [hours, setHours] = useState<24 | 72 | 168>(24);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  // `useCallback` so the Retry buttons below can call the same function the
+  // effects use, rather than duplicating the fetch-and-set logic.
+  const loadSummary = useCallback(() => {
+    setSummaryError(false);
     getSummary()
       .then(setSummary)
-      .catch(() => {});
+      .catch(() => setSummaryError(true));
   }, []);
 
-  useEffect(() => {
+  const loadDay = useCallback(() => {
     setLoading(true);
+    setBucketsError(false);
     getDay(hours)
       .then((r) => setBuckets(r.buckets))
-      .catch(() => setBuckets([]))
+      .catch(() => setBucketsError(true))
       .finally(() => setLoading(false));
   }, [hours]);
+
+  useEffect(loadSummary, [loadSummary]);
+  useEffect(loadDay, [loadDay]);
 
   const prefilterShare =
     summary && summary.today.today > 0
@@ -44,26 +54,34 @@ export function Overview() {
         </p>
       </div>
 
-      <section>
-        <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">Today</h2>
-        <div className="grid grid-cols-3 gap-3">
-          <StatTile label="Verdicts today" value={summary?.today.today ?? "—"} />
-          <StatTile label="Escalated today" value={summary?.today.escalated ?? "—"} accent="red" />
-          <StatTile
-            label="Prefilter share"
-            value={prefilterShare !== null ? `${prefilterShare}%` : "—"}
-          />
-        </div>
-      </section>
+      {summaryError ? (
+        <section className="rounded-lg border border-neutral-200 dark:border-neutral-800">
+          <ErrorNotice message="Couldn't load today's and lifetime stats." onRetry={loadSummary} />
+        </section>
+      ) : (
+        <>
+          <section>
+            <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">Today</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <StatTile label="Verdicts today" value={summary?.today.today ?? "—"} />
+              <StatTile label="Escalated today" value={summary?.today.escalated ?? "—"} accent="red" />
+              <StatTile
+                label="Prefilter share"
+                value={prefilterShare !== null ? `${prefilterShare}%` : "—"}
+              />
+            </div>
+          </section>
 
-      <section>
-        <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">Lifetime</h2>
-        <div className="grid grid-cols-3 gap-3">
-          <StatTile label="Triaged" value={summary?.lifetime.triaged ?? "—"} />
-          <StatTile label="Suppressed" value={summary?.lifetime.suppressed ?? "—"} />
-          <StatTile label="Escalated" value={summary?.lifetime.escalated ?? "—"} accent="red" />
-        </div>
-      </section>
+          <section>
+            <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">Lifetime</h2>
+            <div className="grid grid-cols-3 gap-3">
+              <StatTile label="Triaged" value={summary?.lifetime.triaged ?? "—"} />
+              <StatTile label="Suppressed" value={summary?.lifetime.suppressed ?? "—"} />
+              <StatTile label="Escalated" value={summary?.lifetime.escalated ?? "—"} accent="red" />
+            </div>
+          </section>
+        </>
+      )}
 
       <section>
         <div className="mb-3 flex items-center justify-between">
@@ -86,7 +104,9 @@ export function Overview() {
           </div>
         </div>
         <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900/40">
-          {loading ? (
+          {bucketsError ? (
+            <ErrorNotice message="Couldn't load volume." onRetry={loadDay} />
+          ) : loading ? (
             <p className="py-12 text-center text-sm text-neutral-500">Loading…</p>
           ) : (
             <VolumeChart buckets={buckets} />

@@ -12,7 +12,7 @@ import { Site } from "./site/Site";
 
 function Loading() {
   return (
-    <div className="flex min-h-full items-center justify-center text-sm text-neutral-500">
+    <div className="flex h-full items-center justify-center text-sm text-neutral-500">
       Loading…
     </div>
   );
@@ -48,6 +48,17 @@ function LoginRoute() {
 // (docs/LANDING-BRIEF.md §1) — scoping AuthProvider here is what guarantees
 // that rather than relying on discipline elsewhere.
 //
+// The wrapper is `h-full`, not `min-h-full`. index.css gives html/body/#root
+// height:100%, but a percentage min-height resolves against the parent's
+// *height*, and a box carrying only min-h-full is itself height:auto — so
+// every min-h-full below it collapsed to nothing. That was one bug wearing
+// two faces: AppShell's sidebar ended wherever the page content ended (a
+// stub on Live feed, full-length on the audit table), and Login's
+// items-center had no height to centre the card within, so it sat jammed
+// at the top of the viewport. A definite height fixes both, and a fixed
+// frame is what the dashboard wants anyway — AppShell's <main> already
+// carries its own overflow-y-auto.
+//
 // `data-theme="dark"` is pinned here rather than on <html> (THEME-BRIEF.md
 // §4): an incident surface is read at 3am, so the dashboard is dark in both
 // system settings and at every position of the landing's toggle, not
@@ -60,7 +71,7 @@ function LoginRoute() {
 // light background through the gaps around a dark card.
 function Dashboard() {
   return (
-    <div data-theme="dark" className="min-h-full bg-neutral-950 text-neutral-100">
+    <div data-theme="dark" className="h-full bg-neutral-950 text-neutral-100">
       <AuthProvider>
         <Routes>
           <Route path="login" element={<LoginRoute />} />

@@ -8,6 +8,7 @@ import {
 } from "../lib/api";
 import type { Decision, RecordRow, Tier } from "../lib/api";
 import { DECISION_STYLE, TIER_STYLE, formatTime } from "../lib/theme";
+import { ErrorNotice } from "../components/ErrorNotice";
 
 const PAGE_SIZE = 25;
 
@@ -20,6 +21,7 @@ export function Audit() {
   const [offset, setOffset] = useState(0);
   const [expanded, setExpanded] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     getEstate()
@@ -29,6 +31,7 @@ export function Audit() {
 
   function load() {
     setLoading(true);
+    setError(false);
     getRecords({
       decision: decision || undefined,
       tier: tier || undefined,
@@ -37,7 +40,7 @@ export function Audit() {
       offset,
     })
       .then((r) => setRows(r.rows))
-      .catch(() => setRows([]))
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }
 
@@ -108,10 +111,12 @@ export function Audit() {
 
       <div className="flex flex-col gap-1.5">
         {loading && <p className="py-8 text-center text-sm text-neutral-500">Loading…</p>}
-        {!loading && rows.length === 0 && (
+        {!loading && error && <ErrorNotice message="Couldn't load verdicts." onRetry={load} />}
+        {!loading && !error && rows.length === 0 && (
           <p className="py-8 text-center text-sm text-neutral-500">No matching verdicts.</p>
         )}
         {!loading &&
+          !error &&
           rows.map((row) => {
             const d = DECISION_STYLE[row.decision];
             const t = TIER_STYLE[row.tier];
@@ -218,7 +223,9 @@ export function Audit() {
         >
           Previous
         </button>
-        <span className="text-xs text-neutral-500">Rows {offset + 1}–{offset + rows.length}</span>
+        <span className="text-xs text-neutral-500">
+          {rows.length === 0 ? "No rows" : `Rows ${offset + 1}–${offset + rows.length}`}
+        </span>
         <button
           type="button"
           disabled={rows.length < PAGE_SIZE}

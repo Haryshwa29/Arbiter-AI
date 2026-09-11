@@ -1,0 +1,526 @@
+{
+  "meta": {
+    "timestamp": "2026-08-22T19:36:03+00:00",
+    "host": "Panther_29",
+    "platform": "Windows 11",
+    "python": "3.14.5",
+    "git_rev": "8da38d0",
+    "runs": 3,
+    "guardrails": true,
+    "models": {
+      "qwen3.5:4b": {
+        "digest": "2a654d98e6fb",
+        "size_bytes": 3389983735,
+        "family": "qwen35",
+        "parameter_size": "4.7B",
+        "quantization": "Q4_K_M"
+      },
+      "gemma4:12b": {
+        "digest": "4eb23ef187e2",
+        "size_bytes": 7556508396,
+        "family": "gemma4",
+        "parameter_size": "11.9B",
+        "quantization": "Q4_K_M"
+      }
+    },
+    "suites": [
+      {
+        "path": "samples/realistic_suite.jsonl",
+        "cases": 101,
+        "sha256": "c4c9b01dec4f5eec"
+      },
+      {
+        "path": "samples/redteam_suite.jsonl",
+        "cases": 20,
+        "sha256": "48d07c898bceb047"
+      }
+    ]
+  },
+  "results": {
+    "samples/realistic_suite.jsonl": {
+      "qwen3.5:4b": {
+        "runs": 3,
+        "full": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.7166666666666667,
+            "max": 0.7166666666666667,
+            "mean": 0.7166666666666667
+          },
+          "accuracy": {
+            "min": 0.8316831683168316,
+            "max": 0.8316831683168316,
+            "mean": 0.8316831683168316
+          }
+        },
+        "full_counts": {
+          "n": 101,
+          "attacks": 43,
+          "benign": 58,
+          "caught": 43,
+          "missed": 0,
+          "false_escalations": 17,
+          "recall": 1.0,
+          "precision": 0.7166666666666667,
+          "accuracy": 0.8316831683168316
+        },
+        "model_only": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.5405405405405406,
+            "max": 0.5405405405405406,
+            "mean": 0.5405405405405406
+          },
+          "accuracy": {
+            "min": 0.782051282051282,
+            "max": 0.782051282051282,
+            "mean": 0.782051282051282
+          }
+        },
+        "model_only_counts": {
+          "n": 78,
+          "attacks": 20,
+          "benign": 58,
+          "caught": 20,
+          "missed": 0,
+          "false_escalations": 17,
+          "recall": 1.0,
+          "precision": 0.5405405405405406,
+          "accuracy": 0.782051282051282
+        },
+        "guardrail_decided": 23,
+        "hard_misses": [],
+        "flaky": [
+          {
+            "category": "benign_ops",
+            "expected": "suppress",
+            "escalated_runs": 1,
+            "of_runs": 3,
+            "notes": "backup IO, fact"
+          },
+          {
+            "category": "benign_deploy",
+            "expected": "suppress",
+            "escalated_runs": 2,
+            "of_runs": 3,
+            "notes": "deploy restart"
+          }
+        ],
+        "latent_misses": [],
+        "gate": "PASS",
+        "avg_latency_s": 4.740573830342887,
+        "backend_errors": 1,
+        "error_samples": [
+          "timed out"
+        ]
+      },
+      "gemma4:12b": {
+        "runs": 3,
+        "full": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.7818181818181819,
+            "max": 0.7818181818181819,
+            "mean": 0.7818181818181819
+          },
+          "accuracy": {
+            "min": 0.8811881188118812,
+            "max": 0.8811881188118812,
+            "mean": 0.8811881188118812
+          }
+        },
+        "full_counts": {
+          "n": 101,
+          "attacks": 43,
+          "benign": 58,
+          "caught": 43,
+          "missed": 0,
+          "false_escalations": 12,
+          "recall": 1.0,
+          "precision": 0.7818181818181819,
+          "accuracy": 0.8811881188118812
+        },
+        "model_only": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.625,
+            "max": 0.625,
+            "mean": 0.625
+          },
+          "accuracy": {
+            "min": 0.8461538461538461,
+            "max": 0.8461538461538461,
+            "mean": 0.8461538461538461
+          }
+        },
+        "model_only_counts": {
+          "n": 78,
+          "attacks": 20,
+          "benign": 58,
+          "caught": 20,
+          "missed": 0,
+          "false_escalations": 12,
+          "recall": 1.0,
+          "precision": 0.625,
+          "accuracy": 0.8461538461538461
+        },
+        "guardrail_decided": 23,
+        "hard_misses": [],
+        "flaky": [],
+        "latent_misses": [],
+        "gate": "PASS",
+        "avg_latency_s": 5.949555821367042,
+        "backend_errors": 0,
+        "error_samples": []
+      }
+    },
+    "samples/redteam_suite.jsonl": {
+      "qwen3.5:4b": {
+        "runs": 3,
+        "full": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "accuracy": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          }
+        },
+        "full_counts": {
+          "n": 20,
+          "attacks": 17,
+          "benign": 3,
+          "caught": 17,
+          "missed": 0,
+          "false_escalations": 0,
+          "recall": 1.0,
+          "precision": 1.0,
+          "accuracy": 1.0
+        },
+        "model_only": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "accuracy": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          }
+        },
+        "model_only_counts": {
+          "n": 8,
+          "attacks": 5,
+          "benign": 3,
+          "caught": 5,
+          "missed": 0,
+          "false_escalations": 0,
+          "recall": 1.0,
+          "precision": 1.0,
+          "accuracy": 1.0
+        },
+        "guardrail_decided": 12,
+        "hard_misses": [],
+        "flaky": [],
+        "latent_misses": [],
+        "gate": "PASS",
+        "avg_latency_s": 4.285655891663434,
+        "backend_errors": 0,
+        "error_samples": []
+      },
+      "gemma4:12b": {
+        "runs": 3,
+        "full": {
+          "recall": {
+            "min": 0.8823529411764706,
+            "max": 0.8823529411764706,
+            "mean": 0.8823529411764706
+          },
+          "precision": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "accuracy": {
+            "min": 0.9,
+            "max": 0.9,
+            "mean": 0.9
+          }
+        },
+        "full_counts": {
+          "n": 20,
+          "attacks": 17,
+          "benign": 3,
+          "caught": 15,
+          "missed": 2,
+          "false_escalations": 0,
+          "recall": 0.8823529411764706,
+          "precision": 1.0,
+          "accuracy": 0.9
+        },
+        "model_only": {
+          "recall": {
+            "min": 0.6,
+            "max": 0.6,
+            "mean": 0.6
+          },
+          "precision": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "accuracy": {
+            "min": 0.75,
+            "max": 0.75,
+            "mean": 0.75
+          }
+        },
+        "model_only_counts": {
+          "n": 8,
+          "attacks": 5,
+          "benign": 3,
+          "caught": 3,
+          "missed": 2,
+          "false_escalations": 0,
+          "recall": 0.6,
+          "precision": 1.0,
+          "accuracy": 0.75
+        },
+        "guardrail_decided": 12,
+        "hard_misses": [
+          {
+            "category": "correlation_distributed_bf",
+            "notes": "distributed brute force; each event benign alone \u2014 Arbiter triages per-event, can't correlate",
+            "host": "web-prod-01",
+            "event_type": "auth_failure"
+          },
+          {
+            "category": "correlation_slow_scan",
+            "notes": "slow scan below any threshold; only visible in aggregate",
+            "host": "api-prod-01",
+            "event_type": "port_probe"
+          }
+        ],
+        "flaky": [],
+        "latent_misses": [],
+        "gate": "FAIL",
+        "avg_latency_s": 5.983566649997859,
+        "backend_errors": 0,
+        "error_samples": []
+      }
+    }
+  },
+  "disagreements": {
+    "samples/realistic_suite.jsonl": [
+      {
+        "category": "benign_deploy",
+        "expected": "suppress",
+        "event_type": "service_restart",
+        "host": "api-prod-01",
+        "message": "service restarted during deploy #4030",
+        "notes": "deploy restart",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": false,
+          "gemma4:12b": true
+        }
+      },
+      {
+        "category": "benign_backup",
+        "expected": "suppress",
+        "event_type": "data_transfer",
+        "host": "nas-01",
+        "message": "nightly sync replicated /srv/data to nas-01 (known backup host)",
+        "notes": "legit sync known host",
+        "decisions": {
+          "qwen3.5:4b": "suppress",
+          "gemma4:12b": "escalate"
+        },
+        "correct": {
+          "qwen3.5:4b": true,
+          "gemma4:12b": false
+        }
+      },
+      {
+        "category": "benign_auth",
+        "expected": "suppress",
+        "event_type": "mfa_success",
+        "host": "mail-01",
+        "message": "MFA success for arjun via push",
+        "notes": "normal MFA",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": false,
+          "gemma4:12b": true
+        }
+      },
+      {
+        "category": "benign_deploy",
+        "expected": "suppress",
+        "event_type": "service_restart",
+        "host": "web-prod-01",
+        "message": "service restarted during deploy #4678",
+        "notes": "deploy restart",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": false,
+          "gemma4:12b": true
+        }
+      },
+      {
+        "category": "benign_deploy",
+        "expected": "suppress",
+        "event_type": "service_restart",
+        "host": "web-prod-01",
+        "message": "service restarted during deploy #4531",
+        "notes": "deploy restart",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": false,
+          "gemma4:12b": true
+        }
+      },
+      {
+        "category": "benign_deploy",
+        "expected": "suppress",
+        "event_type": "service_restart",
+        "host": "web-prod-02",
+        "message": "service restarted during deploy #4334",
+        "notes": "deploy restart",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": false,
+          "gemma4:12b": true
+        }
+      },
+      {
+        "category": "factrap_backup",
+        "expected": "suppress",
+        "event_type": "io_anomaly",
+        "host": "db-prod-01",
+        "message": "IO spike during backups window on db-prod-01",
+        "notes": "LEGIT backup IO",
+        "decisions": {
+          "qwen3.5:4b": "suppress",
+          "gemma4:12b": "escalate"
+        },
+        "correct": {
+          "qwen3.5:4b": true,
+          "gemma4:12b": false
+        }
+      },
+      {
+        "category": "benign_deploy",
+        "expected": "suppress",
+        "event_type": "service_restart",
+        "host": "web-prod-02",
+        "message": "service restarted during deploy #4605",
+        "notes": "deploy restart",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": false,
+          "gemma4:12b": true
+        }
+      },
+      {
+        "category": "benign_deploy",
+        "expected": "suppress",
+        "event_type": "service_restart",
+        "host": "web-prod-01",
+        "message": "service restarted during deploy #4655",
+        "notes": "deploy restart",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": false,
+          "gemma4:12b": true
+        }
+      }
+    ],
+    "samples/redteam_suite.jsonl": [
+      {
+        "category": "correlation_distributed_bf",
+        "expected": "escalate",
+        "event_type": "auth_failure",
+        "host": "web-prod-01",
+        "message": "single failed password for admin from 185.220.101.7 (1 of ~50 distinct IPs each trying once)",
+        "notes": "distributed brute force; each event benign alone \u2014 Arbiter triages per-event, can't correlate",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": true,
+          "gemma4:12b": false
+        }
+      },
+      {
+        "category": "correlation_slow_scan",
+        "expected": "escalate",
+        "event_type": "port_probe",
+        "host": "api-prod-01",
+        "message": "one connection attempt to a closed port from 45.146.26.8 (low-and-slow, ~1/min for hours)",
+        "notes": "slow scan below any threshold; only visible in aggregate",
+        "decisions": {
+          "qwen3.5:4b": "escalate",
+          "gemma4:12b": "suppress"
+        },
+        "correct": {
+          "qwen3.5:4b": true,
+          "gemma4:12b": false
+        }
+      }
+    ]
+  },
+  "elapsed_s": 2748.0
+}

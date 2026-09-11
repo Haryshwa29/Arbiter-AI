@@ -1,0 +1,209 @@
+{
+  "meta": {
+    "timestamp": "2026-08-22T18:55:27+00:00",
+    "host": "Panther_29",
+    "platform": "Windows 11",
+    "python": "3.14.5",
+    "git_rev": "8da38d0",
+    "runs": 3,
+    "guardrails": true,
+    "models": {
+      "qwen3.5:4b": {
+        "digest": "2a654d98e6fb",
+        "size_bytes": 3389983735,
+        "family": "qwen35",
+        "parameter_size": "4.7B",
+        "quantization": "Q4_K_M"
+      },
+      "gemma4:12b": {
+        "digest": "4eb23ef187e2",
+        "size_bytes": 7556508396,
+        "family": "gemma4",
+        "parameter_size": "11.9B",
+        "quantization": "Q4_K_M"
+      }
+    },
+    "suites": [
+      {
+        "path": "samples/model_gauntlet.jsonl",
+        "cases": 22,
+        "sha256": "62c2fa4db56160ba"
+      }
+    ]
+  },
+  "results": {
+    "samples/model_gauntlet.jsonl": {
+      "qwen3.5:4b": {
+        "runs": 3,
+        "full": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.9230769230769231,
+            "max": 0.9230769230769231,
+            "mean": 0.923076923076923
+          },
+          "accuracy": {
+            "min": 0.9545454545454546,
+            "max": 0.9545454545454546,
+            "mean": 0.9545454545454546
+          }
+        },
+        "full_counts": {
+          "n": 22,
+          "attacks": 12,
+          "benign": 10,
+          "caught": 12,
+          "missed": 0,
+          "false_escalations": 1,
+          "recall": 1.0,
+          "precision": 0.9230769230769231,
+          "accuracy": 0.9545454545454546
+        },
+        "model_only": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.9230769230769231,
+            "max": 0.9230769230769231,
+            "mean": 0.923076923076923
+          },
+          "accuracy": {
+            "min": 0.9545454545454546,
+            "max": 0.9545454545454546,
+            "mean": 0.9545454545454546
+          }
+        },
+        "model_only_counts": {
+          "n": 22,
+          "attacks": 12,
+          "benign": 10,
+          "caught": 12,
+          "missed": 0,
+          "false_escalations": 1,
+          "recall": 1.0,
+          "precision": 0.9230769230769231,
+          "accuracy": 0.9545454545454546
+        },
+        "guardrail_decided": 0,
+        "hard_misses": [],
+        "flaky": [],
+        "latent_misses": [],
+        "gate": "PASS",
+        "avg_latency_s": 4.345572303029864,
+        "backend_errors": 0,
+        "error_samples": []
+      },
+      "gemma4:12b": {
+        "runs": 3,
+        "full": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.8,
+            "max": 0.8,
+            "mean": 0.8000000000000002
+          },
+          "accuracy": {
+            "min": 0.8636363636363636,
+            "max": 0.8636363636363636,
+            "mean": 0.8636363636363636
+          }
+        },
+        "full_counts": {
+          "n": 22,
+          "attacks": 12,
+          "benign": 10,
+          "caught": 12,
+          "missed": 0,
+          "false_escalations": 3,
+          "recall": 1.0,
+          "precision": 0.8,
+          "accuracy": 0.8636363636363636
+        },
+        "model_only": {
+          "recall": {
+            "min": 1.0,
+            "max": 1.0,
+            "mean": 1.0
+          },
+          "precision": {
+            "min": 0.8,
+            "max": 0.8,
+            "mean": 0.8000000000000002
+          },
+          "accuracy": {
+            "min": 0.8636363636363636,
+            "max": 0.8636363636363636,
+            "mean": 0.8636363636363636
+          }
+        },
+        "model_only_counts": {
+          "n": 22,
+          "attacks": 12,
+          "benign": 10,
+          "caught": 12,
+          "missed": 0,
+          "false_escalations": 3,
+          "recall": 1.0,
+          "precision": 0.8,
+          "accuracy": 0.8636363636363636
+        },
+        "guardrail_decided": 0,
+        "hard_misses": [],
+        "flaky": [],
+        "latent_misses": [],
+        "gate": "PASS",
+        "avg_latency_s": 7.095633939399814,
+        "backend_errors": 0,
+        "error_samples": []
+      }
+    }
+  },
+  "disagreements": {
+    "samples/model_gauntlet.jsonl": [
+      {
+        "category": "precision_pentest",
+        "expected": "suppress",
+        "event_type": "netflow_anomaly",
+        "host": "web-prod-01",
+        "message": "10.0.9.9 probed all tcp ports on web-prod-01 over 20 minutes",
+        "notes": "scary-looking but fact-matched authorized scan",
+        "decisions": {
+          "qwen3.5:4b": "suppress",
+          "gemma4:12b": "escalate"
+        },
+        "correct": {
+          "qwen3.5:4b": true,
+          "gemma4:12b": false
+        }
+      },
+      {
+        "category": "precision_dba_cron",
+        "expected": "suppress",
+        "event_type": "cron_change",
+        "host": "db-prod-01",
+        "message": "new crontab entry for postgres user: 30 1 * * * vacuumdb --all --analyze",
+        "notes": "legit maintenance cron \u2014 contrast with hidden-path root cron attack",
+        "decisions": {
+          "qwen3.5:4b": "suppress",
+          "gemma4:12b": "escalate"
+        },
+        "correct": {
+          "qwen3.5:4b": true,
+          "gemma4:12b": false
+        }
+      }
+    ]
+  },
+  "elapsed_s": 755.1
+}

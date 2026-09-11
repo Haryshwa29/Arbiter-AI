@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getEstate } from "../lib/api";
 import type { Asset, EnvironmentFact } from "../lib/api";
+import { ErrorNotice } from "../components/ErrorNotice";
 
 function any(value: string): string {
   return value.trim() === "" ? "any" : value;
@@ -25,20 +26,31 @@ export function Assets() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [facts, setFacts] = useState<EnvironmentFact[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
+  function load() {
+    setLoading(true);
+    setError(false);
     getEstate()
       .then((r) => {
         setAssets(r.assets);
         setFacts(r.facts);
       })
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(load, []);
 
   const maxCriticality = Math.max(1, ...assets.map((a) => a.criticality));
 
   if (loading) {
     return <p className="py-8 text-center text-sm text-neutral-500">Loading…</p>;
+  }
+
+  if (error) {
+    return <ErrorNotice message="Couldn't load assets & facts." onRetry={load} />;
   }
 
   return (

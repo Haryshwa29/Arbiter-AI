@@ -13,6 +13,21 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * The backend never answered at all — the request timed out (dead process
+ * behind a proxy that still accepts the socket) or `fetch` itself failed
+ * (server down, DNS, offline). Distinct from `ApiError`: an `ApiError` means
+ * the backend responded, just with a status a view should treat as "empty"
+ * or "denied". This means there is no data to read yet, which a view must
+ * not render as if there were.
+ */
+export class UnreachableError extends Error {
+  constructor(cause: unknown) {
+    super("backend unreachable");
+    this.cause = cause;
+  }
+}
+
 export interface User {
   username: string;
   role: "analyst" | "admin";
@@ -26,6 +41,20 @@ type UnauthorizedHandler = () => void;
 let unauthorizedHandler: UnauthorizedHandler | null = null;
 export function setUnauthorizedHandler(fn: UnauthorizedHandler | null): void {
   unauthorizedHandler = fn;
+}
+
+/**
+ * Every view has the same failure mode when the backend is unreachable, so
+ * there is one shared signal for it rather than four separately-wired ones
+ * (set by AuthProvider, read by AppShell for a page-level banner) — same
+ * shape as `unauthorizedHandler` above. Views still catch `UnreachableError`
+ * themselves too, for their own retry affordance: the banner says the
+ * backend is down, the view says which of its own requests failed.
+ */
+type ReachabilityHandler = (reachable: boolean) => void;
+let reachabilityHandler: ReachabilityHandler | null = null;
+export function setReachabilityHandler(fn: ReachabilityHandler | null): void {
+  reachabilityHandler = fn;
 }
 
 function readCookie(name: string): string | null {
@@ -44,6 +73,18 @@ interface RequestOptions {
   skipAuthRedirect?: boolean;
 }
 
+/**
+ * Every request is bounded. A dev proxy (or `arbiter serve` dying while a
+ * page stays open) leaves the socket accepted but answers nothing, and a bare
+ * fetch then never settles: the views sit on their initial state forever —
+ * Overview's tiles show "—" because `summary` is still null, Audit shows
+ * "Loading…" because its `.finally` never runs. That reads as a broken
+ * dashboard rather than an unreachable backend, which is exactly how it was
+ * first reported. `sseStream.ts` already carries a watchdog for the same
+ * failure on the streaming endpoint; this is the request-side equivalent.
+ */
+const REQUEST_TIMEOUT_MS = 10_000;
+
 async function rawFetch(path: string, opts: RequestOptions): Promise<Response> {
   const method = opts.method ?? "GET";
   const headers: Record<string, string> = {};
@@ -56,11 +97,48 @@ async function rawFetch(path: string, opts: RequestOptions): Promise<Response> {
     const csrf = readCookie("arb_csrf");
     if (csrf) headers["X-CSRF-Token"] = csrf;
   }
-  return fetch(path, { method, headers, body, credentials: "same-origin" });
+  try {
+    return await fetch(path, {
+      method,
+      headers,
+      body,
+      credentials: "same-origin",
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    });
+  } catch (e) {
+    // The timeout firing and a genuine network failure both land here as a
+    // rejection, not a Response — there is no status code to branch on, so
+    // this is where the two get folded into one thing a view can check for.
+    throw new UnreachableError(e);
+  }
+}
+
+/**
+ * A dev proxy (or a production reverse proxy) in front of a dead `arbiter
+ * serve` doesn't always hang — Vite's proxy, finding nothing on the upstream
+ * port, answers immediately with 502. That's a real Response, so it would
+ * otherwise sail straight past the try/catch below and read as "the backend
+ * answered, just with an error", when the truth is the same as a timeout:
+ * there is no backend to talk to. 503/504 are the same story for a
+ * production proxy (upstream down / gateway timeout).
+ */
+function isGatewayFailure(status: number): boolean {
+  return status === 502 || status === 503 || status === 504;
 }
 
 async function apiFetch<T>(path: string, opts: RequestOptions = {}): Promise<T> {
-  let res = await rawFetch(path, opts);
+  let res: Response;
+  try {
+    res = await rawFetch(path, opts);
+  } catch (e) {
+    reachabilityHandler?.(false);
+    throw e;
+  }
+  if (isGatewayFailure(res.status)) {
+    reachabilityHandler?.(false);
+    throw new UnreachableError(new Error(`gateway status ${res.status}`));
+  }
+  reachabilityHandler?.(true);
 
   if (res.status === 403 && (opts.method ?? "GET") !== "GET") {
     const peek = await res
@@ -70,7 +148,16 @@ async function apiFetch<T>(path: string, opts: RequestOptions = {}): Promise<T> 
     if (peek?.error === "csrf token missing or invalid") {
       // Every response ensures the arb_csrf cookie exists, so a fresh read
       // should now succeed — retry exactly once per §3.
-      res = await rawFetch(path, opts);
+      try {
+        res = await rawFetch(path, opts);
+      } catch (e) {
+        reachabilityHandler?.(false);
+        throw e;
+      }
+      if (isGatewayFailure(res.status)) {
+        reachabilityHandler?.(false);
+        throw new UnreachableError(new Error(`gateway status ${res.status}`));
+      }
     }
   }
 
