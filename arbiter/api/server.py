@@ -64,6 +64,7 @@ class Ctx:
     memory: Memory
     hub: "Hub"
     demo: bool = False
+    backend: str = "mock"
     shutdown: Callable[[], None] | None = None
 
 
@@ -343,7 +344,8 @@ def make_handler(ctx: Ctx):
             if path == "/api/me":
                 if not user:
                     return self._send_json(401, {"error": "unauthenticated"})
-                return self._send_json(200, {**user, "demo": True} if ctx.demo else user)
+                return self._send_json(200, {**user, "demo": ctx.demo,
+                                             "backend": ctx.backend})
             if not user:
                 return self._send_json(401, {"error": "unauthenticated"})
 
@@ -412,7 +414,9 @@ def make_handler(ctx: Ctx):
             token = ctx.iam.issue_session(user)
             cookie = (f"{SESSION_COOKIE}={token}; HttpOnly; SameSite=Strict; "
                      f"Path=/; Max-Age={SESSION_TTL}")
-            return self._send_json(200, {**user, "demo": True} if ctx.demo else user, extra_cookies=[cookie])
+            return self._send_json(200, {**user, "demo": ctx.demo,
+                                         "backend": ctx.backend},
+                                   extra_cookies=[cookie])
 
         def _logout(self, user: dict) -> None:
             ctx.store.record_iam(user["username"], "logout")
@@ -514,7 +518,7 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
         print(f"  analyst  / {analyst_pw}")
 
     mem = Memory(mem_db)
-    ctx = Ctx(store=store, iam=account, memory=mem, hub=Hub())
+    ctx = Ctx(store=store, iam=account, memory=mem, hub=Hub(), backend=backend)
 
     start_tail_poller(ctx)
 

@@ -35,6 +35,18 @@ class Layout:
         return self.app_dir / "arbiter.pyz"
 
     @property
+    def install_root(self) -> Path:
+        return self.app_dir.parent
+
+    @property
+    def runtime_dir(self) -> Path:
+        return self.install_root / "runtime"
+
+    @property
+    def models_dir(self) -> Path:
+        return self.install_root / "models"
+
+    @property
     def memory_db(self) -> Path:
         # Never pruned; this is the analyst's accumulated learning.
         return self.data_dir / "arbiter_memory.db"

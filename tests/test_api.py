@@ -125,7 +125,8 @@ class ApiTestCase(unittest.TestCase):
     def test_login_then_me_roundtrip(self):
         c, status, body = self._login()
         self.assertEqual(status, 200)
-        self.assertEqual(body, {"username": "priya", "role": "analyst"})
+        self.assertEqual(body, {"username": "priya", "role": "analyst",
+                                "demo": False, "backend": "mock"})
         status, me = c.get("/api/me")
         self.assertEqual(status, 200)
         self.assertEqual(me["username"], "priya")

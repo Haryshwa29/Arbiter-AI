@@ -73,6 +73,9 @@ INSTALL_FLAGS = {"--install", "--upgrade", "--uninstall", "--status"}
 if "--portable" in sys.argv[1:]:
     sys.argv.remove("--portable")
     from arbiter.portable import main
+elif "--service-run" in sys.argv[1:]:
+    sys.argv.remove("--service-run")
+    from arbiter.install.runtime import main
 elif INSTALL_FLAGS & set(sys.argv[1:]):
     from arbiter.install.cli import main
 else:

@@ -67,32 +67,53 @@ jobs:
           name: arbiter-release
           path: dist/
 
-      - name: Publish GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+  windows-setup:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the Windows setup launcher
+        shell: powershell
+        run: |
+          $compiler = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319\csc.exe"
+          & $compiler /nologo /target:exe /platform:x64 `
+            '/out:Install Arbiter.exe' `
+            '/resource:packaging\install.ps1,Arbiter.InstallScript' `
+            packaging\WindowsSetupLauncher.cs
+      - uses: actions/upload-artifact@v4
         with:
-          files: |
-            dist/arbiter-*.pyz
-            dist/install.sh
-            dist/install.ps1
-            dist/SHA256SUMS
+          name: arbiter-windows-setup
+          path: Install Arbiter.exe
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, windows-setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: arbiter-*
+          merge-multiple: true
+          path: release
+      - name: Add the setup executable to the release checksums
+        run: cd release && sha256sum "Install Arbiter.exe" >> SHA256SUMS
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
           generate_release_notes: true
           body: |
             ## Install
 
+            **Windows**
+
+            Download **Install Arbiter.exe**. It checks the computer and recommends
+            Local AI with Qwen 3.5 4B or the smaller rules-only installation.
+
             **Linux / macOS**
             ```sh
             curl -fsSLO https://github.com/${{ github.repository }}/releases/latest/download/install.sh
-            less install.sh      # read it first
+            less install.sh
             sh install.sh
             ```
 
-            **Windows (PowerShell)**
-            ```powershell
-            Invoke-WebRequest https://github.com/${{ github.repository }}/releases/latest/download/install.ps1 -OutFile install.ps1
-            notepad install.ps1  # read it first
-            powershell -ExecutionPolicy Bypass -File install.ps1
-            ```
-
-            Both scripts verify the download against `SHA256SUMS` before running it.
-            Add `--dry-run` to see every step without changing anything.
+            Release files are listed in `SHA256SUMS`. The Windows and shell
+            bootstraps verify the Arbiter application before installing it.

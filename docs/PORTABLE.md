@@ -9,6 +9,12 @@ the browser session and stops Arbiter. Wait for the start window to report
 if the browser is closed or unavailable; Ctrl+C in the start window also requests
 a clean stop. Do not pull the USB while analysis is running.
 
+Open **Install Arbiter.exe** when Arbiter should remain on the computer after
+the USB is removed. It checks hardware, offers Local AI or rules-only mode, and
+uses the dependencies already on the drive. See `docs/WINDOWS-INSTALLER.md` in
+the source repository, or `INSTALLATION.md` on the portable drive, for the
+permanent-install behavior.
+
 This is a **sample-event demonstration**, not monitoring of the host computer.
 No firewall changes, response execution, service registration, or model downloads
 occur. The dashboard displays a sample-data banner. There is no mock fallback
@@ -81,5 +87,6 @@ Sources: [Python Windows distributions](https://www.python.org/downloads/windows
 
 - A clean Windows machine with no Python/Ollama installation and actual USB removal.
 - Hardware coverage beyond the development machine, including CPU-only performance.
-- A permanent installation EXE with hardware-driven model choices.
+- Installer validation through Windows SmartScreen/code signing and a clean
+  supported Windows machine.
 - Real event collectors, admin/password-management UI, and signed public releases.

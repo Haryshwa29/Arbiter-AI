@@ -64,7 +64,8 @@ def ask(question: str, default: bool = True, assume_yes: bool = False) -> bool:
 
 
 def write_config(layout: Layout, host: str, port: int, backend: str,
-                 model: str, events: str) -> None:
+                 model: str, events: str, ollama_executable: str = "",
+                 models_dir: str = "") -> None:
     cfg = configparser.ConfigParser()
     cfg["server"] = {"host": host, "port": str(port)}
     cfg["llm"] = {"backend": backend, "model": model}
@@ -74,6 +75,10 @@ def write_config(layout: Layout, host: str, port: int, backend: str,
         "audit_db": str(layout.audit_db),
         "iam_db": str(layout.iam_db),
         "events": events,
+    }
+    cfg["runtime"] = {
+        "ollama_executable": ollama_executable,
+        "models_dir": models_dir,
     }
     # Shadow mode on, response dry-run: the safe posture for a new install.
     # Nothing gets blocked until an operator has watched it for a while.
@@ -148,6 +153,28 @@ def build_install_plan(layout: Layout, args, archive: Path | None) -> tuple[Plan
         run=lambda: [d.mkdir(parents=True, exist_ok=True) for d in layout.dirs()],
     )
 
+    bundled_ollama = (Path(args.bundled_ollama_dir).resolve()
+                      if getattr(args, "bundled_ollama_dir", None) else None)
+    bundled_models = (Path(args.bundled_models_dir).resolve()
+                      if getattr(args, "bundled_models_dir", None) else None)
+    installed_ollama = ""
+    installed_models = ""
+    if bundled_ollama:
+        ollama_target = layout.runtime_dir / "ollama"
+        installed_ollama = str(ollama_target / "ollama.exe")
+        plan.add(
+            f"copy the bundled local-AI runtime to {ollama_target}",
+            run=lambda: shutil.copytree(bundled_ollama, ollama_target,
+                                        dirs_exist_ok=True),
+        )
+    if bundled_models:
+        installed_models = str(layout.models_dir)
+        plan.add(
+            f"copy the bundled model files to {layout.models_dir}",
+            run=lambda: shutil.copytree(bundled_models, layout.models_dir,
+                                        dirs_exist_ok=True),
+        )
+
     if archive:
         plan.add(
             f"copy {archive.name} -> {layout.pyz_path}",
@@ -171,7 +198,8 @@ def build_install_plan(layout: Layout, args, archive: Path | None) -> tuple[Plan
     plan.add(
         f"write configuration to {layout.config_path}",
         run=lambda: write_config(layout, args.host, args.port, args.backend,
-                                 args.model, events_path),
+                                 args.model, events_path, installed_ollama,
+                                 installed_models),
         skip_if=lambda: layout.config_path.exists() and not args.force,
     )
 
@@ -189,7 +217,7 @@ def build_install_plan(layout: Layout, args, archive: Path | None) -> tuple[Plan
         run=_admin,
     )
 
-    if args.backend == "ollama":
+    if args.backend == "ollama" and not bundled_models:
         plan.add(
             f"pull the local model {args.model!r} via Ollama "
             "(the only network call this installer makes)",
@@ -217,7 +245,26 @@ def cmd_install(args) -> int:
               file=sys.stderr)
         return 1
 
-    if args.backend == "ollama" and not preflight.ollama_present():
+    bundled_ollama = getattr(args, "bundled_ollama_dir", None)
+    bundled_models = getattr(args, "bundled_models_dir", None)
+    if bool(bundled_ollama) != bool(bundled_models):
+        print("Bundled installation requires both Ollama and model directories.",
+              file=sys.stderr)
+        return 1
+    if bundled_ollama:
+        executable = Path(bundled_ollama) / "ollama.exe"
+        if not executable.is_file() or not Path(bundled_models).is_dir():
+            print("Bundled Ollama or model files are incomplete.", file=sys.stderr)
+            return 1
+        try:
+            from ..portable import model_files
+            model_files(Path(bundled_models), args.model)
+        except (OSError, ValueError, KeyError) as exc:
+            print(f"Bundled model validation failed: {exc}", file=sys.stderr)
+            return 1
+
+    if (args.backend == "ollama" and not bundled_ollama
+            and not preflight.ollama_present()):
         print("Ollama is not installed. Arbiter will run on the mock backend\n"
               "(deterministic heuristics — fine for a demo, not for real triage).\n"
               "To install it later:")
@@ -362,6 +409,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--port", type=int, default=DEFAULT_PORT)
     p.add_argument("--backend", choices=["mock", "ollama"], default="ollama")
     p.add_argument("--model", default=DEFAULT_MODEL)
+    p.add_argument("--bundled-ollama-dir", default=None,
+                   help=argparse.SUPPRESS)
+    p.add_argument("--bundled-models-dir", default=None,
+                   help=argparse.SUPPRESS)
     p.add_argument("--events", default=None,
                    help="event source the dashboard feeder reads; defaults to "
                         "a copy of the bundled samples in the data directory")

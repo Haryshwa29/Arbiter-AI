@@ -117,6 +117,22 @@ weights they must trust. The model is the witness; Arbiter is the judge that doe
 take the testimony at its word. `respond.py` already states this: the model proposes,
 rules dispose.
 
+### Implementation checkpoint — 2026-09-11
+
+The first working Windows installer now ships as a small .NET Framework launcher
+with the PowerShell bootstrap embedded as a readable repository resource. This
+is not PyInstaller and does not replace the shared Python installer core. It was
+added because the USB runtime proved that pointing a scheduled task at the
+bootstrap machine's existing Python can leave a permanent installation dependent
+on removable media.
+
+The launcher currently presents the hardware result in its console and selects
+between the evaluated Qwen 3.5 4B path and rules-only mode. The React setup screen
+in Decision 5 remains the intended interface refinement; it is not required to
+validate copying, startup ownership, checksums, service registration, or the
+standalone GitHub download path. The installer smoke test covers those underlying
+paths first so the future screen will sit on tested behavior.
+
 ## Consequences
 
 **Easier:** no public infrastructure to operate, patch, or pay for; no shared demo state;

@@ -13,7 +13,7 @@
 # escalates `curl ... | sh` as an attack pattern, and we are not going to ask
 # you to do something we flag as malicious. Download, read, then run:
 #
-#   curl -fsSLO https://github.com/Haryshwa29/arbiter/releases/latest/download/install.sh
+#   curl -fsSLO https://github.com/Haryshwa29/Arbiter-AI/releases/latest/download/install.sh
 #   less install.sh
 #   sh install.sh
 #
@@ -23,7 +23,7 @@
 
 set -eu
 
-REPO="${ARBITER_REPO:-Haryshwa29/arbiter}"
+REPO="${ARBITER_REPO:-Haryshwa29/Arbiter-AI}"
 BASE="${ARBITER_BASE_URL:-https://github.com/$REPO/releases/latest/download}"
 WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT

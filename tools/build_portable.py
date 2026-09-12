@@ -89,12 +89,18 @@ def main():
             shutil.copy2(args.models_dir / "blobs" / entry["digest"].replace(":", "-"),
                          out / "licenses" / "Model-LICENSE")
     shutil.copy2(ROOT / "docs" / "PORTABLE.md", out / "README.md")
+    shutil.copy2(ROOT / "docs" / "WINDOWS-INSTALLER.md", out / "INSTALLATION.md")
     (out / "config" / "portable.json").write_text(json.dumps({"model": args.model}, indent=2), encoding="utf-8")
     compiler = Path(r"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe")
     for name, defines in (("Start Arbiter.exe", []), ("Stop Arbiter.exe", ["/define:STOP"])):
         subprocess.run([str(compiler), "/nologo", "/target:exe", "/platform:x64",
                         "/out:" + str(out / name), *defines,
                         str(ROOT / "packaging" / "PortableLauncher.cs")], check=True)
+    subprocess.run([
+        str(compiler), "/nologo", "/target:exe", "/platform:x64",
+        "/out:" + str(out / "Install Arbiter.exe"),
+        "/resource:" + str(ROOT / "packaging" / "install.ps1") + ",Arbiter.InstallScript",
+        str(ROOT / "packaging" / "WindowsSetupLauncher.cs")], check=True)
     (out / "BUILD.json").write_text(json.dumps({
         "model": args.model, "python_archive": args.python_zip.name,
         "python_sha256": args.python_sha256.lower(),

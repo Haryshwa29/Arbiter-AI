@@ -20,6 +20,7 @@ MIN_DISK_MB = 500
 # Rough floor for a 4B-parameter local model at q4; below this, MockBackend
 # or a smaller model is the honest recommendation.
 RECOMMENDED_RAM_GB = 8
+LOCAL_MODEL_DISK_GB = 8
 
 
 @dataclass
@@ -64,8 +65,15 @@ def port_free(host: str, port: int) -> bool:
         return s.connect_ex((host, port)) != 0
 
 
-def ollama_present() -> bool:
-    return shutil.which("ollama") is not None
+def ollama_present(executable: str | Path | None = None) -> bool:
+    return bool(Path(executable).is_file()) if executable else shutil.which("ollama") is not None
+
+
+def recommended_mode(ram_gb: float | None, free_gb: float | None) -> str:
+    """Return the safe default for the hardware, not a performance promise."""
+    if ram_gb is None or free_gb is None:
+        return "rules"
+    return "local" if ram_gb >= RECOMMENDED_RAM_GB and free_gb >= LOCAL_MODEL_DISK_GB else "rules"
 
 
 def run_checks(data_dir: Path, host: str, port: int) -> list[Check]:

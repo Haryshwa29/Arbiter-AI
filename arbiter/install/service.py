@@ -24,7 +24,7 @@ TASK_NAME = "Arbiter"
 UNIT_TEMPLATE = """\
 [Unit]
 Description=Arbiter — self-hosted AI security analyst
-Documentation=https://github.com/Haryshwa29/arbiter
+Documentation=https://github.com/Haryshwa29/Arbiter-AI
 After=network-online.target
 Wants=network-online.target
 
@@ -64,11 +64,18 @@ def serve_argv(layout: Layout, python: str, host: str, port: int,
     ]
 
 
+def installed_argv(layout: Layout, python: str) -> list[str]:
+    """Launch through the installed runtime so config and bundled Ollama
+    ownership are applied consistently after the source USB is removed."""
+    return [python, str(layout.pyz_path), "--service-run",
+            "--config", str(layout.config_path)]
+
+
 def unit_text(layout: Layout, python: str, host: str, port: int,
               events: str) -> str:
     # Derived from serve_argv so the unit and the Windows task can never
     # disagree about how Arbiter is launched.
-    exec_start = " ".join(serve_argv(layout, python, host, port, events))
+    exec_start = subprocess.list2cmdline(installed_argv(layout, python))
     return UNIT_TEMPLATE.format(
         exec_start=exec_start,
         data_dir=layout.data_dir, log_dir=layout.log_dir,
@@ -98,15 +105,18 @@ def install_service(layout: Layout, python: str, host: str, port: int,
                     events: str) -> str:
     """Register the service. Returns a sentence describing what happened."""
     if WINDOWS:
-        argv = serve_argv(layout, python, host, port, events)
-        quoted = " ".join(f'\\"{a}\\"' if " " in str(a) else str(a) for a in argv)
+        quoted = subprocess.list2cmdline(installed_argv(layout, python))
         cmd = ["schtasks", "/Create", "/F", "/TN", TASK_NAME,
                "/TR", quoted,
                "/SC", "ONSTART" if layout.scope == "system" else "ONLOGON"]
         if layout.scope == "system":
             cmd += ["/RU", "SYSTEM", "/RL", "HIGHEST"]
         subprocess.run(cmd, check=True, capture_output=True)
-        return f"scheduled task {TASK_NAME!r} created"
+        started = subprocess.run(["schtasks", "/Run", "/TN", TASK_NAME],
+                                 capture_output=True)
+        return (f"scheduled task {TASK_NAME!r} created and started"
+                if started.returncode == 0
+                else f"scheduled task {TASK_NAME!r} created; it starts at next logon")
 
     if not systemd_available():
         return ("systemd not available — start Arbiter manually with:\n      "

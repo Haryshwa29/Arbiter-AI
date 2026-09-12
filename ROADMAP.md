@@ -43,9 +43,12 @@ implemented and passes an automated relocated-folder test using bundled Python,
 bundled Ollama, and a bundled Qwen 4B model. It provides Start/Stop executables,
 keeps Arbiter-owned data in the portable folder, disables Ollama cloud features,
 labels the current JSONL feed as sample data, and completes real local inference.
-The milestone remains in progress until it is tested from physical portable
-storage on a clean supported Windows machine. Live host monitoring and the
-permanent hardware-guided installer remain subsequent work.
+The milestone remains in progress until it is tested on a clean supported
+Windows machine. Physical USB operation is validated. A permanent Windows
+installer now detects RAM/disk, offers Local AI (Qwen 3.5 4B) or rules-only
+mode, uses the USB payload offline, and has an automated installed-runtime
+smoke test. GitHub Release installation and actual startup-task behavior still
+need clean-machine validation. Live host monitoring remains subsequent work.
 
 Objective:
 

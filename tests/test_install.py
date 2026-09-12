@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from unittest.mock import patch
 from argparse import Namespace
 from pathlib import Path
 
-from arbiter.install import service
+from arbiter.install import preflight, service
 from arbiter.install.cli import build_install_plan, build_parser, write_config
 from arbiter.install.plan import Action, Plan, layout_for
 
@@ -21,7 +22,8 @@ from arbiter.install.plan import Action, Plan, layout_for
 def _args(**over):
     base = dict(host="127.0.0.1", port=8787, backend="mock", model="m",
                 events="", service=True, force=False, yes=True, dry_run=False,
-                scope="user", prefix=None, purge=False)
+                scope="user", prefix=None, purge=False,
+                bundled_ollama_dir=None, bundled_models_dir=None)
     base.update(over)
     return Namespace(**base)
 
@@ -89,6 +91,28 @@ class PlanTests(unittest.TestCase):
 
 
 class InstallPlanTests(unittest.TestCase):
+    def test_bundled_runtime_and_models_are_copied_inside_install_root(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            source_ollama = root / "source-ollama"
+            source_models = root / "source-models"
+            source_ollama.mkdir()
+            source_models.mkdir()
+            (source_ollama / "ollama.exe").write_bytes(b"runtime")
+            (source_models / "manifest").write_bytes(b"model")
+            lay = layout_for("user", root / "installed")
+            args = _args(service=False,
+                         bundled_ollama_dir=str(source_ollama),
+                         bundled_models_dir=str(source_models))
+            plan, _ = build_install_plan(lay, args, None)
+            plan.execute()
+            self.assertEqual((lay.runtime_dir / "ollama" / "ollama.exe").read_bytes(),
+                             b"runtime")
+            self.assertEqual((lay.models_dir / "manifest").read_bytes(), b"model")
+            config = lay.config_path.read_text(encoding="utf-8")
+            self.assertIn(str(lay.runtime_dir / "ollama" / "ollama.exe"), config)
+            self.assertIn(str(lay.models_dir), config)
+
     def test_install_is_idempotent_on_existing_config(self):
         with tempfile.TemporaryDirectory() as td:
             lay = layout_for("user", td)
@@ -143,6 +167,27 @@ class InstallPlanTests(unittest.TestCase):
 
 
 class ServiceTests(unittest.TestCase):
+    def test_windows_task_is_created_and_started_immediately(self):
+        with tempfile.TemporaryDirectory() as td:
+            lay = layout_for("user", td)
+            completed = type("Completed", (), {"returncode": 0})()
+            with patch.object(service, "WINDOWS", True), \
+                    patch.object(service.subprocess, "run", return_value=completed) as run:
+                result = service.install_service(lay, r"C:\Arbiter\python.exe",
+                                                 "127.0.0.1", 8787, "events.jsonl")
+            self.assertEqual(run.call_count, 2)
+            self.assertIn("/Create", run.call_args_list[0].args[0])
+            self.assertIn("/Run", run.call_args_list[1].args[0])
+            self.assertIn("created and started", result)
+
+    def test_installed_service_starts_from_installed_config(self):
+        with tempfile.TemporaryDirectory() as td:
+            lay = layout_for("user", td)
+            argv = service.installed_argv(lay, str(lay.runtime_dir / "python.exe"))
+            self.assertIn("--service-run", argv)
+            self.assertIn(str(lay.config_path), argv)
+            self.assertNotIn("E:\\", " ".join(argv))
+
     def test_serve_argv_uses_absolute_installed_paths(self):
         with tempfile.TemporaryDirectory() as td:
             lay = layout_for("user", td)
@@ -175,6 +220,14 @@ class ParserTests(unittest.TestCase):
         for mode in ("--install", "--upgrade", "--uninstall", "--status"):
             args = build_parser().parse_args([mode, "--dry-run"])
             self.assertTrue(args.dry_run)
+
+
+class HardwareRecommendationTests(unittest.TestCase):
+    def test_local_ai_requires_both_ram_and_disk(self):
+        self.assertEqual(preflight.recommended_mode(8, 8), "local")
+        self.assertEqual(preflight.recommended_mode(7.9, 100), "rules")
+        self.assertEqual(preflight.recommended_mode(64, 7.9), "rules")
+        self.assertEqual(preflight.recommended_mode(None, 100), "rules")
 
 
 if __name__ == "__main__":

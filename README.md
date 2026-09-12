@@ -51,15 +51,18 @@ The release now includes the dashboard and serves it from the same process
 as the API. Run `python dist/arbiter-0.1.0.pyz serve` and open the address
 printed in the terminal. First-run credentials are printed there too.
 The public-site build is rejected by the release builder. This package still
-requires Python; a bundled Windows runtime, local model and USB launchers
-are the next portability work, not included yet.
+requires Python when run directly; the Windows setup and portable bundle handle
+that dependency for the user.
 
 A first Windows portable demo can now be assembled separately with
 `tools/build_portable.py`. It includes the runtime and local model, with
-`Start Arbiter.exe` and `Stop Arbiter.exe`. See `docs/PORTABLE.md` for the
+`Start Arbiter.exe`, `Stop Arbiter.exe`, and `Install Arbiter.exe`. The installer
+checks the computer and offers a compatible permanent Local AI or rules-only
+installation; when run from the USB it needs no dependency download. See
+`docs/WINDOWS-INSTALLER.md` and `docs/PORTABLE.md` for the
 supported environment, build inputs, and remaining clean-machine validation.
-This is a sample-event demo; live host monitoring and the permanent installation
-EXE are separate upcoming milestones. Its 16 individually named, live-editable
+The portable mode is a sample-event demo; live host monitoring is a separate
+upcoming milestone. Its 16 individually named, live-editable
 scenarios are under `samples/demo_cases/Active`; the portable builder exposes
 them as `Demo Test Cases/Active` beside the launchers.
 

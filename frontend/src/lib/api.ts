@@ -32,6 +32,7 @@ export interface User {
   username: string;
   role: "analyst" | "admin";
   demo?: boolean;
+  backend?: "mock" | "ollama";
 }
 
 // Set by AuthProvider on mount. Fires when an authenticated request comes

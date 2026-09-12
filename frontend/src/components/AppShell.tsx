@@ -22,6 +22,11 @@ export function AppShell() {
           Sample event demonstration · Local AI analysis · This computer is not being monitored
         </div>
       )}
+      {!user?.demo && user?.backend === "mock" && (
+        <div role="status" className="shrink-0 bg-sky-950 px-4 py-2 text-center text-sm text-sky-200">
+          Rules-only installation · Local-model reasoning is not enabled
+        </div>
+      )}
       {/* Every view has the same failure mode when the backend is
           unreachable — one banner here beats each view inventing its own.
           Views still show their own retry inline (see Overview/Audit/Assets)
