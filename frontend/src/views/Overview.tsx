@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { getDay, getSummary } from "../lib/api";
-import type { DayBucket, SummaryResponse } from "../lib/api";
+import { getDay, getSummary, getRecords } from "../lib/api";
+import type { DayBucket, SummaryResponse, RecordRow } from "../lib/api";
+import { EventPanel } from "../components/EventPanel";
 import { StatTile } from "../components/StatTile";
 import { VolumeChart } from "../components/VolumeChart";
 import { ErrorNotice } from "../components/ErrorNotice";
@@ -12,6 +13,8 @@ const WINDOWS = [
 ];
 
 export function Overview() {
+  const [recent, setRecent] = useState<RecordRow[]>([]);
+  const [eventId, setEventId] = useState<string | null>(null);
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
   const [summaryError, setSummaryError] = useState(false);
   const [buckets, setBuckets] = useState<DayBucket[]>([]);
@@ -37,7 +40,10 @@ export function Overview() {
       .finally(() => setLoading(false));
   }, [hours]);
 
-  useEffect(loadSummary, [loadSummary]);
+  useEffect(() => {
+    const refresh = () => {loadSummary(); void getRecords({limit: 10}).then(r => setRecent(r.rows)).catch(() => {});};
+    refresh(); const timer = setInterval(refresh, 3000); return () => clearInterval(timer);
+  }, [loadSummary]);
   useEffect(loadDay, [loadDay]);
 
   const prefilterShare =
@@ -83,6 +89,8 @@ export function Overview() {
         </>
       )}
 
+      {eventId && <EventPanel id={eventId} onClose={() => setEventId(null)} />}
+      <section><h2 className="mb-3 text-sm">Recent device detections</h2><p className="mb-3 text-xs text-neutral-400">Detection decisions; no protective actions have been executed.</p>{recent.map(row => <button key={row.id} className="mb-2 block w-full rounded border border-neutral-700 p-3 text-left text-sm" onClick={() => setEventId(row.event_id)}>{row.decision === "escalate" ? "Alert" : "Observation"} · {row.host} · {row.signature}<span className="block text-xs text-neutral-400">{row.rationale}</span></button>)}</section>
       <section>
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-xs font-medium uppercase tracking-wide text-neutral-500">Volume</h2>

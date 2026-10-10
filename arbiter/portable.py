@@ -24,6 +24,9 @@ from .iam import IAM, load_or_create_secret
 from .memory import Memory
 from .store import AuditStore
 from .install.preflight import _total_ram_gb
+from .ingestion.demo import DemoManager
+from .ingestion.protection import Protection
+from .ingestion.service import IngestionService, ingestion_path
 
 
 def model_files(root: Path, model: str) -> list[tuple[Path, str, int]]:
@@ -172,7 +175,7 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
     request = data / "stop.request"
     request.unlink(missing_ok=True)
     threads = []
-    httpd = store = iam = memory = job = process = log = None
+    httpd = store = iam = memory = job = process = log = ingestion = simulator = None
     try:
         logs = root / "logs"; logs.mkdir(exist_ok=True)
         log = (logs / "ollama.log").open("ab")
@@ -207,21 +210,25 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
             iam.create_user("admin", password, "admin")
             print(f"First sign-in: admin\nPassword: {password}\nKeep this password for the next launch.", flush=True)
         memory = Memory(data / "arbiter_memory.db")
-        seed_demo_memory(memory)
-        ctx = Ctx(store, iam, memory, Hub(), demo=True, backend="ollama",
+        ctx = Ctx(store, iam, memory, Hub(), demo=False, backend="ollama",
                   shutdown=stop.set)
+        ingestion = IngestionService(ingestion_path(data / "arbiter_audit.db"), memory, store,
+                                     "ollama", model, url)
+        simulator = DemoManager("ollama", model, url)
+        ctx.simulator = simulator
+        ctx.protection = Protection(ingestion.buffer, store)
+        ctx.ingestion = ingestion
+        ingestion.start()
         httpd = build_httpd(ctx, "127.0.0.1", 0)
         for target, args in (
             (httpd.serve_forever, ()),
             (tail_poller, (ctx, 1.0, stop)),
-            (demo_feed_loop, (ctx, memory, str(root / "Demo Test Cases" / "Active"),
-                              "ollama", model, 3.0, stop, url, True)),
         ):
             thread = threading.Thread(target=target, args=args, daemon=True)
             thread.start(); threads.append(thread)
         address = f"http://127.0.0.1:{httpd.server_port}"
         (data / "session.json").write_text(json.dumps({"url": address, "model": model}), encoding="utf-8")
-        print(f"SAMPLE EVENTS ONLY - this computer is not monitored.\n"
+        print(f"Live sources collect after you enable them. Start simulations in Demo & Replay.\n"
               f"Live cases: {root / 'Demo Test Cases' / 'Active'}\n"
               f"Dashboard: {address}\n"
               "Use Sign out & shut down in the dashboard when finished.\n"
@@ -240,6 +247,10 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
             httpd.shutdown(); httpd.server_close()
         for thread in threads:
             thread.join(timeout=125)
+        if simulator:
+            simulator.close()
+        if ingestion:
+            ingestion.stop()
         if job:
             job.close()
         if process:

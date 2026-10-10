@@ -4,7 +4,34 @@
 
 A self-hosted AI security analyst for companies with no security team. Events in → cheap pre-filter → local LLM on ambiguous alerts → verdict with evidence or a written rationale → audit trail. Nothing in that path calls the cloud. See `CONCEPT.md` for the full product vision and `docs/ARCHITECTURE.md` for how the pieces fit.
 
-**Status: pre-release.** The triage brain, the response actuator, the audit store, built-in IAM, a JSON API and the installer all work and are covered by tests. Still missing: a real collector (events are replayed from JSONL today) and the dashboard views on top of the API.
+**Status: pre-release.** The existing deterministic/local-AI brain, guardrails,
+audit/IAM stores, installer and dashboard now have a shared live and replay
+ingestion pipeline. Windows Events, Sysmon, osquery, Suricata EVE, private UDP
+syslog and optional AWS CloudTrail/GuardDuty collectors are implemented. Azure,
+GCP, Zeek and additional AWS transports are explicitly Coming Soon. Real AWS
+account validation and production-scale delivery remain future validation work.
+
+## Live telemetry and Demo & Replay
+
+Sign in as administrator and open **Data Sources → Add Data Source**. Enable
+Windows Events to begin reading Security/System/Application logs (subject to
+log-read permissions), or connect an installed Sysmon/osquery/network source.
+A fresh installation has no live sources enabled. **Live Events** shows incoming
+records, including routine observations, with normalized/raw data, written
+analysis and related-event links. Events are not automatically alerts.
+
+**Demo & Replay** preserves existing samples and named cases: upload JSON,
+JSONL or CSV, or select a prepared dataset. Preview valid/invalid counts before
+ingestion; analyze immediately or replay at original/1x/2x/5x/10x timing.
+Uploads and collectors normalize to the same versioned schema, durable SQLite
+buffer and existing analysis engine. The local model handles ambiguous activity,
+not every passive telemetry record. No ingestion path executes remediation.
+
+Start with [the safe Windows lab guide](docs/LIVE_LAB.md),
+[connector setup](docs/CONNECTORS.md), [AWS setup and permissions](docs/CLOUD_INTEGRATION.md),
+[ingestion architecture and limits](docs/INGESTION_ARCHITECTURE.md), and
+[adding a connector](docs/ADDING_A_CONNECTOR.md). The core remains stdlib-only;
+AWS uses the optional `python -m pip install -e ".[aws]"` SDK dependency.
 
 ## Install it
 
@@ -137,14 +164,20 @@ python -m arbiter eval samples/adversarial_suite.jsonl --backend mock --no-guard
 
 ## API and dashboard
 
-`arbiter/api/server.py` is a thin JSON API over the audit store, IAM and memory layers — stdlib `http.server`, session cookie plus CSRF double-submit, security headers, and an SSE stream that fans out new audit rows as they land. It never talks to the triage engine directly, so it doesn't care whether a real collector or `arbiter run` wrote the row.
+`arbiter/api/server.py` retains the thin authenticated JSON/SSE API over audit,
+IAM and memory. Its ingestion endpoints configure collectors or enqueue data;
+the separate ingestion worker owns triage. Existing verdict routes and SSE stay
+compatible. New Live Events reads normalized telemetry independently of alerts.
 
 ```bash
 python -m arbiter serve                       # http://127.0.0.1:8000
 python -m arbiter serve --demo-feed --events samples/realistic_suite.jsonl
 ```
 
-`--demo-feed` is development-only and off by default: it replays events through the triage engine on a timer so the dashboard has something to show before a collector is wired up. It accepts either sample shape — bare events (`samples/events.jsonl`) or labelled eval cases (`samples/realistic_suite.jsonl` and the other suites). The installed service never passes it. Neither does it pass `--dev-accounts`, which resets passwords to known weak values and prints a warning saying so.
+`--demo-feed` is development-only and off by default: it queues samples through
+the same ingestion worker as live telemetry. It accepts bare Events, labelled
+eval cases and the editable named case folder. The installed service never
+passes it or `--dev-accounts` (the explicit known-weak local account reset flag).
 
 Add `--backend ollama` if you want the feed to look like a real deployment. On the default mock backend the feed escalates almost everything: the mock has no judgement, so no signature ever accumulates the benign history the prefilter needs before it will suppress, and the escalations feed back into the history that would have earned suppression.
 
@@ -154,7 +187,8 @@ The React frontend (`frontend/`, Vite + TypeScript + Tailwind) is partly built �
 
 1. Dashboard views against the JSON API.
 2. Answer "minimum viable local model" with a labeled eval run on real hardware — the biggest open question.
-3. Wrap a real collector (Vector/Wazuh decision) emitting the `Event` schema.
+3. Validate the live collectors in the lab and a read-only AWS account; expand
+   future adapters through the shared ingestion contract.
 4. Event-triggered micro-rescans when unknown assets appear.
 
 ## Security
@@ -164,3 +198,13 @@ Found a vulnerability? Please don't open a public issue — see [`SECURITY.md`](
 ## License
 
 [GNU Affero General Public License v3.0 or later](LICENSE). You may run, study, modify and redistribute Arbiter; if you distribute a modified version, or run one as a network service, you must make your changes available under the same terms.
+
+### Device monitoring and isolated demos
+
+The dashboard now connects incoming records and verdicts through clickable
+event details. Demo & Replay opens its own paced simulation workspace, with
+multi-selection, random mixing, playback controls and simulated responses.
+Real monitoring history and counts exclude demos. Permission setup, installed
+local AI model discovery, and approved temporary Windows IP blocking are
+available; automatic protection remains disabled. See
+[the current behavior and limits](docs/DEVICE_MONITORING_AND_DEMO.md).

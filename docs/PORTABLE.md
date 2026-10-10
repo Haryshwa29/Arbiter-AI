@@ -15,7 +15,10 @@ uses the dependencies already on the drive. See `docs/WINDOWS-INSTALLER.md` in
 the source repository, or `INSTALLATION.md` on the portable drive, for the
 permanent-install behavior.
 
-This is a **sample-event demonstration**, not monitoring of the host computer.
+Sample-event replay starts by default. Live monitoring starts only after an
+administrator enables Windows/Sysmon/osquery/network sources in **Data Sources**.
+Both use the shared ingestion queue. See [LIVE_LAB.md](LIVE_LAB.md) for expected
+telemetry and source setup; no privileged software is installed automatically.
 No firewall changes, response execution, service registration, or model downloads
 occur. The dashboard displays a sample-data banner. There is no mock fallback
 if local AI is unavailable.
@@ -89,4 +92,6 @@ Sources: [Python Windows distributions](https://www.python.org/downloads/windows
 - Hardware coverage beyond the development machine, including CPU-only performance.
 - Installer validation through Windows SmartScreen/code signing and a clean
   supported Windows machine.
-- Real event collectors, admin/password-management UI, and signed public releases.
+- Clean-machine validation of opt-in live collection, admin/password-management
+  UI, and signed public releases. Optional AWS SDK deployment requires a reviewed
+  source/venv runtime; it is not bundled in the embedded portable Python.

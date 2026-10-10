@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEstate } from "../lib/api";
+import { getEstate, getInventory } from "../lib/api";
 import type { Asset, EnvironmentFact } from "../lib/api";
 import { ErrorNotice } from "../components/ErrorNotice";
 
@@ -27,6 +27,8 @@ export function Assets() {
   const [facts, setFacts] = useState<EnvironmentFact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [inventory, setInventory] = useState<Awaited<ReturnType<typeof getInventory>>["assets"]>([]);
+  const [inventoryError, setInventoryError] = useState(false);
 
   function load() {
     setLoading(true);
@@ -38,6 +40,7 @@ export function Assets() {
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
+    getInventory().then(r => {setInventory(r.assets); setInventoryError(false);}).catch(() => setInventoryError(true));
   }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,6 +139,10 @@ export function Assets() {
             ))}
           </div>
         )}
+      </section>
+      <section>
+        <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-400">Observed asset context</h2>
+        {inventoryError ? <p className="text-sm text-amber-300">Could not load observed inventory.</p> : !inventory.length ? <p className="text-sm text-neutral-400">No telemetry assets observed yet. Enable a source or upload a dataset.</p> : inventory.map(asset => <details key={asset.asset_id} className="mb-3 rounded-lg border border-neutral-800 p-4"><summary className="cursor-pointer text-sm">{asset.host} · last seen {new Date(asset.last_seen).toLocaleString()}</summary><p className="mt-2 text-xs text-neutral-400">Observed inventory supplements administrator-curated criticality above.</p><pre className="mt-3 max-h-80 overflow-auto text-xs text-neutral-300">{JSON.stringify(asset.context, null, 2)}</pre></details>)}
       </section>
     </div>
   );

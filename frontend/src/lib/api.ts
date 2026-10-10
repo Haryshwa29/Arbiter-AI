@@ -73,6 +73,7 @@ interface RequestOptions {
   // normal outcome (not logged in / bad credentials) — they must not
   // trigger the global session-expiry redirect.
   skipAuthRedirect?: boolean;
+  timeoutMs?: number;
 }
 
 /**
@@ -105,7 +106,7 @@ async function rawFetch(path: string, opts: RequestOptions): Promise<Response> {
       headers,
       body,
       credentials: "same-origin",
-      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? REQUEST_TIMEOUT_MS),
     });
   } catch (e) {
     // The timeout firing and a genuine network failure both land here as a
@@ -264,6 +265,7 @@ export function parseDetail(row: RecordRow): EventDetail | null {
 }
 
 export interface RecordFilters {
+  event_id?: string;
   decision?: Decision;
   host?: string;
   tier?: Tier;
@@ -273,6 +275,7 @@ export interface RecordFilters {
 
 export async function getRecords(filters: RecordFilters = {}): Promise<{ rows: RecordRow[] }> {
   const params = new URLSearchParams();
+  if (filters.event_id) params.set("event_id", filters.event_id);
   if (filters.decision) params.set("decision", filters.decision);
   if (filters.host) params.set("host", filters.host);
   if (filters.tier) params.set("tier", filters.tier);
@@ -335,4 +338,72 @@ export interface StreamRow {
   score: number;
   tier: Tier;
   rationale: string;
+  event_id: string;
 }
+
+// -- common telemetry ingestion ------------------------------------------
+export interface Connector {
+  name: string; label: string; category: string; status: string;
+  enabled: boolean; implemented: boolean; description: string;
+  configuration: Record<string, unknown>;
+  events_received: number; events_per_minute: number | null;
+  last_event_received: string | null; errors: number; error: string;
+}
+export interface IngestionStatus {
+  device: string; backend: string; model: string; elevated: boolean; protection_enabled: boolean; coverage: string; can_request_permission: boolean;
+  connectors: Connector[];
+  metrics: Record<string, number>;
+  worker_alive: boolean;
+}
+export interface TelemetryEvent {
+  event_id: string; timestamp: string; received_at: string; source_type: string;
+  hostname: string; event_type: string; event_category: string; severity: number;
+  message: string; username: string; raw_event: unknown;
+  metadata: Record<string, unknown>; [key: string]: unknown;
+}
+export interface ProtectionAction {id: string; status: string; target: string; expires_at: string; actor: string;}
+export interface TelemetryRow {
+  protection_proposal?: {kind: string; target: string; minutes: number; reason: string; status: string} | null;
+  protection_actions?: ProtectionAction[];
+  id: number; event_id: string; event: TelemetryEvent; state: string; error: string;
+  related: string[]; analysis: {
+    decision: Decision; tier: Tier; score: number; rationale: string;
+    evidence: string; kind: "alert" | "observation"; correlation?: unknown; incident_id?: string;
+    responses?: {status: string; kind: string; target: string; reason: string}[];
+  } | null;
+}
+export interface ImportSummary {
+  filename: string; detected_format: string; number_of_events: number;
+  valid_events: number; invalid_events: number; import_status: string;
+  accepted_events: number; errors: string[];
+}
+export const getIngestionStatus = () => apiFetch<IngestionStatus>("/api/ingestion/status");
+export const configureConnector = (name: string, enabled: boolean, configuration: Record<string, unknown>) =>
+  apiFetch("/api/ingestion/configure", {method: "POST", body: {name, enabled, configuration}, timeoutMs: 40_000});
+export const getEvents = (filters: Record<string, string> = {}) =>
+  apiFetch<{events: TelemetryRow[]}>(`/api/events?${new URLSearchParams({scope: "live", ...filters})}`);
+export const getEvent = (id: string, demo = false) => apiFetch<TelemetryRow>(`${demo ? "/api/demo/event" : "/api/event"}?id=${encodeURIComponent(id)}`);
+export const getDatasets = () => apiFetch<{datasets: string[]}>("/api/datasets");
+export const importDataset = (body: Record<string, unknown>, prepared = false) =>
+  apiFetch<ImportSummary>(prepared ? "/api/ingestion/dataset" : "/api/ingestion/import", {method: "POST", body});
+export const getInventory = () => apiFetch<{assets: {asset_id: string; host: string; last_seen: string; context: Record<string, unknown>}[]}>("/api/ingestion/assets");
+
+export interface DemoStatus {
+  session_id?: string; state: string; total: number; delivered: number; completed: number;
+  interval_seconds?: number; error?: string; events: TelemetryRow[];
+}
+export const getDemo = () => apiFetch<DemoStatus>("/api/demo/status");
+export const startDemo = (body: Record<string, unknown>) => apiFetch<DemoStatus>("/api/demo/start", {method: "POST", body, timeoutMs: 30_000});
+export const controlDemo = (action: string) => apiFetch<DemoStatus>("/api/demo/control", {method: "POST", body: {action}});
+
+export const requestPermissions = () => apiFetch<{status: string}>("/api/permissions/request", {method: "POST", body: {}, timeoutMs: 65_000});
+
+export const approveProtection = (event_id: string) => apiFetch("/api/protection/approve", {method: "POST", body: {event_id}, timeoutMs: 40_000});
+export const undoProtection = (action_id: string) => apiFetch("/api/protection/undo", {method: "POST", body: {action_id}, timeoutMs: 40_000});
+
+export const getModels = () => apiFetch<{available: boolean; models: string[]}>("/api/models");
+export const connectModel = (model: string) => apiFetch("/api/models/connect", {method: "POST", body: {model}, timeoutMs: 140_000});
+
+export const previewDemo = (body: Record<string, unknown>) => apiFetch<{files: ImportSummary[]}>("/api/demo/preview", {method: "POST", body});
+
+export const getDemoHistory = (offset = 0, filters: Record<string, string> = {}) => apiFetch<{events: TelemetryRow[]; total?: number}>(`/api/demo/history?${new URLSearchParams({...filters, offset: String(offset)})}`);

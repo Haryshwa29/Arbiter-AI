@@ -4,6 +4,24 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 10 iteration: isolated paced DemoManager, shared clickable EventPanel,
+recent-feed recovery, explicit packaged UAC setup, persisted local model selection,
+and approved reversible Windows IP blocks. See docs/DEVICE_MONITORING_AND_DEMO.md.
+No ingestion path executes generic response command strings. Protection is manual
+approval only; demos cannot act on the real device.
+
+Live ingestion iteration (2026-10-09): `arbiter/ingestion` now provides the
+SecurityEvent v1.0 adapter, durable bounded queue, shared worker, source registry,
+Windows/Sysmon/osquery/Suricata/private UDP syslog and optional AWS readers.
+Source, installed and portable runtimes own this lifecycle. Data Sources, Live
+Events and Demo & Replay are authenticated React views. Existing Event, brain,
+guardrails, verdict routes, feedback and response boundaries stay compatible.
+See `docs/INGESTION_ARCHITECTURE.md` for actual support and MVP limitations;
+Coming Soon sources have no transport. AWS API retrieval is an explicit opt-in
+exception authorized for this iteration; the triage path still uses local AI.
+Only explicitly approved typed firewall operations invoke an actuator. Refer to code and tests rather
+than older "future collector" descriptions below.
+
 First vertical slice of the triage engine (Python, stdlib-only):
 
 - `arbiter/schema.py` — Event/Verdict data contract. **This is the stable boundary a future Go collector agent must honor. Do not change it casually; keep it dependency-free.**

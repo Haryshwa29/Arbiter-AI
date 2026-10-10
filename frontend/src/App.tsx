@@ -5,9 +5,11 @@ import { DASH_BASE, PUBLIC_LANDING } from "./lib/routing";
 import { Login } from "./views/Login";
 import { AppShell } from "./components/AppShell";
 import { Overview } from "./views/Overview";
-import { LiveFeed } from "./views/LiveFeed";
 import { Audit } from "./views/Audit";
 import { Assets } from "./views/Assets";
+import { DataSources } from "./views/DataSources";
+import { LiveEvents } from "./views/LiveEvents";
+import { DemoReplay } from "./views/DemoReplay";
 import { Site } from "./site/Site";
 
 function Loading() {
@@ -83,9 +85,12 @@ function Dashboard() {
             }
           >
             <Route path="overview" element={<Overview />} />
-            <Route path="live" element={<LiveFeed />} />
+            <Route path="live" element={<LiveEvents />} />
             <Route path="audit" element={<Audit />} />
             <Route path="assets" element={<Assets />} />
+            <Route path="sources" element={<DataSources />} />
+            <Route path="events" element={<Navigate to={`${DASH_BASE}/live`} replace />} />
+            <Route path="replay" element={<DemoReplay />} />
             <Route index element={<Navigate to={`${DASH_BASE}/overview`} replace />} />
             <Route path="*" element={<Navigate to={`${DASH_BASE}/overview`} replace />} />
           </Route>

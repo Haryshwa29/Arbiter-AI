@@ -58,9 +58,10 @@ class AuditStore:
                 (datetime.now(timezone.utc).isoformat(), "iam", actor, action, detail))
             self.conn.commit()
 
-    def query(self, decision=None, host=None, tier=None, limit=100, offset=0):
+    def query(self, decision=None, host=None, tier=None, limit=100, offset=0, event_id=None):
         sql = "SELECT * FROM audit WHERE kind='verdict'"
         args = []
+        if event_id: sql += " AND event_id=?"; args.append(event_id)
         if decision: sql += " AND decision=?"; args.append(decision)
         if host: sql += " AND host=?"; args.append(host)
         if tier: sql += " AND tier=?"; args.append(tier)
@@ -88,6 +89,14 @@ class AuditStore:
         with self._lock:
             row = self.conn.execute("SELECT COALESCE(MAX(id), 0) FROM audit").fetchone()
         return row[0]
+
+    def verdict_for_event(self, event_id):
+        """Recovery lookup for the ingestion worker; legacy rows stay valid."""
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT * FROM audit WHERE kind='verdict' AND event_id=? ORDER BY id DESC LIMIT 1",
+                (event_id,)).fetchone()
+        return dict(row) if row else None
 
     def rows_since(self, last_id, limit=200):
         with self._lock:

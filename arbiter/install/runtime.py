@@ -67,7 +67,8 @@ def run(config_path: Path) -> None:
 
         serve(host=host, port=port, store_db=paths["audit_db"],
               iam_db=paths["iam_db"], mem_db=paths["memory_db"],
-              events=paths.get("events", ""), backend=backend, model=model)
+              events=paths.get("events", ""), backend=backend, model=model,
+              ollama_url=ollama_url)
     finally:
         if job:
             job.close()

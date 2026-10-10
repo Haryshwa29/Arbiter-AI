@@ -309,6 +309,28 @@ Do not delay deployment for marginal improvements unless they materially affect:
 
 # Decision Proposal Format
 
+## D020 — Unified opt-in telemetry ingestion
+
+STATUS: ACCEPTED (user-requested iteration)
+
+CONTEXT: Manual demo events must coexist with real machine/network/cloud data.
+
+DECISION: Collectors and files normalize to SecurityEvent v1.0, queue durably,
+then adapt to the existing Event/triage/guardrail contract. Routine observations
+are retained separately from alerts. Opt-in AWS readers may contact AWS to
+retrieve the organization's own telemetry; inference remains local. Vendor
+secrets stay outside connector configuration. Deferred sources are labelled.
+
+REASON: Real telemetry requires buffering and source adapters without replacing
+the working brain or exposing every record to a model.
+
+CONSEQUENCES: A separate ingestion DB is additive. No implicit collection on a
+fresh install; no automatic response. The existing local-inference invariant is
+preserved. Multi-worker/exactly-once delivery and authenticated syslog TLS remain
+future work. AWS SDK is optional rather than bundled into the stdlib-only zipapp.
+
+DATE: 2026-10-09
+
 Future decisions should be recorded as:
 
 ```

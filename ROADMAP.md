@@ -104,6 +104,15 @@ Success criteria:
 
 # PHASE 2 — EVENT COLLECTION
 
+IMPLEMENTATION STATUS (2026-10-09): Shared versioned normalization and SQLite
+queue now support live Windows/Sysmon, osquery inventory, EVE file tailing,
+private UDP syslog and optional CloudTrail/GuardDuty polling, plus preserved
+demo/file/replay ingestion. Data Sources and Live Events show source health,
+observations and alerts independently. Correlation and observed asset context
+are MVP foundations. AWS is fixture/API-contract tested; actual account
+validation remains outstanding. Zeek/Azure/GCP/additional AWS transports remain
+explicit Coming Soon scaffolding. See the ingestion guides for operational limits.
+
 Objective:
 
 Reduce dependence on manually supplied test events.

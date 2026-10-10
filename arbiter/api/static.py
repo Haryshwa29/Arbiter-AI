@@ -30,7 +30,7 @@ def dashboard_resource(path, root=None):
     if any(part.startswith(".") for part in parts if part):
         return None
     # Explicit client routes only: unknown files must not become index.html.
-    routes = {"", "login", "overview", "live", "audit", "assets"}
+    routes = {"", "login", "overview", "live", "audit", "assets", "sources", "events", "replay"}
     if path.strip("/") in routes:
         parts = ["index.html"]
     resource = root.joinpath(*parts)

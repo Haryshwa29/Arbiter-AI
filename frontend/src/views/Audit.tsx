@@ -8,11 +8,13 @@ import {
 } from "../lib/api";
 import type { Decision, RecordRow, Tier } from "../lib/api";
 import { DECISION_STYLE, TIER_STYLE, formatTime } from "../lib/theme";
+import { EventPanel } from "../components/EventPanel";
 import { ErrorNotice } from "../components/ErrorNotice";
 
 const PAGE_SIZE = 25;
 
 export function Audit() {
+  const [eventId, setEventId] = useState<string | null>(null);
   const [rows, setRows] = useState<RecordRow[]>([]);
   const [hosts, setHosts] = useState<string[]>([]);
   const [decision, setDecision] = useState<Decision | "">("");
@@ -64,6 +66,7 @@ export function Audit() {
         <p className="mt-1 text-sm text-neutral-500">Every verdict, filterable and reviewable.</p>
       </div>
 
+      {eventId && <EventPanel id={eventId} onClose={() => setEventId(null)} />}
       <div className="flex flex-wrap items-center gap-3">
         <select
           value={decision}
@@ -148,6 +151,7 @@ export function Audit() {
 
                 {isOpen && (
                   <div className="border-t border-neutral-200 px-4 py-3 text-sm dark:border-neutral-800">
+                    <button className="mb-3 text-sky-300 underline" onClick={() => setEventId(row.event_id)}>Inspect original event · {row.event_id}</button>
                     <p className="text-xs text-neutral-500">Signature</p>
                     <p className="mb-2 break-all text-neutral-700 dark:text-neutral-300">{row.signature}</p>
 

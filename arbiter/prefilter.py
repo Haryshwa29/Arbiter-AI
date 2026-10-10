@@ -56,6 +56,13 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
     history = memory.history(event.signature)
     criticality = memory.asset_criticality(event.host)
 
+    # Normalized telemetry includes passive context that is not an alert.
+    # Guardrails run BEFORE this prefilter in TriageEngine. Legacy demo events
+    # have no provenance marker and retain their original history policy.
+    if routine_telemetry(event):
+        return PrefilterResult(Decision.SUPPRESS, score,
+            "Routine telemetry observation: no detection or correlation signal; retained in Live Events")
+
     if score >= ESCALATE_AT:
         return PrefilterResult(
             Decision.ESCALATE, score,
@@ -82,3 +89,28 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
         f"score {score:.1f} in ambiguous band or insufficient history "
         f"({history.total} prior verdicts) — deferring to LLM tier",
     )
+
+
+def routine_telemetry(event: Event) -> bool:
+    provenance = event.fields.get("_telemetry")
+    if not isinstance(provenance, dict) or event.fields.get("correlation") or event.severity > 2:
+        return False
+    source = provenance.get("source")
+    kind = event.event_type
+    if source == "osquery" and kind == "asset_snapshot":
+        return True
+    if source == "cloudtrail" and kind == "cloud_read":
+        return True
+    if source == "suricata" and kind in {"dns", "http", "tls", "flow", "fileinfo"}:
+        return True
+    if source == "syslog" and kind == "syslog_message" and event.severity <= 1:
+        return True
+    if source in {"windows", "sysmon"} and kind in {"auth_success", "auth_failure", "logout", "dns_query", "network_connection", "file_create", "image_load", "system_log"}:
+        return True
+    if source in {"windows", "sysmon"} and kind == "process_exec":
+        # Only unadorned standard shell launches. Other process executions need
+        # context, and dangerous shell switches are caught by guardrails first.
+        process = str(event.fields.get("process_name", "")).lower().replace("/", "\\")
+        command = str(event.fields.get("command_line", "")).strip().strip('"').lower()
+        return process in {r"c:\windows\system32\cmd.exe", r"c:\windows\system32\windowspowershell\v1.0\powershell.exe"} and command in {"", process, "cmd.exe", "powershell.exe"}
+    return False

@@ -7,7 +7,9 @@ import { DASH_BASE } from "../lib/routing";
 // layout-route context.
 const NAV_ITEMS = [
   { to: `${DASH_BASE}/overview`, label: "Overview" },
-  { to: `${DASH_BASE}/live`, label: "Live feed" },
+  { to: `${DASH_BASE}/sources`, label: "Data Sources" },
+  { to: `${DASH_BASE}/live`, label: "Live" },
+  { to: `${DASH_BASE}/replay`, label: "Demo & Replay" },
   { to: `${DASH_BASE}/audit`, label: "Verdicts & audit" },
   { to: `${DASH_BASE}/assets`, label: "Assets & facts" },
 ];
@@ -19,12 +21,12 @@ export function AppShell() {
     <div className="flex h-full flex-col">
       {user?.demo && (
         <div role="status" className="shrink-0 bg-amber-950 px-4 py-2 text-center text-sm text-amber-200">
-          Sample event demonstration · Local AI analysis · This computer is not being monitored
+          Sample replay active · Live sources collect only after you enable them in Data Sources
         </div>
       )}
       {!user?.demo && user?.backend === "mock" && (
         <div role="status" className="shrink-0 bg-sky-950 px-4 py-2 text-center text-sm text-sky-200">
-          Rules-only installation · Local-model reasoning is not enabled
+          Test analysis backend · Local AI is not connected · Protective actions require explicit approval
         </div>
       )}
       {/* Every view has the same failure mode when the backend is

@@ -20,6 +20,11 @@ jobs:
       - name: Unit tests
         run: python -m unittest discover -s tests -v
 
+      - name: Pytest compatibility checks
+        run: |
+          python -m pip install pytest
+          python -m pytest -q
+
       - name: End-to-end smoke (mock backend)
         run: |
           python -m arbiter --db /tmp/arbiter.db seed
@@ -73,3 +78,17 @@ jobs:
             echo "::error::forbidden positioning copy found in the built site"
             exit 1
           fi
+
+  aws-fixtures:
+    runs-on: ubuntu-latest
+    env:
+      AWS_EC2_METADATA_DISABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install optional SDK for mocked contract tests
+        run: python -m pip install -e '.[aws]'
+      - name: No-credential AWS fixture tests
+        run: python -m unittest tests.test_aws_sdk tests.test_ingestion -v

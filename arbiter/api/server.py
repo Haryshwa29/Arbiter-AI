@@ -32,6 +32,8 @@ import hmac
 import json
 import queue
 import secrets
+import ipaddress
+import sys
 import threading
 from dataclasses import dataclass, replace
 from http.cookies import SimpleCookie
@@ -44,6 +46,14 @@ from ..iam import IAM, SESSION_TTL, load_or_create_secret
 from ..memory import Memory
 from ..store import AuditStore
 from .static import CSP, dashboard_resource
+from ..ingestion.schema import safe_json
+from ..ingestion.service import IngestionService, ingestion_path
+from ..ingestion.store import BufferFull
+from ..ingestion.demo import DemoManager
+from ..ingestion.files import parse_upload
+from ..ingestion.permissions import request_elevation
+from ..ingestion.protection import Protection
+from ..ingestion.models import available_models
 
 SESSION_COOKIE = "arb_session"
 CSRF_COOKIE = "arb_csrf"
@@ -66,6 +76,10 @@ class Ctx:
     demo: bool = False
     backend: str = "mock"
     shutdown: Callable[[], None] | None = None
+    ingestion: IngestionService | None = None
+    simulator: DemoManager | None = None
+    elevate: Callable[[], None] | None = None
+    protection: Protection | None = None
 
 
 class Hub:
@@ -107,7 +121,7 @@ def require_admin(user: dict | None) -> bool:
 
 
 def _row_msg(row: dict) -> dict:
-    return {"id": row["id"], "ts": row["ts"], "host": row["host"],
+    return {"id": row["id"], "event_id": row["event_id"], "ts": row["ts"], "host": row["host"],
             "signature": row["signature"], "decision": row["decision"],
             "score": row["score"], "tier": row["tier"],
             "rationale": row.get("rationale", "")}
@@ -129,8 +143,9 @@ def tail_poller(ctx: Ctx, interval: float = 1.0,
         stop.wait(interval)
 
 
-def start_tail_poller(ctx: Ctx, interval: float = 1.0) -> threading.Thread:
-    t = threading.Thread(target=tail_poller, args=(ctx, interval), daemon=True)
+def start_tail_poller(ctx: Ctx, interval: float = 1.0,
+                      stop: threading.Event | None = None) -> threading.Thread:
+    t = threading.Thread(target=tail_poller, args=(ctx, interval, stop), daemon=True)
     t.start()
     return t
 
@@ -224,6 +239,16 @@ def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
               "feed not started", flush=True)
         return
     print(f"-- demo feed: {len(events)} events from {events_path}", flush=True)
+    if ctx.simulator:
+        from ..ingestion.normalization import normalize
+        stop = stop or threading.Event()
+        while not stop.is_set():
+            if ctx.simulator.status()["state"] in {"ready", "completed"}:
+                events = load_feed_events(events_path)
+                if events:
+                    ctx.simulator.start([[normalize(json.loads(event.to_json()), "legacy") for event in events]], "1x")
+            stop.wait(max(.1, interval))
+        return
     llm = OllamaBackend(model=model, url=ollama_url) if backend == "ollama" else get_backend(backend, model=model)
     engine = TriageEngine(memory=mem, llm=llm,
                           audit_path=os.devnull, shadow=True)
@@ -246,8 +271,12 @@ def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
                 revision = current
         event = replace(events[i % len(events)], id="", timestamp="")
         try:
-            verdict = engine.triage(event)
-            ctx.store.record_verdict(event, verdict)
+            if ctx.ingestion:
+                ctx.ingestion.submit(event, connector="replay")
+            else:
+                # Low-level API consumers/tests that supply no lifecycle owner.
+                verdict = engine.triage(event)
+                ctx.store.record_verdict(event, verdict)
         except Exception as exc:  # one bad event must not kill the thread
             print(f"!! --demo-feed: {event.signature} failed to triage: "
                   f"{exc!r}", flush=True)
@@ -256,9 +285,10 @@ def demo_feed_loop(ctx: Ctx, mem: Memory, events_path: str, backend: str,
 
 
 def start_demo_feed(ctx: Ctx, mem: Memory, events_path: str, backend: str,
-                    model: str, interval: float) -> threading.Thread:
+                    model: str, interval: float, stop: threading.Event | None = None,
+                    ollama_url: str = "http://localhost:11434") -> threading.Thread:
     t = threading.Thread(target=demo_feed_loop,
-                         args=(ctx, mem, events_path, backend, model, interval),
+                         args=(ctx, mem, events_path, backend, model, interval, stop, ollama_url),
                          daemon=True)
     t.start()
     return t
@@ -308,13 +338,19 @@ def make_handler(ctx: Ctx):
             self.wfile.write(body)
 
         def _read_json(self) -> dict | None:
-            n = int(self.headers.get("Content-Length", 0) or 0)
+            try:
+                n = int(self.headers.get("Content-Length", 0) or 0)
+            except ValueError:
+                return None
+            if n < 0 or n > 8 * 1024 * 1024 or self.headers.get("Transfer-Encoding"):
+                return None
             if n == 0:
                 return {}
+            self.connection.settimeout(10)
             raw = self.rfile.read(n)
             try:
-                data = json.loads(raw.decode("utf-8"))
-            except (json.JSONDecodeError, UnicodeDecodeError):
+                data = safe_json(raw.decode("utf-8"))
+            except (ValueError, UnicodeDecodeError):
                 return None
             return data if isinstance(data, dict) else None
 
@@ -322,6 +358,12 @@ def make_handler(ctx: Ctx):
         def do_GET(self) -> None:
             path = urlparse(self.path).path
             query = parse_qs(urlparse(self.path).query)
+
+            if path == "/health":
+                if not self._session_user():
+                    return self._send_json(401, {"error": "unauthenticated"})
+                return self._send_json(200, {"ok": True, "ingestion": bool(ctx.ingestion and
+                    ctx.ingestion.pipeline.thread and ctx.ingestion.pipeline.thread.is_alive())})
 
             if path != "/api" and not path.startswith("/api/"):
                 resource = dashboard_resource(path)
@@ -349,6 +391,45 @@ def make_handler(ctx: Ctx):
             if not user:
                 return self._send_json(401, {"error": "unauthenticated"})
 
+            if path == "/api/models":
+                return self._send_json(200, available_models(ctx.ingestion.ollama_url) if ctx.ingestion else {"available": False, "models": []})
+
+            if path in {"/api/demo/status", "/api/demo/event", "/api/demo/history"}:
+                if not ctx.simulator:
+                    return self._send_json(503, {"error": "simulator unavailable"})
+                if path == "/api/demo/history":
+                    try:
+                        offset = max(0, int((query.get("offset") or ["0"])[0]))
+                    except ValueError:
+                        return self._send_json(400, {"error": "invalid offset"})
+                    return self._send_json(200, ctx.simulator.history(offset, {key: (query.get(key) or [""])[0] for key in ("decision", "event_type", "host", "source", "response", "search")}))
+                if path == "/api/demo/status":
+                    return self._send_json(200, ctx.simulator.status())
+                event = ctx.simulator.detail((query.get("id") or [""])[0])
+                return self._send_json(200 if event else 404, event or {"error": "event not found"})
+
+            if path in {"/api/ingestion/status", "/api/events", "/api/event", "/api/ingestion/assets", "/api/datasets"}:
+                if not ctx.ingestion:
+                    return self._send_json(503, {"error": "ingestion service unavailable"})
+                if path == "/api/ingestion/status":
+                    return self._send_json(200, {**ctx.ingestion.status(), "can_request_permission": ctx.elevate is not None})
+                if path == "/api/ingestion/assets":
+                    return self._send_json(200, {"assets": ctx.ingestion.buffer.assets()})
+                if path == "/api/datasets":
+                    return self._send_json(200, {"datasets": list(prepared_datasets())})
+                if path == "/api/event":
+                    event = ctx.ingestion.buffer.detail((query.get("id") or [""])[0])
+                    if event and ctx.protection:
+                        event["protection_proposal"] = ctx.protection.proposal(event)
+                        event["protection_actions"] = ctx.protection.actions(event["event_id"])
+                    return self._send_json(200 if event else 404, event or {"error": "event not found"})
+                try:
+                    filters = {k: v[0] for k, v in query.items() if k in {"source", "host", "severity", "category", "since", "ip", "username", "scope"}}
+                    rows = ctx.ingestion.buffer.query(filters, int(query.get("limit", ["100"])[0]), int(query.get("offset", ["0"])[0]))
+                except (ValueError, OverflowError):
+                    return self._send_json(400, {"error": "invalid event filters"})
+                return self._send_json(200, {"events": rows})
+
             if path == "/api/summary":
                 return self._send_json(200, {
                     "today": ctx.store.today_counts(),
@@ -368,6 +449,7 @@ def make_handler(ctx: Ctx):
                 except ValueError:
                     limit, offset = 100, 0
                 rows = ctx.store.query(
+                    event_id=(query.get("event_id") or [None])[0],
                     decision=(query.get("decision") or [None])[0],
                     host=(query.get("host") or [None])[0],
                     tier=(query.get("tier") or [None])[0],
@@ -387,6 +469,12 @@ def make_handler(ctx: Ctx):
                 return self._send_json(401, {"error": "unauthenticated"})
             if not self._check_csrf():
                 return self._send_json(403, {"error": "csrf token missing or invalid"})
+            try:
+                size = int(self.headers.get("Content-Length", 0) or 0)
+            except ValueError:
+                return self._send_json(400, {"error": "invalid content length"})
+            if size > 8 * 1024 * 1024:
+                return self._send_json(413, {"error": "request exceeds 8 MiB"})
             body = self._read_json()
             if body is None:
                 return self._send_json(400, {"error": "invalid json body"})
@@ -395,6 +483,110 @@ def make_handler(ctx: Ctx):
                 return self._login(body)
 
             user = self._session_user()
+            if path == "/api/models/connect":
+                if not require_admin(user): return self._send_json(403, {"error": "administrator role required"})
+                if not ctx.ingestion: return self._send_json(400, {"error": "ingestion unavailable"})
+                if ctx.simulator and ctx.simulator.status()["state"] in {"running", "paused"}:
+                    return self._send_json(400, {"error": "stop the simulation before changing the analysis model"})
+                try:
+                    ctx.ingestion.connect_model(body.get("model"))
+                    ctx.backend = ctx.ingestion.backend
+                    if ctx.simulator: ctx.simulator.close()
+                    ctx.simulator = DemoManager(ctx.ingestion.backend, ctx.ingestion.model, ctx.ingestion.ollama_url)
+                    ctx.store.record_iam(user["username"], "local_model_connected", ctx.ingestion.model)
+                    return self._send_json(200, {"backend": ctx.backend})
+                except (ValueError, OSError, RuntimeError):
+                    return self._send_json(400, {"error": "local model unavailable; check the inference service and installed models"})
+
+            if path in {"/api/protection/approve", "/api/protection/undo"}:
+                if not require_admin(user) or not ipaddress.ip_address(self.client_address[0]).is_loopback:
+                    return self._send_json(403, {"error": "local administrator session required"})
+                if not ctx.protection:
+                    return self._send_json(400, {"error": "device protection unavailable"})
+                try:
+                    result = ctx.protection.approve(body.get("event_id", ""), user["username"]) if path.endswith("approve") else ctx.protection.undo(body.get("action_id", ""), user["username"])
+                    return self._send_json(200, {"actions": result})
+                except (ValueError, OSError):
+                    return self._send_json(400, {"error": "action unavailable or failed; check event evidence and Windows administrator access"})
+
+            if path == "/api/permissions/request":
+                if not require_admin(user) or not ipaddress.ip_address(self.client_address[0]).is_loopback:
+                    return self._send_json(403, {"error": "local administrator session required"})
+                if not ctx.elevate:
+                    return self._send_json(400, {"error": "restart the local packaged dashboard as administrator"})
+                try:
+                    ctx.elevate()
+                    ctx.store.record_iam(user["username"], "permission_requested", "Windows UAC relaunch")
+                    return self._send_json(202, {"status": "restarting"})
+                except (ValueError, OSError, TimeoutError):
+                    return self._send_json(400, {"error": "Windows permission request cancelled, timed out, or unavailable"})
+
+            if path in {"/api/demo/start", "/api/demo/control", "/api/demo/preview"}:
+                if not require_admin(user):
+                    return self._send_json(403, {"error": "administrator role required"})
+                if not ctx.simulator:
+                    return self._send_json(503, {"error": "simulator unavailable"})
+                try:
+                    if path == "/api/demo/control":
+                        result = ctx.simulator.control(body.get("action"))
+                    else:
+                        catalogue = prepared_datasets()
+                        names = body.get("datasets", [])
+                        if not isinstance(names, list) or len(names) > 30 or any(not isinstance(name, str) or name not in catalogue for name in names):
+                            raise ValueError("invalid dataset selection")
+                        parsed_files = [parse_upload(*catalogue[name]) for name in dict.fromkeys(names)]
+                        groups = [parsed.events for parsed in parsed_files]
+                        uploads = body.get("uploads", [])
+                        if not isinstance(uploads, list) or len(uploads) > 20:
+                            raise ValueError("invalid uploads")
+                        for upload in uploads:
+                            if not isinstance(upload, dict): raise ValueError("invalid upload")
+                            parsed = parse_upload(upload.get("filename"), upload.get("content"), body.get("source", "auto"))
+                            parsed_files.append(parsed)
+                            groups.append(parsed.events)
+                        if path == "/api/demo/preview":
+                            return self._send_json(200, {"files": [parsed.summary() for parsed in parsed_files]})
+                        if any(parsed.invalid_events for parsed in parsed_files):
+                            raise ValueError("selection contains invalid records; validate first")
+                        result = ctx.simulator.start(groups, body.get("speed", "1x"), body.get("order", "mixed"), body.get("seed", 0), body.get("traffic", "steady"))
+                    ctx.store.record_iam(user["username"], "simulation_control", result["state"])
+                    return self._send_json(200, result)
+                except (ValueError, TypeError, KeyError):
+                    return self._send_json(400, {"error": "invalid simulation request; check datasets, playback settings and current session"})
+
+            if path in {"/api/ingestion/configure", "/api/ingestion/import", "/api/ingestion/submit", "/api/ingestion/dataset"}:
+                if not ctx.ingestion:
+                    return self._send_json(503, {"error": "ingestion service unavailable"})
+                if not require_admin(user):
+                    return self._send_json(403, {"error": "administrator role required for ingestion writes"})
+                try:
+                    if path == "/api/ingestion/configure":
+                        ctx.ingestion.configure(body.get("name"), body.get("enabled"), body.get("configuration", {}))
+                        ctx.store.record_iam(user["username"], "connector_configured", str(body.get("name", "")))
+                        return self._send_json(200, {"ok": True})
+                    if path == "/api/ingestion/submit":
+                        accepted = ctx.ingestion.submit(body.get("event"), body.get("source", "auto"))
+                        return self._send_json(202, {"accepted": accepted})
+                    if ctx.simulator and not body.get("preview", False):
+                        return self._send_json(400, {"error": "dataset playback belongs in the isolated simulation workspace; use /api/demo/start"})
+                    if path == "/api/ingestion/dataset":
+                        datasets = prepared_datasets()
+                        name = body.get("dataset")
+                        if name not in datasets:
+                            raise ValueError("unknown prepared dataset")
+                        filename, content = datasets[name]
+                    else:
+                        filename, content = body.get("filename"), body.get("content")
+                    result = ctx.ingestion.import_file(filename, content, body.get("source", "auto"),
+                        body.get("speed", "instant"), body.get("preview", False))
+                    ctx.store.record_iam(user["username"], "dataset_preview" if body.get("preview") else "dataset_import", result["filename"])
+                    return self._send_json(200 if body.get("preview") else 202, result)
+                except BufferFull:
+                    return self._send_json(429, {"error": "event queue full; retry when processing catches up"})
+                except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
+                    return self._send_json(400, {"error": "invalid ingestion request; check file, source and configuration"})
+                except RuntimeError:
+                    return self._send_json(409, {"error": "source is still stopping; retry shortly"})
             if path == "/api/logout":
                 return self._logout(user)
             if path == "/api/label":
@@ -483,6 +675,34 @@ def build_httpd(ctx: Ctx, host: str, port: int) -> ThreadingHTTPServer:
     return ThreadingHTTPServer((host, port), make_handler(ctx))
 
 
+def prepared_datasets() -> dict:
+    """Fixed allowlisted files; no request-controlled filesystem paths."""
+    roots = [Path(__file__).resolve().parents[2] / "samples"]
+    if hasattr(__import__("sys"), "argv"):
+        import sys
+        roots.append(Path(sys.argv[0]).resolve().parent / "samples")
+    result = {}
+    # importlib.resources also works inside a release zipapp.
+    from importlib.resources import files
+    bundled = files("arbiter").joinpath("datasets")
+    if bundled.is_dir():
+        for path in bundled.iterdir():
+            if path.name.endswith(".jsonl") and path.is_file():
+                result[path.name] = (path.name, path.read_text(encoding="utf-8"))
+    # Portable editable cases are allowlisted afresh on each request.
+    case_root = Path(__import__("sys").argv[0]).resolve().parent / "Demo Test Cases" / "Active"
+    if case_root.is_dir():
+        for path in case_root.iterdir():
+            if path.is_file() and path.suffix in {".json", ".jsonl"} and path.stat().st_size <= 5 * 1024 * 1024:
+                result["case:" + path.name] = (path.name, path.read_text(encoding="utf-8"))
+    for root in roots:
+        if root.is_dir():
+            for path in root.glob("*.jsonl"):
+                if path.stat().st_size <= 5 * 1024 * 1024:
+                    result[path.name] = (path.name, path.read_text(encoding="utf-8"))
+    return result
+
+
 DEV_ACCOUNTS = {"admin": ("admin123", "admin"),
                 "analyst": ("analyst123", "analyst")}
 
@@ -491,7 +711,10 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
           demo_feed: bool = False, events: str | None = None,
           backend: str = "mock", model: str = "qwen3.5:4b",
           demo_feed_interval: float = 2.0,
-          dev_accounts: bool = False) -> None:
+          dev_accounts: bool = False,
+          ollama_url: str = "http://localhost:11434") -> None:
+    if demo_feed and (not events or not Path(events).exists()):
+        raise SystemExit(f"--demo-feed needs a real --events file (got {events!r})")
     store = AuditStore(store_db)
     secret_path = Path(iam_db).with_name(Path(iam_db).name + ".secret")
     secret = load_or_create_secret(secret_path)
@@ -519,21 +742,47 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
 
     mem = Memory(mem_db)
     ctx = Ctx(store=store, iam=account, memory=mem, hub=Hub(), backend=backend)
-
-    start_tail_poller(ctx)
-
-    if demo_feed:
-        if not events or not Path(events).exists():
-            raise SystemExit(f"--demo-feed needs a real --events file (got {events!r})")
-        start_demo_feed(ctx, mem, events, backend, model, demo_feed_interval)
-        print(f"demo feed: replaying {events} into the store every "
-              f"{demo_feed_interval}s (dev only — off by default)")
-
-    httpd = build_httpd(ctx, host, port)
-    print(f"Arbiter API on http://{host}:{port}  (Ctrl-C to stop)")
+    ctx.ingestion = IngestionService(ingestion_path(store_db), mem, store, backend, model, ollama_url)
+    ctx.backend = ctx.ingestion.backend
+    ctx.simulator = DemoManager(ctx.ingestion.backend, ctx.ingestion.model, ollama_url)
+    ctx.protection = Protection(ctx.ingestion.buffer, store)
+    # Preserve earlier demo imports as an archive rather than device detections.
+    with ctx.ingestion.buffer.lock:
+        old_demo_ids = [r[0] for r in ctx.ingestion.buffer.conn.execute("SELECT event_id FROM telemetry WHERE connector IN ('file','replay')")]
+    with store._lock, store.conn:
+        store.conn.executemany("UPDATE audit SET kind='demo_verdict' WHERE kind='verdict' AND event_id=?", [(event_id,) for event_id in old_demo_ids])
+    stop = threading.Event()
+    httpd = poller = demo_thread = None
     try:
+        httpd = build_httpd(ctx, host, port)
+        if Path(sys.argv[0]).suffix == ".pyz" and "serve" in sys.argv and ipaddress.ip_address(host).is_loopback:
+            def elevate():
+                argv = ["-u", str(Path(sys.argv[0]).resolve()), "--db", str(Path(mem_db).resolve()),
+                    "serve", "--host", host, "--port", str(port), "--store-db", str(Path(store_db).resolve()),
+                    "--iam-db", str(Path(iam_db).resolve()), "--backend", backend, "--model", model]
+                request_elevation(argv, port)
+                threading.Timer(.5, httpd.shutdown).start()
+            ctx.elevate = elevate
+        ctx.ingestion.start()
+        poller = start_tail_poller(ctx, stop=stop)
+        if demo_feed:
+            demo_thread = start_demo_feed(ctx, mem, events, backend, model, demo_feed_interval, stop, ollama_url)
+            print(f"demo feed: replaying {events} into the store every "
+                  f"{demo_feed_interval}s (dev only — off by default)")
+        print(f"Arbiter API on http://{host}:{port}  (Ctrl-C to stop)")
         httpd.serve_forever()
     except KeyboardInterrupt:
         print("\nstopped")
     finally:
-        httpd.server_close()
+        stop.set()
+        if httpd:
+            httpd.server_close()
+        if poller:
+            poller.join(timeout=2)
+        if demo_thread:
+            demo_thread.join(timeout=3)
+        ctx.simulator.close()
+        ctx.ingestion.stop()
+        mem.close()
+        account.close()
+        store.close()

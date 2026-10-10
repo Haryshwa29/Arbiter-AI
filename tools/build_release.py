@@ -117,6 +117,11 @@ def stage_source(stage: Path) -> int:
             dest = stage / "samples" / src.name
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
+            # Package-local copy makes prepared replay datasets discoverable
+            # through importlib.resources while running inside the zipapp.
+            bundled = stage / "arbiter" / "datasets" / src.name
+            bundled.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, bundled)
             count += 1
     (stage / "__main__.py").write_text(LAUNCHER, encoding="utf-8")
     return count + 1
