@@ -1,9 +1,13 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig(({ isSsrBuild, mode }) => ({
+  resolve: {
+    alias: mode === 'public' ? [{ find: /^\.\/App\.tsx$/, replacement: fileURLToPath(new URL('./src/PublicApp.tsx', import.meta.url)) }] : [],
+  },
   plugins: [react(), tailwindcss(), {
     name: 'arbiter-build-target',
     generateBundle() {
@@ -19,7 +23,7 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
   // the static server, so signing in silently does nothing — which is exactly
   // how it looked the first time.
   server: {
-    proxy: {
+    proxy: mode === 'public' ? undefined : {
       '/api': {
         target: 'http://127.0.0.1:8787',
         changeOrigin: false,
@@ -27,7 +31,7 @@ export default defineConfig(({ isSsrBuild, mode }) => ({
     },
   },
   preview: {
-    proxy: {
+    proxy: mode === 'public' ? undefined : {
       '/api': {
         target: 'http://127.0.0.1:8787',
         changeOrigin: false,

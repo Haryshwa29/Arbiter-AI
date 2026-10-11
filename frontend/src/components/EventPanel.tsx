@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { getEvent, getRecords, approveProtection, undoProtection } from "../lib/api";
 import { eventStatus, eventProgress } from "../lib/eventStatus";
-import { useAuth } from "../lib/auth";
+import { useOptionalAuth } from "../lib/auth";
+import { publicDemoApi } from "../lib/publicDemo";
 import type { RecordRow, TelemetryRow } from "../lib/api";
 
-export function EventPanel({id, onClose, demo = false}: {id: string; onClose: () => void; demo?: boolean}) {
-  const {user} = useAuth();
+export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id: string; onClose: () => void; demo?: boolean; publicDemo?: boolean}) {
+  const auth = useOptionalAuth();
+  const user = publicDemo ? {role: "analyst", backend: "mock"} : auth?.user;
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
   const [event, setEvent] = useState<TelemetryRow | null>(null);
@@ -20,7 +22,7 @@ export function EventPanel({id, onClose, demo = false}: {id: string; onClose: ()
   useEffect(() => {
     let active = true;
     const refresh = async () => {
-      try { const row = await getEvent(id, demo); if (active) {setEvent(row); setError("");} }
+      try { const row = await (publicDemo ? publicDemoApi.getEvent(id) : getEvent(id, demo)); if (active) {setEvent(row); setError("");} }
       catch {
         if (demo) {if (active) setError("This simulation event is unavailable."); return;}
         try {const data = await getRecords({event_id: id}); if (active) {setVerdict(data.rows[0] ?? null); setError(data.rows.length ? "" : "Event details are unavailable.");}}
@@ -30,7 +32,7 @@ export function EventPanel({id, onClose, demo = false}: {id: string; onClose: ()
     setEvent(null); setVerdict(null); void refresh();
     const timer = setInterval(() => void refresh(), 1000);
     return () => {active = false; clearInterval(timer);};
-  }, [id, demo]);
+  }, [id, demo, publicDemo]);
   async function act(actionId?: string) {
     const target = event?.protection_proposal?.target;
     if (!window.confirm(actionId ? "Remove this Arbiter firewall block?" : `Block all inbound and outbound connections to ${target} on this PC for five minutes? Review the evidence first; legitimate connections to that address will also stop.`)) return;

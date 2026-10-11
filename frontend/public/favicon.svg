@@ -1,29 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32">
-  <!--
-    The Arbiter mark: circle and chord, the same geometry as Nav.tsx and as
-    every station gate TransitField.tsx draws. The chord runs (15,3.6) to
-    (9,20.4) — that angle is the source of truth the field derives its LOGO
-    constant from, so it must not be redrawn by eye here.
-
-    Stroke is 2.2 rather than the nav's 1.4: at a 16px tab the thinner weight
-    renders under one device pixel and the mark turns to a smudge.
-
-    The colour follows the browser's theme, matching the mark token in
-    index.css. An SVG favicon can carry its own media query, so the amber
-    darkens on a light tab strip, where the brighter value would be roughly
-    2:1 and unreadable.
-
-    (No double hyphens anywhere in this comment: XML forbids them, and an
-    invalid comment makes the browser reject the entire file.)
-  -->
-  <style>
-    .mark { stroke: #B4841F; }
-    @media (prefers-color-scheme: dark) {
-      .mark { stroke: #d9a943; }
-    }
-  </style>
-  <g class="mark" fill="none" stroke-width="2.2" stroke-linecap="round">
-    <circle cx="12" cy="12" r="9.2" />
-    <line x1="15" y1="3.6" x2="9" y2="20.4" />
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 28">
+  <path d="M5 3 12 1.5 19 3 21 6v13l-9 7-9-7V6Z" fill="#201b14" stroke="#d7b66d" stroke-width="1.4" stroke-linejoin="miter" />
+  <path d="M12 6.5 18 20h-2.5L14 16.2h-4L8.5 20H6Zm-1 7.3h2L12 11Z" fill="#d7b66d" fill-rule="evenodd" />
+  <path d="m5.5 5 6.5-1.5L18.5 5M12 21.5v3" fill="none" stroke="#d7b66d" stroke-width="1" opacity=".65" />
 </svg>

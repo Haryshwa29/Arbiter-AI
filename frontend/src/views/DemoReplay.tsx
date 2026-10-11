@@ -1,7 +1,9 @@
 import { Fragment, useEffect, useState } from "react";
-import { controlDemo, getDatasets, getDemo, startDemo, previewDemo, getDemoHistory, ApiError } from "../lib/api";
+import * as dashboardApi from "../lib/api";
+import { ApiError } from "../lib/api";
+import { publicDemoApi } from "../lib/publicDemo";
 import type { DemoStatus, ImportSummary, TelemetryRow } from "../lib/api";
-import { useAuth } from "../lib/auth";
+import { useOptionalAuth } from "../lib/auth";
 import { EventPanel } from "../components/EventPanel";
 
 import { eventStatus, eventProgress } from "../lib/eventStatus";
@@ -19,8 +21,10 @@ function matchesHistory(row: TelemetryRow, filters: Record<string, string>) {
   return !filters.search || JSON.stringify([row.event, row.analysis]).toLowerCase().includes(filters.search.toLowerCase());
 }
 
-export function DemoReplay() {
-  const {user} = useAuth();
+export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
+  const auth = useOptionalAuth();
+  const user = publicDemo ? {role: "admin", backend: "mock"} : auth?.user;
+  const {controlDemo, getDatasets, getDemo, startDemo, previewDemo, getDemoHistory} = publicDemo ? publicDemoApi : dashboardApi;
   const [preview, setPreview] = useState<ImportSummary[] | null>(null);
   const [datasets, setDatasets] = useState<string[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -40,12 +44,12 @@ export function DemoReplay() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    getDatasets().then(r => setDatasets(r.datasets)).catch(() => setError("Could not load datasets."));
+    getDatasets().then(r => setDatasets(r.datasets)).catch(e => setError(e instanceof Error ? e.message : "Could not load datasets."));
     let active = true;
-    const refresh = async () => {try {const data = await getDemo(); if (active) setSession(data);} catch {if (active) setError("Could not read simulation status.");}};
+    const refresh = async () => {try {const data = await getDemo(); if (active) setSession(data);} catch(e) {if (active) setError(e instanceof Error ? e.message : "Could not read simulation status.");}};
     void refresh(); const timer = setInterval(() => void refresh(), 750);
     return () => {active = false; clearInterval(timer);};
-  }, []);
+  }, [getDemo, getDatasets]);
   useEffect(() => {
     if (!workspace || !history) return;
     let active = true;
@@ -60,7 +64,7 @@ export function DemoReplay() {
     }
     setHistoryRows([]); void refresh(); const timer = setInterval(() => void refresh(), 1000);
     return () => {active = false; clearInterval(timer);};
-  }, [workspace, history, historyOffset, historyFilters, session?.session_id]);
+  }, [workspace, history, historyOffset, historyFilters, session?.session_id, getDemoHistory, getDemo]);
   function selectDatasets(names: string[]) {setSelected(names);setPreview(null);}
   async function start(validate = false) {
     setBusy(true); setError("");
@@ -95,7 +99,7 @@ export function DemoReplay() {
       <div className="my-4 flex gap-3"><button className={control} onClick={() => selectDatasets(datasets)}>Select all</button><button className={control} onClick={() => selectDatasets([])}>Clear selection</button></div>
       <fieldset className="flex flex-col gap-2"><legend className="mb-2 text-sm">Datasets</legend>{datasets.map(name => <label key={name} className="flex gap-3 text-sm"><input type="checkbox" checked={selected.includes(name)} onChange={e => selectDatasets(e.target.checked ? [...selected, name] : selected.filter(n => n !== name))}/>{name}</label>)}</fieldset>
       <label className="mt-4 flex flex-col gap-2 text-sm">Or add dataset files<input className={control} type="file" multiple accept=".json,.jsonl,.csv" onChange={e => {setFiles(Array.from(e.target.files ?? []));setPreview(null);}}/></label>
-      <p className="mt-2 text-xs text-neutral-400">JSON, JSONL, CSV. Up to 5,000 events per session.</p>
+      <p className="mt-2 text-xs text-neutral-400">Choose your own JSON, JSONL or CSV event files. Up to 5 MiB combined and 5,000 events per session. Arbitrary documents and executable files are not event datasets.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-2 text-sm">Delivery speed<select className={control} value={speed} onChange={e => setSpeed(e.target.value)}>{["1x", "2x", "5x", "10x"].map(value => <option key={value}>{value}</option>)}</select></label>
         <label className="flex flex-col gap-2 text-sm">Event order<select className={control} value={order} onChange={e => setOrder(e.target.value)}><option value="mixed">Mix datasets, preserve each sequence</option><option value="random">Shuffle all events</option></select></label>
@@ -150,6 +154,6 @@ export function DemoReplay() {
 
       </section>
     </div>}
-    {detail && <EventPanel id={detail} demo onClose={() => setDetail(null)}/>}
+    {detail && <EventPanel id={detail} demo publicDemo={publicDemo} onClose={() => setDetail(null)}/>}
   </div>;
 }

@@ -1,14 +1,11 @@
 // Runs after the public-site build (client + SSR). Splices the SSR-rendered
 // Site (Nav + Landing + Footer) into dist/index.html's #root, sets its
-// title/meta/OG tags, and moves the original plain SPA shell to
-// dist/app/index.html so /app/* keeps getting a bare shell (it hydrates
-// client-side; there is no SEO reason to prerender an auth-gated
-// dashboard). See docs/LANDING-BRIEF.md §1.
+// title/meta/OG tags. The public artifact contains no dashboard shell.
 //
 // Only ever invoked by `npm run build:public` — the default `npm run build`
 // never runs this, so a customer install's dist/index.html stays the plain
 // dashboard shell it already was.
-import { readFileSync, writeFileSync, mkdirSync, rmSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -25,10 +22,6 @@ if (!existsSync(ssrEntry)) {
 
 const shell = readFileSync(shellPath, "utf-8");
 
-// dist/app/index.html: the untouched plain shell, for /app/* to hydrate
-// into fresh (no prerendered content to reconcile against).
-mkdirSync(resolve(dist, "app"), { recursive: true });
-writeFileSync(resolve(dist, "app", "index.html"), shell);
 
 const { render } = await import(pathToFileURL(ssrEntry).href);
 const { html, meta } = render();
@@ -50,4 +43,3 @@ writeFileSync(shellPath, withMeta);
 rmSync(resolve(dist, "server"), { recursive: true, force: true });
 
 console.log("dist/index.html      -> prerendered landing (site/), title/description/OG set");
-console.log("dist/app/index.html  -> plain dashboard shell (basename /app)");

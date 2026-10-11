@@ -1,7 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import type { ReactNode } from "react";
 import { AuthProvider, useAuth } from "./lib/auth";
-import { DASH_BASE, PUBLIC_LANDING } from "./lib/routing";
+import { DASH_BASE } from "./lib/routing";
 import { Login } from "./views/Login";
 import { AppShell } from "./components/AppShell";
 import { Overview } from "./views/Overview";
@@ -10,7 +10,6 @@ import { Assets } from "./views/Assets";
 import { DataSources } from "./views/DataSources";
 import { LiveEvents } from "./views/LiveEvents";
 import { DemoReplay } from "./views/DemoReplay";
-import { Site } from "./site/Site";
 
 function Loading() {
   return (
@@ -104,7 +103,6 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {PUBLIC_LANDING && <Route path="/" element={<Site />} />}
         <Route path={`${DASH_BASE}/*`} element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
