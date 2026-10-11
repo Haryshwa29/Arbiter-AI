@@ -35,6 +35,7 @@ import secrets
 import ipaddress
 import sys
 import threading
+import time
 from dataclasses import dataclass, replace
 from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -712,7 +713,8 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
           backend: str = "mock", model: str = "qwen3.5:4b",
           demo_feed_interval: float = 2.0,
           dev_accounts: bool = False,
-          ollama_url: str = "http://localhost:11434") -> None:
+          ollama_url: str = "http://localhost:11434",
+          health_callback=None) -> None:
     if demo_feed and (not events or not Path(events).exists()):
         raise SystemExit(f"--demo-feed needs a real --events file (got {events!r})")
     store = AuditStore(store_db)
@@ -752,7 +754,8 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
     with store._lock, store.conn:
         store.conn.executemany("UPDATE audit SET kind='demo_verdict' WHERE kind='verdict' AND event_id=?", [(event_id,) for event_id in old_demo_ids])
     stop = threading.Event()
-    httpd = poller = demo_thread = None
+    httpd = poller = demo_thread = health_thread = None
+    health_failure = []
     try:
         httpd = build_httpd(ctx, host, port)
         if Path(sys.argv[0]).suffix == ".pyz" and "serve" in sys.argv and ipaddress.ip_address(host).is_loopback:
@@ -764,6 +767,27 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
                 threading.Timer(.5, httpd.shutdown).start()
             ctx.elevate = elevate
         ctx.ingestion.start()
+        if health_callback:
+            def monitor():
+                while not stop.is_set():
+                    try:
+                        with ctx.ingestion.lock:
+                            health = ctx.ingestion.status()
+                            worker = ctx.ingestion.pipeline
+                            if not health["worker_alive"] or time.monotonic() - worker.last_activity > 180:
+                                raise RuntimeError("analysis worker stopped or stalled")
+                            for collector in ctx.ingestion.collectors.values():
+                                if not collector.thread or not collector.thread.is_alive():
+                                    raise RuntimeError("enabled collector stopped")
+                        health_callback(health)
+                    except Exception:
+                        health_failure.append(True)
+                        print("Monitoring health check failed; restarting the installed process")
+                        httpd.shutdown()
+                        return
+                    stop.wait(10)
+            health_thread = threading.Thread(target=monitor, daemon=True)
+            health_thread.start()
         poller = start_tail_poller(ctx, stop=stop)
         if demo_feed:
             demo_thread = start_demo_feed(ctx, mem, events, backend, model, demo_feed_interval, stop, ollama_url)
@@ -771,12 +795,16 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
                   f"{demo_feed_interval}s (dev only — off by default)")
         print(f"Arbiter API on http://{host}:{port}  (Ctrl-C to stop)")
         httpd.serve_forever()
+        if health_failure:
+            raise RuntimeError("monitoring health failed; service recovery required")
     except KeyboardInterrupt:
         print("\nstopped")
     finally:
         stop.set()
         if httpd:
             httpd.server_close()
+        if health_thread:
+            health_thread.join(timeout=2)
         if poller:
             poller.join(timeout=2)
         if demo_thread:

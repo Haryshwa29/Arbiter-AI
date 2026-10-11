@@ -1,5 +1,11 @@
 # Arbiter AI — Development Roadmap
 
+Deployment order agreed 2026-10-10: finish unattended Windows device operation,
+then establish equivalent lifecycle/health/UI behavior on Linux and macOS,
+then extend to servers and fleets. Windows task recovery, ownership and health
+are implemented; native boot/logout/sleep and multi-day validation remain.
+macOS launchd/native telemetry are still future work.
+
 This roadmap defines development order.
 
 It intentionally prevents future ideas from disrupting the current MVP.

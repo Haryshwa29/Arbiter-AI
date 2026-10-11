@@ -13,6 +13,11 @@ restarts on failure is enough for the dashboard, and it is inspectable with
 from __future__ import annotations
 
 import shutil
+import csv
+import io
+import tempfile
+import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta, timezone
 import subprocess
 from pathlib import Path
 
@@ -101,22 +106,72 @@ def _systemctl(layout: Layout, *args: str) -> None:
     subprocess.run(cmd, check=True)
 
 
+def windows_task_xml(layout: Layout, python: str, user_sid: str = "") -> str:
+    """Inspectable scheduler policy, no shell commands or passwords."""
+    namespace = "http://schemas.microsoft.com/windows/2004/02/mit/task"
+    ET.register_namespace("", namespace)
+    def node(parent, name, text=None, **attributes):
+        result = ET.SubElement(parent, f"{{{namespace}}}{name}", attributes)
+        result.text = text
+        return result
+    root = ET.Element(f"{{{namespace}}}Task", {"version": "1.3"})
+    registration = node(root, "RegistrationInfo")
+    node(registration, "Description", "Arbiter continuous local monitoring")
+    triggers = node(root, "Triggers")
+    trigger = node(triggers, "BootTrigger" if layout.scope == "system" else "LogonTrigger")
+    node(trigger, "Enabled", "true")
+    if layout.scope == "user":
+        if not user_sid.startswith("S-1-"): raise ValueError("current Windows user SID required")
+        node(trigger, "UserId", user_sid)
+    node(trigger, "Delay", "PT15S")
+    recovery = node(triggers, "TimeTrigger")
+    node(recovery, "Enabled", "true")
+    node(recovery, "StartBoundary", (datetime.now(timezone.utc) + timedelta(minutes=2)).isoformat(timespec="seconds"))
+    repetition = node(recovery, "Repetition")
+    node(repetition, "Interval", "PT5M")
+    node(repetition, "StopAtDurationEnd", "false")
+    principals = node(root, "Principals")
+    principal = node(principals, "Principal", id="ArbiterPrincipal")
+    node(principal, "UserId", "S-1-5-18" if layout.scope == "system" else user_sid)
+    if layout.scope == "user": node(principal, "LogonType", "InteractiveToken")
+    node(principal, "RunLevel", "HighestAvailable" if layout.scope == "system" else "LeastPrivilege")
+    settings = node(root, "Settings")
+    for name, value in (("MultipleInstancesPolicy", "IgnoreNew"), ("DisallowStartIfOnBatteries", "false"),
+                        ("StopIfGoingOnBatteries", "false"), ("StartWhenAvailable", "true"),
+                        ("RunOnlyIfNetworkAvailable", "false"), ("Enabled", "true"),
+                        ("Hidden", "true"), ("ExecutionTimeLimit", "PT0S")):
+        node(settings, name, value)
+    restart = node(settings, "RestartOnFailure")
+    node(restart, "Interval", "PT1M")
+    node(restart, "Count", "999")
+    actions = node(root, "Actions", Context="ArbiterPrincipal")
+    action = node(actions, "Exec")
+    argv = installed_argv(layout, python)
+    node(action, "Command", argv[0])
+    node(action, "Arguments", subprocess.list2cmdline(argv[1:]))
+    node(action, "WorkingDirectory", str(layout.data_dir))
+    return ET.tostring(root, encoding="unicode", xml_declaration=False)
+
+
 def install_service(layout: Layout, python: str, host: str, port: int,
                     events: str) -> str:
     """Register the service. Returns a sentence describing what happened."""
     if WINDOWS:
-        quoted = subprocess.list2cmdline(installed_argv(layout, python))
-        cmd = ["schtasks", "/Create", "/F", "/TN", TASK_NAME,
-               "/TR", quoted,
-               "/SC", "ONSTART" if layout.scope == "system" else "ONLOGON"]
-        if layout.scope == "system":
-            cmd += ["/RU", "SYSTEM", "/RL", "HIGHEST"]
-        subprocess.run(cmd, check=True, capture_output=True)
+        user_sid = ""
+        if layout.scope == "user":
+            identity = subprocess.run(["whoami", "/user", "/fo", "csv", "/nh"],
+                                      check=True, capture_output=True, text=True)
+            user_sid = next(csv.reader(io.StringIO(identity.stdout)))[1].strip()
+        with tempfile.TemporaryDirectory(prefix="arbiter-task-") as temp:
+            task_path = Path(temp) / "task.xml"
+            task_path.write_text(windows_task_xml(layout, python, user_sid), encoding="utf-16")
+            subprocess.run(["schtasks", "/Create", "/F", "/TN", TASK_NAME,
+                            "/XML", str(task_path)], check=True, capture_output=True)
         started = subprocess.run(["schtasks", "/Run", "/TN", TASK_NAME],
                                  capture_output=True)
         return (f"scheduled task {TASK_NAME!r} created and started"
                 if started.returncode == 0
-                else f"scheduled task {TASK_NAME!r} created; it starts at next logon")
+                else f"scheduled task {TASK_NAME!r} created; automatic startup/recovery is registered; immediate start failed")
 
     if not systemd_available():
         return ("systemd not available — start Arbiter manually with:\n      "
@@ -157,6 +212,7 @@ def restart_service(layout: Layout) -> str:
 
 def remove_service(layout: Layout) -> None:
     if WINDOWS:
+        subprocess.run(["schtasks", "/End", "/TN", TASK_NAME], capture_output=True)
         subprocess.run(["schtasks", "/Delete", "/F", "/TN", TASK_NAME],
                        capture_output=True)
         return
@@ -179,7 +235,7 @@ def service_status(layout: Layout) -> str:
     if WINDOWS:
         r = subprocess.run(["schtasks", "/Query", "/TN", TASK_NAME],
                            capture_output=True, text=True)
-        return "registered" if r.returncode == 0 else "not registered"
+        return "registered" if r.returncode == 0 else "not registered or task query not permitted"
     if not systemd_available():
         return "systemd unavailable"
     r = subprocess.run(

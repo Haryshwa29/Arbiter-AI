@@ -170,15 +170,34 @@ class ServiceTests(unittest.TestCase):
     def test_windows_task_is_created_and_started_immediately(self):
         with tempfile.TemporaryDirectory() as td:
             lay = layout_for("user", td)
-            completed = type("Completed", (), {"returncode": 0})()
+            completed = type("Completed", (), {"returncode": 0, "stdout": '"test-user","S-1-5-21-123"\n'})()
             with patch.object(service, "WINDOWS", True), \
                     patch.object(service.subprocess, "run", return_value=completed) as run:
                 result = service.install_service(lay, r"C:\Arbiter\python.exe",
                                                  "127.0.0.1", 8787, "events.jsonl")
-            self.assertEqual(run.call_count, 2)
-            self.assertIn("/Create", run.call_args_list[0].args[0])
-            self.assertIn("/Run", run.call_args_list[1].args[0])
+            self.assertEqual(run.call_count, 3)
+            self.assertIn("/Create", run.call_args_list[1].args[0])
+            self.assertIn("/XML", run.call_args_list[1].args[0])
+            self.assertIn("/Run", run.call_args_list[2].args[0])
             self.assertIn("created and started", result)
+
+    def test_windows_task_policy_boot_recovery_and_escaped_paths(self):
+        import xml.etree.ElementTree as ET
+        with tempfile.TemporaryDirectory() as td:
+            lay = layout_for("system", Path(td) / "A & B")
+            root = ET.fromstring(service.windows_task_xml(lay, r"C:\Python Space\python.exe"))
+            ns = {"t": "http://schemas.microsoft.com/windows/2004/02/mit/task"}
+            self.assertIsNotNone(root.find("t:Triggers/t:BootTrigger", ns))
+            for key, value in {"ExecutionTimeLimit": "PT0S", "MultipleInstancesPolicy": "IgnoreNew",
+                               "DisallowStartIfOnBatteries": "false", "StopIfGoingOnBatteries": "false"}.items():
+                self.assertEqual(root.findtext(f"t:Settings/t:{key}", namespaces=ns), value)
+            self.assertEqual(root.findtext("t:Settings/t:RestartOnFailure/t:Interval", namespaces=ns), "PT1M")
+            self.assertEqual(root.findtext("t:Triggers/t:TimeTrigger/t:Repetition/t:Interval", namespaces=ns), "PT5M")
+            self.assertEqual(root.findtext("t:Principals/t:Principal/t:UserId", namespaces=ns), "S-1-5-18")
+            self.assertEqual(root.findtext("t:Actions/t:Exec/t:WorkingDirectory", namespaces=ns), str(lay.data_dir))
+            user = ET.fromstring(service.windows_task_xml(layout_for("user", td), "python.exe", "S-1-5-21-1"))
+            self.assertEqual(user.findtext("t:Principals/t:Principal/t:LogonType", namespaces=ns), "InteractiveToken")
+            self.assertIsNone(user.find("t:Triggers/t:BootTrigger", ns))
 
     def test_installed_service_starts_from_installed_config(self):
         with tempfile.TemporaryDirectory() as td:

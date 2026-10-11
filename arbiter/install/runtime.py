@@ -31,7 +31,7 @@ def _wait_for_ollama(url: str, process: subprocess.Popen | None,
     raise RuntimeError("local AI did not become ready within 45 seconds")
 
 
-def run(config_path: Path) -> None:
+def _run(config_path: Path, health) -> None:
     from ..api.server import serve
     from ..portable import OwnedJob, local_port, ollama_environment
 
@@ -65,10 +65,15 @@ def run(config_path: Path) -> None:
                 job.assign(process)
             _wait_for_ollama(ollama_url, process)
 
+        def runtime_health(status):
+            if process is not None and process.poll() is not None:
+                raise RuntimeError("owned local AI process stopped")
+            health(status)
+
         serve(host=host, port=port, store_db=paths["audit_db"],
               iam_db=paths["iam_db"], mem_db=paths["memory_db"],
               events=paths.get("events", ""), backend=backend, model=model,
-              ollama_url=ollama_url)
+              ollama_url=ollama_url, health_callback=runtime_health)
     finally:
         if job:
             job.close()
@@ -81,6 +86,36 @@ def run(config_path: Path) -> None:
                 process.kill()
         if log:
             log.close()
+
+
+def run(config_path: Path) -> None:
+    from .lifecycle import instance_lock, operational_logs, write_health
+    cfg = configparser.ConfigParser()
+    if not cfg.read(config_path, encoding="utf-8"):
+        raise RuntimeError(f"configuration not found: {config_path}")
+    data_dir = Path(cfg["paths"]["data_dir"]).resolve()
+    log_dir = data_dir.parent / "logs"
+    with instance_lock(data_dir), operational_logs(log_dir):
+        write_health(data_dir, "starting")
+        print("Starting installed Arbiter monitoring")
+        def health(status):
+            sources = [{key: source.get(key) for key in ("name", "enabled", "status", "errors", "last_event_received")}
+                       for source in status["connectors"] if source["category"] != "Demo"]
+            degraded = not status["worker_alive"] or any(source["enabled"] and source["status"] == "Error" for source in sources)
+            write_health(data_dir, "degraded" if degraded else "running", backend=status["backend"],
+                         worker_alive=status["worker_alive"], sources=sources,
+                         queue_depth=status["metrics"].get("queue_depth", 0))
+        try:
+            _run(config_path, health)
+        except Exception:
+            write_health(data_dir, "failed")
+            print("Installed runtime failed; inspect this log; scheduled recovery will retry.")
+            import traceback
+            traceback.print_exc()
+            raise
+        else:
+            write_health(data_dir, "stopped")
+            print("Installed Arbiter stopped")
 
 
 def main(argv: list[str] | None = None) -> int:

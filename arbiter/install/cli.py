@@ -93,9 +93,9 @@ def write_config(layout: Layout, host: str, port: int, backend: str,
 
 
 def seed_databases(layout: Layout) -> None:
-    from ..cli import cmd_seed
+    from ..memory import Memory
 
-    cmd_seed(Namespace(db=str(layout.memory_db)))
+    Memory(str(layout.memory_db)).close()
 
 
 def install_sample_events(layout: Layout) -> Path:
@@ -204,7 +204,7 @@ def build_install_plan(layout: Layout, args, archive: Path | None) -> tuple[Plan
     )
 
     plan.add(
-        f"initialise and seed the memory database at {layout.memory_db}",
+        f"initialise the memory database without demo seeds at {layout.memory_db}",
         run=lambda: seed_databases(layout),
         skip_if=lambda: layout.memory_db.exists(),
     )
@@ -380,6 +380,20 @@ def cmd_status(args) -> int:
         size = f"{path.stat().st_size / 1024:.0f} KB" if path.exists() else "absent"
         print(f"  {label:11} {path} ({size})")
     print(f"  service     {service.service_status(layout)}")
+    health_path = layout.data_dir / "service-health.json"
+    if health_path.exists():
+        try:
+            import json
+            from datetime import datetime, timezone
+            health = json.loads(health_path.read_text(encoding="utf-8"))
+            age = max(0, (datetime.now(timezone.utc) - datetime.fromisoformat(health["updated_at"])).total_seconds())
+            state = "stale / process unavailable" if age > 30 and health["state"] in {"running", "degraded", "starting"} else health["state"]
+            print(f"  monitoring  {state}; last heartbeat {age:.0f}s ago")
+        except (OSError, ValueError, KeyError):
+            print("  monitoring  health record unavailable")
+    else:
+        print("  monitoring  no installed-runtime heartbeat yet")
+    print(f"  logs        {layout.log_dir / 'service.log'}")
     print()
     return 0 if installed else 1
 

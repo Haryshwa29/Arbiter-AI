@@ -15,6 +15,7 @@ class Pipeline:
         self.thread = None
         self._last_prune = 0.0
         self.simulation = False
+        self.last_activity = time.monotonic()
 
     def start(self):
         self.thread = threading.Thread(target=self.run, daemon=True)
@@ -22,6 +23,7 @@ class Pipeline:
 
     def run(self):
         while not self.stop_event.is_set():
+            self.last_activity = time.monotonic()
             if time.monotonic() - self._last_prune > 3600:
                 self.buffer.prune()
                 self._last_prune = time.monotonic()
