@@ -36,14 +36,15 @@ class PrefilterResult:
 
 def score_event(event: Event, memory: Memory) -> float:
     criticality = memory.asset_criticality(event.host)
-    history = memory.history(event.signature)
+    context = event.fields.get("_context_signature")
+    history = memory.history(context or event.signature)
 
     # History modifier: signatures that always turned out benign decay
     # toward 0.5; the boost applies ONLY to overruled suppressions (missed
     # attacks). An overruled escalation is a false alarm — the human said
     # benign — and feeds the decay via false_positive_rate instead.
     modifier = 1.0
-    if history.total >= MIN_HISTORY_TO_SUPPRESS:
+    if history.total >= MIN_HISTORY_TO_SUPPRESS and (context or not isinstance(event.fields.get("_telemetry"), dict)):
         modifier -= 0.5 * history.false_positive_rate
     modifier += 0.3 * min(history.overruled, 3)
 
@@ -53,7 +54,9 @@ def score_event(event: Event, memory: Memory) -> float:
 
 def prefilter(event: Event, memory: Memory) -> PrefilterResult:
     score = score_event(event, memory)
-    history = memory.history(event.signature)
+    context = event.fields.get("_context_signature")
+    history = memory.history(context or event.signature)
+    broad_overrule = memory.history(event.signature).overruled if context else 0
     criticality = memory.asset_criticality(event.host)
 
     # Normalized telemetry includes passive context that is not an alert.
@@ -61,6 +64,7 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
     # have no provenance marker and retain their original history policy.
     if routine_telemetry(event):
         return PrefilterResult(Decision.SUPPRESS, score,
+            "Arbiter-owned fixed read-only log query: exact command and parent matched; no new detection or correlation signal" if event.fields.get("_collector_activity") is True else
             "Routine telemetry observation: no detection or correlation signal; retained in Live Events")
 
     if score >= ESCALATE_AT:
@@ -77,10 +81,14 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
         # human already overruled as false alarms don't count against it.
         and history.escalated - history.false_alarms <= MAX_FP_ESCALATIONS
         and history.overruled == 0
+        # Native telemetry signatures aggregate different binaries/users/rules.
+        # Benign host/type history cannot authorize suppressing a new artifact.
+        and (context or not isinstance(event.fields.get("_telemetry"), dict))
+        and broad_overrule == 0
     ):
         return PrefilterResult(
             Decision.SUPPRESS, score,
-            f"score {score:.1f} < {SUPPRESS_AT}; signature seen "
+            ("Exact native process hash, command, user, parent and environment context; " if context else "") + f"score {score:.1f} < {SUPPRESS_AT}; signature seen "
             f"{history.total}x, always benign, never overruled",
         )
 
@@ -97,6 +105,10 @@ def routine_telemetry(event: Event) -> bool:
         return False
     source = provenance.get("source")
     kind = event.event_type
+    if source == "sysmon" and kind == "process_exec" and event.fields.get("_collector_activity") is True:
+        return True
+    if source == "windows_security" and kind == "security_posture" and event.severity == 0:
+        return True
     if source == "osquery" and kind == "asset_snapshot":
         return True
     if source == "cloudtrail" and kind == "cloud_read":

@@ -33,6 +33,8 @@ class IngestionService:
         self.registry = registry or default_registry()
         self.collectors = {}
         self.lock = threading.RLock()
+        self.discovery_stop = threading.Event()
+        self.discovery_thread = None
         llm = OllamaBackend(model, ollama_url) if backend == "ollama" else get_backend(backend, model)
         self.pipeline = Pipeline(self.buffer, TriageEngine(memory, llm, os.devnull, shadow=True), audit)
 
@@ -48,7 +50,7 @@ class IngestionService:
                 self.buffer.conn.execute("INSERT OR REPLACE INTO analysis_configuration VALUES (1,?,?)", (self.backend, model))
             self.pipeline.start()
 
-    def start(self):
+    def start(self, discover=False):
         self.pipeline.start()
         for row in self.buffer.configs():
             if row["enabled"]:
@@ -57,6 +59,26 @@ class IngestionService:
                 except (ValueError, OSError):
                     self.buffer.checkpoint(row["name"], safe_json(row["checkpoint"]),
                         {"errors": row["errors"] + 1, "error": "Configuration unavailable; reconfigure this source"})
+        if discover:
+            self.discovery_stop.clear()
+            self.discovery_thread = threading.Thread(target=self._discover, daemon=True)
+            self.discovery_thread.start()
+
+    def _discover(self):
+        from .discovery import discover_local
+        while not self.discovery_stop.is_set():
+            try:
+                detected = discover_local()
+                with self.lock:
+                    configured = {row["name"] for row in self.buffer.configs()}
+                    for name, config in detected.items():
+                        if self.discovery_stop.is_set():
+                            return
+                        if name not in configured:
+                            self.configure(name, True, config)
+            except (OSError, ValueError):
+                pass  # collector health reports unavailable sources separately
+            self.discovery_stop.wait(30)
 
     def _start(self, name, config, checkpoint):
         collector = self.registry.create(name, config, checkpoint)
@@ -131,6 +153,9 @@ class IngestionService:
         return {**summary, "import_status": "Queued" if result.events else "No valid events", "accepted_events": len(result.events)}
 
     def stop(self):
+        self.discovery_stop.set()
+        if self.discovery_thread:
+            self.discovery_thread.join()  # finish probing before closing the store
         with self.lock:
             for collector in self.collectors.values():
                 collector.stop()

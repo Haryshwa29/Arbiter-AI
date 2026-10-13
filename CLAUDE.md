@@ -4,6 +4,21 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 12 decision integration: reboot verified native Sysmon delivery. High-priority
+Defender/Wazuh/Suricata/GuardDuty findings have a deterministic review floor; osquery
+checks executable startup/process commands against existing rails; Windows protection
+posture is observed automatically. Exact Defender-file/Sysmon-network matches can
+propose an approved TTL-limited IP block. Queue/history/index performance fixes and
+exact process-context learning preserve legacy Event/Verdict signatures. Local Qwen
+is connected on the installed device. See docs/SECURITY_TOOL_INTEGRATIONS.md for
+validation and backlog/capacity limitations.
+
+October 11 tool integration: explicit verified Windows tool provisioning via
+`arbiter setup-monitoring`, automatic local source discovery in real runtimes,
+Microsoft Defender findings and local Wazuh manager alert-file ingestion. Disabled
+sources and isolated demos are preserved. See docs/SECURITY_TOOL_INTEGRATIONS.md
+for supported setup, privacy boundaries and transport limits.
+
 October 10 iteration: isolated paced DemoManager, shared clickable EventPanel,
 recent-feed recovery, explicit packaged UAC setup, persisted local model selection,
 and approved reversible Windows IP blocks. See docs/DEVICE_MONITORING_AND_DEMO.md.

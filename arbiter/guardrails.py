@@ -226,7 +226,20 @@ def _impossible_travel(ev: Event) -> bool:
 
 # (code, name, reason, predicate) — order matters only for which reason is
 # reported first; a hit from any means the event is non-suppressible.
+def _high_priority_tool_finding(event):
+    finding = event.fields.get("_tool_finding")
+    provenance = event.fields.get("_telemetry", {})
+    return (isinstance(finding, dict) and isinstance(provenance, dict)
+            and event.source in {"defender", "wazuh", "suricata", "guardduty", "windows_security", "osquery"}
+            and finding.get("source") == event.source == provenance.get("source")
+            and finding.get("type") == event.event_type
+            and finding.get("high_priority") is True)
+
+
 RULES = [
+    ("NON_SUPPRESSIBLE_TOOL_FINDING", "high_priority_tool_finding",
+     "a high-priority security-tool finding requires review; benign history or model confidence cannot dismiss it",
+     _high_priority_tool_finding),
     ("NON_SUPPRESSIBLE_EXPOSURE", "internet_exposure",
      "exposing a sensitive service to a broad/public scope is never a benign "
      "maintenance side-effect", _internet_exposure),

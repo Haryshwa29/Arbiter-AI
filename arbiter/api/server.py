@@ -766,7 +766,7 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
                 request_elevation(argv, port)
                 threading.Timer(.5, httpd.shutdown).start()
             ctx.elevate = elevate
-        ctx.ingestion.start()
+        ctx.ingestion.start(discover=True)
         if health_callback:
             def monitor():
                 while not stop.is_set():

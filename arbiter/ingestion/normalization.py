@@ -30,10 +30,12 @@ def normalize(data: Any, source: str = "auto") -> SecurityEvent:
             source = "cloudtrail"
         elif "Severity" in data and "Resource" in data:
             source = "guardduty"
+        elif isinstance(data.get("rule"), dict) and "level" in data["rule"] and "agent" in data:
+            source = "wazuh"
         elif "event_type" in data and "src_ip" in data:
             source = "suricata"
         elif "System" in data:
-            source = "sysmon" if "Sysmon" in str(data["System"]) else "windows"
+            source = "defender" if "Windows Defender" in str(data["System"]) else "sysmon" if "Sysmon" in str(data["System"]) else "windows"
         else:
             raise ValueError("unrecognized event format; choose a source adapter")
     if source == "normalized":
@@ -56,8 +58,11 @@ def normalize(data: Any, source: str = "auto") -> SecurityEvent:
             message=ev.message, severity=ev.severity, timestamp=ev.timestamp, event_id=ev.id,
             raw_event=original, username=str(f.get("user", f.get("username", ""))),
             src_ip=str(f.get("src_ip", "")), metadata={"normalized_by": "legacy", "legacy_fields": f})
-    adapters = {"windows": windows, "sysmon": windows, "suricata": suricata,
-                "cloudtrail": cloudtrail, "guardduty": guardduty, "osquery": osquery}
+    from .collectors.defender import defender
+    from .collectors.security import security
+    adapters = {"windows": windows, "sysmon": windows, "defender": defender, "suricata": suricata,
+                "cloudtrail": cloudtrail, "guardduty": guardduty, "osquery": osquery,
+                "wazuh": wazuh, "windows_security": security}
     if source not in adapters:
         raise ValueError("unsupported source adapter")
     return adapters[source](data, source)
@@ -137,6 +142,54 @@ def suricata(data: dict, source="suricata") -> SecurityEvent:
         metadata={"normalized_by": source, "flow_id": data.get("flow_id"), "details": specific})
 
 
+def wazuh(data: dict, source="wazuh") -> SecurityEvent:
+    rule, agent = data.get("rule"), data.get("agent")
+    if not isinstance(rule, dict) or not isinstance(agent, dict):
+        raise ValueError("Wazuh rule and agent required")
+    level = rule.get("level")
+    if isinstance(level, bool) or not isinstance(level, int) or not 0 <= level <= 15:
+        raise ValueError("Wazuh rule level must be an integer from 0 to 15")
+    if not rule.get("id") or not data.get("timestamp"):
+        raise ValueError("Wazuh rule ID and timestamp required")
+    detail = data.get("data", {})
+    fim = data.get("syscheck", {})
+    if not isinstance(detail, dict) or not isinstance(fim, dict):
+        raise ValueError("invalid Wazuh detail")
+    groups = rule.get("groups", [])
+    if not isinstance(groups, list) or any(not isinstance(g, str) for g in groups):
+        raise ValueError("invalid Wazuh groups")
+    # Only explicit rule groups supply event semantics; severity alone is not proof.
+    kind, category = "security_finding", "security"
+    if "authentication_failed" in groups:
+        kind, category = "auth_failure", "authentication"
+    elif "authentication_success" in groups:
+        kind, category = "auth_success", "authentication"
+    elif fim:
+        kind, category = "file_change", "file"
+    description = str(rule.get("description", "Wazuh finding"))
+    # Keep structured evidence visible to guardrails when prose is benign.
+    message = description + " | " + json.dumps({"data": detail, "syscheck": fim}, sort_keys=True)
+    if data.get("full_log"):
+        message += " | " + str(data["full_log"])
+    manager = data.get("manager", {})
+    if not isinstance(manager, dict):
+        raise ValueError("invalid Wazuh manager")
+    return SecurityEvent(source_type=source, source_vendor="Wazuh", source_product="Wazuh",
+        hostname=str(agent.get("name") or manager.get("name") or "wazuh-manager"),
+        device_id=str(agent.get("id", "")), event_type=kind, event_category=category,
+        timestamp=str(data["timestamp"]), severity=level * 10 / 15,
+        event_id=identity(source, (manager.get("name", ""), agent.get("id", ""),
+            data.get("id"), data["timestamp"], json.dumps(data, sort_keys=True))),
+        message=message, username=str(detail.get("dstuser", detail.get("srcuser", ""))),
+        src_ip=str(detail.get("srcip", "")), dst_ip=str(detail.get("dstip", "")),
+        src_port=detail.get("srcport"), dst_port=detail.get("dstport"),
+        protocol=str(detail.get("protocol", "")), file_path=str(fim.get("path", "")),
+        file_hash=str(fim.get("sha256_after", "")), action=str(fim.get("event", "")),
+        rule_id=str(rule["id"]), rule_name=description, tags=groups,
+        raw_event=data, metadata={"normalized_by": source, "wazuh_level": level,
+            "rule": rule, "agent": agent, "manager": manager, "location": data.get("location", "")})
+
+
 def cloudtrail(data: dict, source="cloudtrail") -> SecurityEvent:
     original = data
     if "CloudTrailEvent" in data:
@@ -200,7 +253,23 @@ def guardduty(data: dict, source="guardduty") -> SecurityEvent:
 def osquery(data: dict, source="osquery") -> SecurityEvent:
     if not isinstance(data.get("rows"), list) or not data.get("table"):
         raise ValueError("invalid osquery snapshot")
+    from ..guardrails import guardrail_check
+    findings = []
+    if data["table"] in {"processes", "startup_items", "scheduled_tasks"}:
+        for row in data["rows"][:100]:
+            if not isinstance(row, dict): continue
+            command = str(row.get("cmdline") or row.get("command") or row.get("action") or "")
+            path = str(row.get("path") or row.get("name") or "")
+            if not command: continue
+            observed = Event(source, str(data.get("hostname", "unknown")), "process_exec", command, 0,
+                             fields={"command_line": command, "process": path, "path": path})
+            hit = guardrail_check(observed)
+            if hit:
+                findings.append({"rule": hit.code, "reason": hit.reason, "command": command[:4000], "path": path[:1000]})
+                if len(findings) >= 5: break
+    message = f"osquery {data['table']}: {len(data['rows'])} rows"
+    if findings: message += " | Security findings: " + json.dumps(findings)
     return SecurityEvent(source_type=source, hostname=str(data.get("hostname", "unknown")),
         source_product="osquery", event_type="asset_snapshot", event_category="inventory",
-        message=f"osquery {data['table']}: {len(data['rows'])} rows", severity=0,
-        raw_event=data, metadata={"normalized_by": source, "table": data["table"], "rows": data["rows"]})
+        message=message, severity=8 if findings else 0,
+        raw_event=data, metadata={"normalized_by": source, "table": data["table"], "rows": data["rows"], "security_findings": findings})

@@ -36,9 +36,16 @@ class Pipeline:
             return False
         started = time.monotonic()
         try:
+            backend = getattr(self.engine.llm, "name", "unrecorded")
+            model = getattr(self.engine.llm, "model", "")
+            backend = backend if isinstance(backend, str) else "unrecorded"
+            model = model if isinstance(model, str) else ""
             event = SecurityEvent(**safe_json(row["payload"]))
+            from .evidence import own_log_query
+            own_query = own_log_query(event, row["connector"])
             self.buffer.asset(event)
-            correlations = correlate(event, self.buffer.recent(event, scope=None if self.simulation else "live"))
+            correlations = correlate(event, self.buffer.recent(event, scope=None if self.simulation else "live",
+                sources=("defender", "suricata", "guardduty", "wazuh") if own_query else None))
             related = list(dict.fromkeys(eid for c in correlations for eid in c["events"]))
             if correlations:
                 event.metadata["correlation"] = correlations
@@ -49,12 +56,23 @@ class Pipeline:
             existing = self.audit.verdict_for_event(event.event_id)
             if existing:
                 analysis = {k: existing[k] for k in ("decision", "tier", "score", "rationale", "evidence")}
+                detail = safe_json(existing.get("detail") or "{}")
+                reasoning = detail.get("fields", {}).get("_analysis_backend", {})
+                analysis["backend"] = reasoning.get("backend", "unrecorded") if analysis["tier"] == "llm" else "deterministic"
+                analysis["model"] = reasoning.get("model", "")
             else:
                 legacy = event.to_event()
-                legacy.fields["asset_context"] = self.buffer.asset_summary(event)
+                if not own_query: legacy.fields["asset_context"] = self.buffer.asset_summary(event)
+                from .evidence import process_context, own_log_query
+                if own_query: legacy.fields["_collector_activity"] = True
+                context = process_context(event, legacy, self.engine, row["connector"])
+                if context: legacy.fields["_context_signature"] = context
+                legacy.fields["_analysis_backend"] = {"backend": backend, "model": model}
                 verdict = self.engine.triage(legacy)
                 self.audit.record_verdict(legacy, verdict)
                 analysis = safe_json(verdict.to_json())
+                analysis["backend"] = backend if analysis["tier"] == "llm" else "deterministic"
+                analysis["model"] = model if analysis["backend"] == "ollama" else ""
             analysis["kind"] = "alert" if analysis["decision"] == "escalate" else "observation"
             # Planning is pure. Neither simulated nor live ingestion executes commands.
             from ..respond import plan

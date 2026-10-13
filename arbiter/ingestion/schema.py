@@ -134,6 +134,13 @@ class SecurityEvent:
         if self.process_name:
             data["process"] = self.process_name
         data.pop("_telemetry", None)
+        data.pop("_tool_finding", None)
+        data.pop("_context_signature", None)
+        data.pop("_collector_activity", None)
+        from .evidence import tool_finding
+        finding = tool_finding(self)
+        if finding:
+            data["_tool_finding"] = finding
         if self.metadata.get("normalized_by") != "legacy":
             data["_telemetry"] = {"source": self.source_type, "category": self.event_category}
         if self.metadata.get("correlation"):

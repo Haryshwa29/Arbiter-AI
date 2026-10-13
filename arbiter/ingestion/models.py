@@ -8,6 +8,8 @@ def available_models(url="http://localhost:11434"):
         with urlopen(url.rstrip("/") + "/api/tags", timeout=2) as response:
             data = json.loads(response.read(1024 * 1024))
         if not isinstance(data, dict): return {"available": False, "models": []}
-        return {"available": True, "models": [m["name"] for m in data.get("models", []) if isinstance(m, dict) and isinstance(m.get("name"), str)]}
+        return {"available": True, "models": [m["name"] for m in data.get("models", []) if isinstance(m, dict)
+            and isinstance(m.get("name"), str) and not m.get("remote_host") and not m.get("remote_model")
+            and not m["name"].lower().endswith((":cloud", "-cloud"))]}
     except (OSError, ValueError, KeyError, TypeError):
         return {"available": False, "models": []}

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sqlite3
 import threading
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from .facts import ScopedFact
@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS verdict_history (
     ts          TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_history_sig ON verdict_history (signature);
+CREATE INDEX IF NOT EXISTS idx_history_counts ON verdict_history(signature,decision,human_label);
 
 CREATE TABLE IF NOT EXISTS facts (
     id      INTEGER PRIMARY KEY,
@@ -79,10 +80,12 @@ class Memory:
         # accumulates in.
         self.conn = sqlite3.connect(str(db_path), check_same_thread=False)
         self._lock = threading.Lock()
+        self._history_cache = {}
         with self._lock:
             self.conn.executescript(_SCHEMA)
             self._migrate()
             self.conn.commit()
+            self._history_version = self.conn.execute("PRAGMA data_version").fetchone()[0]
 
     def _migrate(self) -> None:
         # Caller already holds self._lock.
@@ -130,40 +133,50 @@ class Memory:
                 for h, c, r, cf in rows]
 
     # -- verdict history ---------------------------------------------------
-    def record_verdict(self, verdict: Verdict) -> None:
+    def record_verdict(self, verdict: Verdict, context_signature=None) -> None:
         with self._lock:
-            self.conn.execute(
+            self._refresh_history_cache()
+            signatures = [verdict.signature]
+            if isinstance(context_signature, str) and context_signature.startswith(verdict.signature + ":ctx:"):
+                signatures.append(context_signature)
+            self.conn.executemany(
                 "INSERT INTO verdict_history (signature, decision, ts) VALUES (?,?,?)",
-                (verdict.signature, verdict.decision.value, verdict.timestamp),
+                [(signature, verdict.decision.value, verdict.timestamp) for signature in signatures],
             )
             self.conn.commit()
+            for signature in signatures:
+                cached = self._history_cache.get(signature)
+                if cached:
+                    cached.total += 1
+                    if verdict.decision.value == "suppress": cached.suppressed += 1
+                    else: cached.escalated += 1
+
+    def _refresh_history_cache(self):
+        version = self.conn.execute("PRAGMA data_version").fetchone()[0]
+        if version != self._history_version:
+            self._history_cache.clear()
+            self._history_version = version
 
     def history(self, signature: str) -> SignatureHistory:
         with self._lock:
-            rows = self.conn.execute(
-                "SELECT decision, human_label FROM verdict_history WHERE signature=?",
-                (signature,),
-            ).fetchall()
-        h = SignatureHistory(total=len(rows))
-        for decision, label in rows:
-            if decision == "suppress":
-                h.suppressed += 1
-                if label == "overruled":
-                    h.overruled += 1        # we suppressed a real attack
-            else:
-                h.escalated += 1
-                if label == "overruled":
-                    h.false_alarms += 1     # we cried wolf on benign activity
-        return h
+            self._refresh_history_cache()
+            if signature not in self._history_cache:
+                row = self.conn.execute("SELECT COUNT(*),SUM(decision='suppress'),SUM(decision!='suppress'),"
+                    "SUM(decision='suppress' AND human_label='overruled'),SUM(decision!='suppress' AND human_label='overruled') "
+                    "FROM verdict_history WHERE signature=?", (signature,)).fetchone()
+                if len(self._history_cache) >= 4096: self._history_cache.clear()
+                self._history_cache[signature] = SignatureHistory(*(value or 0 for value in row))
+            return replace(self._history_cache[signature])
 
     def label_verdicts(self, signature: str, label: str) -> None:
         """Human feedback loop: mark past verdicts confirmed/overruled."""
         with self._lock:
             self.conn.execute(
-                "UPDATE verdict_history SET human_label=? WHERE signature=?",
-                (label, signature),
+                "UPDATE verdict_history SET human_label=? WHERE signature=? OR substr(signature,1,?)=?",
+                (label, signature, len(signature + ":ctx:"), signature + ":ctx:"),
             )
             self.conn.commit()
+            self._history_cache.clear()
 
     # -- environment facts ---------------------------------------------------
     def add_fact(self, fact: str, scope: str = "*", *, user: str = "",

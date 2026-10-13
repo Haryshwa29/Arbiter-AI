@@ -13,6 +13,19 @@ CHANNELS = ("Security", "System", "Application")
 SYSMON_CHANNEL = "Microsoft-Windows-Sysmon/Operational"
 
 
+def channel_installed(channel):
+    """A registered channel may exist even when Windows cannot open its logger."""
+    if os.name != "nt":
+        return False
+    import winreg
+    try:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                r"SOFTWARE\Microsoft\Windows\CurrentVersion\WINEVT\Channels" + "\\" + channel):
+            return True
+    except OSError:
+        return False
+
+
 def parse_xml(text: str) -> list[dict]:
     if "<!DOCTYPE" in text.upper() or "<!ENTITY" in text.upper() or len(text) > 8 * 1024 * 1024:
         raise ValueError("unsafe or oversized Windows XML")
@@ -57,8 +70,11 @@ class WindowsCollector(Collector):
                 "/rd:true" if newest else "/rd:false", "/c:1" if newest else "/c:200"]
         if cursor is not None:
             args.append(f"/q:*[System[(EventRecordID > {int(cursor)})]]")
-        result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            timeout=15, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        try:
+            result = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                timeout=15, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except subprocess.TimeoutExpired as exc:
+            raise OSError("event query timed out") from exc
         if result.returncode:
             raise OSError("event channel unavailable")
         raw = result.stdout
@@ -83,7 +99,8 @@ class WindowsCollector(Collector):
             except OSError:
                 self.errors += 1
                 self.error = f"{channel}: unavailable or access denied"
-        self.status = "Connected" if available else ("Not detected" if self.config["adapter"] == "sysmon" else "Error")
+        self.status = "Connected" if available else (
+            "Not detected" if self.config["adapter"] == "sysmon" and not channel_installed(SYSMON_CHANNEL) else "Error")
 
     def normalize(self, raw):
         return windows(raw, self.config["adapter"])

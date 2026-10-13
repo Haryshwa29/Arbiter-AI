@@ -218,7 +218,7 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
         ctx.simulator = simulator
         ctx.protection = Protection(ingestion.buffer, store)
         ctx.ingestion = ingestion
-        ingestion.start()
+        ingestion.start(discover=True)
         httpd = build_httpd(ctx, "127.0.0.1", 0)
         for target, args in (
             (httpd.serve_forever, ()),

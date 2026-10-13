@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS audit (
 CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit(ts);
 CREATE INDEX IF NOT EXISTS idx_audit_decision ON audit(decision);
 CREATE INDEX IF NOT EXISTS idx_audit_host ON audit(host);
+CREATE INDEX IF NOT EXISTS idx_audit_event ON audit(event_id, kind);
 """
 
 

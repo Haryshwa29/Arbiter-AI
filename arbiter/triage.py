@@ -7,6 +7,7 @@ nothing is actually suppressed until Arbiter has earned trust.
 from __future__ import annotations
 
 import json
+import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -64,7 +65,7 @@ class TriageEngine:
                 self.stats.guardrail_decided += 1
                 self.stats.total += 1
                 self.stats.escalated += 1
-                self.memory.record_verdict(verdict)
+                self.memory.record_verdict(verdict, context_signature=event.fields.get("_context_signature"))
                 self._audit(event, verdict)
                 return verdict
             downgraded = (hit, fact)
@@ -96,7 +97,7 @@ class TriageEngine:
         else:
             self.stats.suppressed += 1
 
-        self.memory.record_verdict(verdict)
+        self.memory.record_verdict(verdict, context_signature=event.fields.get("_context_signature"))
         self._audit(event, verdict)
         return verdict
 
@@ -117,6 +118,8 @@ class TriageEngine:
 
         try:
             llm = self.llm.triage(event, criticality, summary, facts)
+            if isinstance(llm.confidence, bool) or not math.isfinite(llm.confidence):
+                raise ValueError("invalid model confidence")
         except Exception as exc:  # LLM down/garbled → fail toward escalation
             return Verdict(
                 event_id=event.id, signature=event.signature,

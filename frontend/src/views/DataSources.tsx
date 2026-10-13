@@ -43,7 +43,7 @@ export function DataSources() {
   }
   const active = status?.connectors.filter(c => c.category !== "Demo" && c.name !== "api" && ["Connected", "Listening"].includes(c.status));
   return <div className="flex max-w-6xl flex-col gap-6">
-    <header><h1 className="text-lg font-medium">Data Sources</h1><p className="mt-1 text-sm text-neutral-400">Connect telemetry to the same analysis pipeline used by Demo & Replay.</p></header>
+    <header><h1 className="text-lg font-medium">Data Sources</h1><p className="mt-1 text-sm text-neutral-400">Installed Windows tools are connected automatically: Sysmon activity, osquery inventory and Microsoft Defender detections. Explicitly disabled sources stay disabled.</p></header>
     {error && <p role="alert" className="text-sm text-amber-300">{error}</p>}
     {!status && !error && <p role="status">Loading sources…</p>}
     {status && <>

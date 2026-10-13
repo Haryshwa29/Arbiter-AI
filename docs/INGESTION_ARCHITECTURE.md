@@ -49,10 +49,12 @@ can duplicate memory history. This is an explicit MVP limit, not exactly-once
 processing. Failed analysis remains visible for administrator review. Automatic
 retry of arbitrary failed events is not implemented.
 
-Source, portable and installed runtimes start the same service. Fresh installs
-enable no live collectors. Configuration stores no credentials. Enabling a
+Source, portable and installed runtimes start the same service. Real Windows
+runtimes auto-connect discovered local tools. Configuration stores no credentials. Enabling a
 source persists across restarts; disabling stops it but does not erase events.
-Portable sample replay remains active while live sources are opt-in. Shutdown
+Real Windows runtimes now auto-connect discovered local tools (October 11);
+explicit source disabling is preserved. See `SECURITY_TOOL_INTEGRATIONS.md`.
+Shutdown
 waits for the current local inference call (up to its existing 120-second timeout).
 
 ## Events, observations, alerts, incidents

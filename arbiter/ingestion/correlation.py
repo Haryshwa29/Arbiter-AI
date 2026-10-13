@@ -32,6 +32,25 @@ def correlate(event: SecurityEvent, previous: list[SecurityEvent]) -> list[dict]
         if hot:
             matches.append({"rule": "suspicious_process_network", "events": [p.event_id for p in hot],
                             "severity": 8, "reason": "Outbound connection by a process with an existing guardrail signal"})
+    if event.event_type in {"network_connection", "process_exec"}:
+        from .evidence import artifact
+        path = artifact(event.process_name)
+        malware = [p for p in previous if p.hostname == event.hostname and p.source_type == "defender"
+                   and p.event_type == "malware_detection" and path
+                   and path == artifact(p.file_path)]
+        if malware:
+            matches.append({"rule": "malware_process_network" if event.event_type == "network_connection" else "malware_process_execution", "events": [p.event_id for p in malware[:20]],
+                            "severity": 9, "verified_tool_source": any(p.metadata.get("_collector_origin") == "defender" for p in malware),
+                            "reason": "Activity by the exact executable associated with a recent Defender malware detection on this host"})
+    if event.source_type == "defender" and event.event_type == "malware_detection":
+        from .evidence import artifact
+        paths = {artifact(event.file_path)} - {""}
+        activity = [p for p in previous if p.hostname == event.hostname and p.source_type == "sysmon"
+                    and p.event_type in {"process_exec", "network_connection"}
+                    and artifact(p.process_name) in paths]
+        if activity:
+            matches.append({"rule": "malware_related_process_activity", "events": [p.event_id for p in activity[:20]],
+                            "severity": 9, "reason": "Defender malware detection matches recent Sysmon executable activity; no remediation assumed"})
     if event.event_type == "iam_change":
         logins = [p for p in same_identity if p.event_type == "auth_success"]
         if logins:

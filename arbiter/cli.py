@@ -195,6 +195,11 @@ def main():
                          "lockout. NEVER use outside localhost")
     wp.set_defaults(fn=cmd_serve)
 
+    from .install.monitoring import setup_monitoring
+    mp = sub.add_parser("setup-monitoring", help="install verified local osquery and Sysmon tools; Windows approval required for Sysmon")
+    mp.add_argument("--inventory-only", action="store_true", help="provision read-only osquery without installing the Sysmon driver")
+    mp.set_defaults(fn=setup_monitoring)
+
     args = p.parse_args()
     args.fn(args)
 

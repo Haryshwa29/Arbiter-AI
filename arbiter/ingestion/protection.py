@@ -71,7 +71,10 @@ class Protection:
             return None
         correlations = row["analysis"].get("correlation", [])
         rules = {item["rule"] for item in correlations}
-        target = event["src_ip"] if "repeated_login_failures" in rules else event["dst_ip"] if "suspicious_process_network" in rules else ""
+        if "malware_process_network" in rules and not any(
+                item.get("rule") == "malware_process_network" and item.get("verified_tool_source") is True for item in correlations):
+            rules.discard("malware_process_network")
+        target = event["src_ip"] if "repeated_login_failures" in rules else event["dst_ip"] if rules.intersection({"suspicious_process_network", "malware_process_network"}) else ""
         try:
             if not ipaddress.ip_address(target).is_global: return None
         except ValueError: return None

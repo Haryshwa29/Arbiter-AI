@@ -368,6 +368,7 @@ export interface TelemetryRow {
   id: number; event_id: string; event: TelemetryEvent; state: string; error: string;
   related: string[]; analysis: {
     decision: Decision; tier: Tier; score: number; rationale: string;
+    backend?: string; model?: string;
     evidence: string; kind: "alert" | "observation"; correlation?: unknown; incident_id?: string;
     responses?: {status: string; kind: string; target: string; reason: string}[];
   } | null;

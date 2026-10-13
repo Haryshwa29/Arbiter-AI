@@ -12,6 +12,9 @@ from .collectors.osquery import OsqueryCollector
 from .collectors.suricata import SuricataCollector
 from .collectors.syslog import SyslogCollector
 from .collectors.windows import CHANNELS, WindowsCollector
+from .collectors.wazuh import WazuhCollector
+from .collectors.defender import DefenderCollector
+from .collectors.security import SecurityCollector
 
 
 @dataclass(frozen=True)
@@ -94,6 +97,13 @@ class Registry:
 def default_registry():
     registry = Registry()
     specs = [
+        ConnectorSpec("windows_security", "Windows protection status", "Endpoints", SecurityCollector, "windows_security",
+            {"interval": 300}, description="Automatically observe Defender and firewall protection; disabled controls generate findings. Read-only."),
+        ConnectorSpec("defender", "Microsoft Defender", "Endpoints", DefenderCollector, "defender",
+            {"read_existing": False}, description="Built-in antivirus detections, action results and protection changes; read-only."),
+        ConnectorSpec("wazuh", "Wazuh", "Endpoints", WazuhCollector, "wazuh",
+            {"path": "", "read_existing": False},
+            description="Read a local Wazuh manager alerts.json file. Requires read access; no active response is invoked."),
         ConnectorSpec("windows", "Windows Events", "Endpoints", WindowsCollector, "windows",
             {"channels": ["Security", "System", "Application"], "read_existing": False},
             description="Read Windows logs; Security may require Event Log Readers access."),
