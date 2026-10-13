@@ -4,6 +4,12 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 13 local access: this PC's owner requested a dashboard without sign-in.
+Explicit `serve --local-access` / installed `[server] local_access = true` opens
+as Local owner (admin), requires loopback binding and direct local Host/Origin
+checks, and retains CSRF and typed response approvals. Other installs retain
+password authentication by default. Existing accounts/history are preserved.
+
 October 12 decision integration: reboot verified native Sysmon delivery. High-priority
 Defender/Wazuh/Suricata/GuardDuty findings have a deterministic review floor; osquery
 checks executable startup/process commands against existing rails; Windows protection

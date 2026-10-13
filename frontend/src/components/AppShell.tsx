@@ -72,13 +72,13 @@ export function AppShell() {
               <p className="truncate px-2 text-xs text-neutral-500">
                 {user.username} · {user.role}
               </p>
-              <button
+              {!user.local_access && <button
                 type="button"
                 onClick={() => void logout()}
                 className="rounded-md px-2 py-1.5 text-left text-sm text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/40 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
               >
                 {user.demo ? "Sign out & shut down" : "Sign out"}
-              </button>
+              </button>}
             </div>
           )}
         </aside>

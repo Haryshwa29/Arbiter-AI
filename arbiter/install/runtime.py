@@ -73,7 +73,8 @@ def _run(config_path: Path, health) -> None:
         serve(host=host, port=port, store_db=paths["audit_db"],
               iam_db=paths["iam_db"], mem_db=paths["memory_db"],
               events=paths.get("events", ""), backend=backend, model=model,
-              ollama_url=ollama_url, health_callback=runtime_health)
+              ollama_url=ollama_url, health_callback=runtime_health,
+              local_access=cfg.getboolean("server", "local_access", fallback=False))
     finally:
         if job:
             job.close()

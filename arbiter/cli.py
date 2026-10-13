@@ -112,7 +112,7 @@ def cmd_serve(args):
           iam_db=args.iam_db, mem_db=args.db, demo_feed=args.demo_feed,
           events=args.events, backend=args.backend, model=args.model,
           demo_feed_interval=args.demo_feed_interval,
-          dev_accounts=args.dev_accounts)
+          dev_accounts=args.dev_accounts, local_access=args.local_access)
 
 
 def main():
@@ -176,6 +176,8 @@ def main():
     wp = sub.add_parser("serve",
                         help="run the JSON API the new frontend talks to")
     wp.add_argument("--host", default="127.0.0.1")
+    wp.add_argument("--local-access", action="store_true",
+                    help="open as local owner without sign-in; literal loopback binding only")
     wp.add_argument("--port", type=int, default=8787)
     wp.add_argument("--store-db", default="arbiter_audit.db")
     wp.add_argument("--iam-db", default="arbiter_iam.db")

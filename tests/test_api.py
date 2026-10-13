@@ -114,6 +114,35 @@ class ApiTestCase(unittest.TestCase):
         status, _ = Client(self.port).get("/api/me")
         self.assertEqual(status, 401)
 
+    def test_local_owner_opens_without_password_and_retains_csrf(self):
+        self.ctx.local_access = True
+        c = Client(self.port)
+        status, user = c.get("/api/me")
+        self.assertEqual(status, 200)
+        self.assertEqual(user["role"], "admin")
+        self.assertTrue(user["local_access"])
+        self.assertNotIn("arb_session", c.cookies)
+        self.assertEqual(c.post("/api/label", {"signature": "sig1", "label": "confirmed"}, csrf=False)[0], 403)
+        self.assertEqual(c.post("/api/label", {"signature": "sig1", "label": "confirmed"})[0], 200)
+
+    def test_local_owner_rejects_rebinding_and_cross_site_requests(self):
+        self.ctx.local_access = True
+        for headers in ({"Host": f"attacker.example:{self.port}"},
+                        {"Origin": "http://attacker.example"},
+                        {"Sec-Fetch-Site": "cross-site"},
+                        {"Sec-Fetch-Site": "same-site"},
+                        {"Origin": "null"}):
+            with self.subTest(headers=headers):
+                self.assertEqual(Client(self.port).get("/api/me", headers)[0], 401)
+        origin = f"http://127.0.0.1:{self.port}"
+        self.assertEqual(Client(self.port).get("/api/me", {"Origin": origin, "Sec-Fetch-Site": "same-origin"})[0], 200)
+
+    def test_local_owner_cannot_bind_network_interfaces(self):
+        self.ctx.local_access = True
+        for host in ("0.0.0.0", "192.168.1.10", "::"):
+            with self.subTest(host=host), self.assertRaises(ValueError):
+                build_httpd(self.ctx, host, 0)
+
     def test_login_without_csrf_token_is_rejected(self):
         c = Client(self.port)
         c.get("/api/me")

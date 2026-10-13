@@ -31,6 +31,7 @@ export class UnreachableError extends Error {
 export interface User {
   username: string;
   role: "analyst" | "admin";
+  local_access?: boolean;
   demo?: boolean;
   backend?: "mock" | "ollama";
 }

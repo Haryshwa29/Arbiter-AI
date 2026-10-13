@@ -81,6 +81,7 @@ class Ctx:
     simulator: DemoManager | None = None
     elevate: Callable[[], None] | None = None
     protection: Protection | None = None
+    local_access: bool = False
 
 
 class Hub:
@@ -307,6 +308,19 @@ def make_handler(ctx: Ctx):
             return SimpleCookie(self.headers.get("Cookie", ""))
 
         def _session_user(self) -> dict | None:
+            if ctx.local_access:
+                # Explicit owner mode: no forwarded headers or DNS names can
+                # turn a remote/rebound request into a trusted local request.
+                port = self.server.server_address[1]
+                hosts = {f"127.0.0.1:{port}", f"localhost:{port}", f"[::1]:{port}"}
+                host = self.headers.get("Host", "").lower()
+                origin = self.headers.get("Origin")
+                site = self.headers.get("Sec-Fetch-Site")
+                if (host not in hosts or not ipaddress.ip_address(self.client_address[0]).is_loopback
+                        or site not in (None, "same-origin", "none")
+                        or (origin is not None and origin != "http://" + host)):
+                    return None
+                return {"username": "Local owner", "role": "admin", "local_access": True}
             c = self._cookies()
             tok = c[SESSION_COOKIE].value if SESSION_COOKIE in c else None
             return ctx.iam.verify_session(tok)
@@ -673,6 +687,8 @@ def make_handler(ctx: Ctx):
 
 
 def build_httpd(ctx: Ctx, host: str, port: int) -> ThreadingHTTPServer:
+    if ctx.local_access and not ipaddress.ip_address(host).is_loopback:
+        raise ValueError("local access requires a literal loopback bind address")
     return ThreadingHTTPServer((host, port), make_handler(ctx))
 
 
@@ -714,7 +730,9 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
           demo_feed_interval: float = 2.0,
           dev_accounts: bool = False,
           ollama_url: str = "http://localhost:11434",
-          health_callback=None) -> None:
+          health_callback=None, local_access: bool = False) -> None:
+    if local_access and not ipaddress.ip_address(host).is_loopback:
+        raise ValueError("local access requires a literal loopback bind address")
     if demo_feed and (not events or not Path(events).exists()):
         raise SystemExit(f"--demo-feed needs a real --events file (got {events!r})")
     store = AuditStore(store_db)
@@ -743,7 +761,8 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
         print(f"  analyst  / {analyst_pw}")
 
     mem = Memory(mem_db)
-    ctx = Ctx(store=store, iam=account, memory=mem, hub=Hub(), backend=backend)
+    ctx = Ctx(store=store, iam=account, memory=mem, hub=Hub(), backend=backend,
+              local_access=local_access)
     ctx.ingestion = IngestionService(ingestion_path(store_db), mem, store, backend, model, ollama_url)
     ctx.backend = ctx.ingestion.backend
     ctx.simulator = DemoManager(ctx.ingestion.backend, ctx.ingestion.model, ollama_url)
@@ -763,6 +782,8 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
                 argv = ["-u", str(Path(sys.argv[0]).resolve()), "--db", str(Path(mem_db).resolve()),
                     "serve", "--host", host, "--port", str(port), "--store-db", str(Path(store_db).resolve()),
                     "--iam-db", str(Path(iam_db).resolve()), "--backend", backend, "--model", model]
+                if local_access:
+                    argv.append("--local-access")
                 request_elevation(argv, port)
                 threading.Timer(.5, httpd.shutdown).start()
             ctx.elevate = elevate

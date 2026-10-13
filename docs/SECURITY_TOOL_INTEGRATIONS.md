@@ -202,3 +202,22 @@ seconds: local `qwen3.5:4b`, worker alive, zero processing/normalization failure
 The retained protection snapshot showed all four observed Defender controls and
 all three firewall profiles enabled. This snapshot does not prove freshness of
 every control while collection is delayed.
+
+## Local dashboard access
+
+At the owner's request, this PC can use explicit local-owner access without a
+sign-in form. The installed configuration uses `[server] local_access = true`;
+source servers can opt in with `arbiter serve --local-access`. It is off by
+default for other installations. Anyone able to access this PC's loopback service
+has dashboard administrator privileges in this mode. Existing passwords/accounts
+are preserved, and ordinary deployments still require authentication.
+
+The server refuses to enable this mode on a non-loopback bind address. It checks
+the direct peer address and an exact literal-loopback/localhost Host header;
+cross-site/same-site fetches and mismatched Origin headers cannot use local-owner
+access. Forwarded headers do not grant access. POST requests still require the
+existing CSRF cookie/header check, and typed protective actions still require
+their explicit approval. The sidebar identifies the local owner and hides Sign
+out in this mode. No landing-page data exposure or new runtime dependency is added.
+This sidebar adjustment reused the existing component; Magic/ui-ux pro max
+remain unavailable and were not used.
