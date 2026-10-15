@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import ipaddress
 import json
 import math
+import re
 from typing import Any
 import uuid
 
@@ -23,7 +24,10 @@ def timestamp(value: Any) -> str:
         return now()
     if isinstance(value, (float, int)):
         return datetime.fromtimestamp(value, timezone.utc).isoformat()
-    dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    text = str(value).replace("Z", "+00:00")
+    # Wazuh emits offsets such as +0000; Python 3.10 requires +00:00.
+    text = re.sub(r"([T ].*[+-]\d{2})(\d{2})$", r"\1:\2", text)
+    dt = datetime.fromisoformat(text)
     return dt.replace(tzinfo=dt.tzinfo or timezone.utc).astimezone(timezone.utc).isoformat()
 
 
