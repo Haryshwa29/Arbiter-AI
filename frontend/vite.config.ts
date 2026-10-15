@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig(({ isSsrBuild, mode }) => ({
+  base: mode === 'public' ? process.env.PUBLIC_BASE_PATH || '/' : '/',
   resolve: {
     alias: mode === 'public' ? [{ find: /^\.\/App\.tsx$/, replacement: fileURLToPath(new URL('./src/PublicApp.tsx', import.meta.url)) }] : [],
   },

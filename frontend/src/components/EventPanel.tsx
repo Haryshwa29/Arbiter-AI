@@ -42,7 +42,7 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
     finally {setBusy(false);}
   }
   const analysis = event?.analysis ?? verdict;
-  const reasoningBackend = event?.analysis?.backend ?? (publicDemo ? "mock" : "unrecorded");
+  const reasoningBackend = event?.analysis?.backend ?? "unrecorded";
   const status = event ? eventStatus(event) : verdict ? verdict.decision === "escalate" ? "Alerted · escalated for review" : "Suppressed" : "Loading…";
   return <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onMouseDown={e => {if (e.target === e.currentTarget) onClose();}}>
     <section role="dialog" aria-modal="true" aria-label="Event details" className="flex h-full w-full max-w-2xl flex-col gap-4 overflow-y-auto border-l border-neutral-700 bg-neutral-950 p-6 text-neutral-100" onKeyDown={e => {
@@ -56,7 +56,7 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
         <p className="text-sm text-sky-300">{status}</p>{event && <p className="text-xs text-neutral-400">{eventProgress(event)}</p>}
         {event && <p className="text-xs text-neutral-400">Source: {event.event.source_type}<br/>Occurred: {new Date(event.event.timestamp).toLocaleString()}<br/>Received: {new Date(event.event.received_at).toLocaleString()}</p>}
         <h3 className="font-medium">Analysis</h3><p className="text-sm">{analysis?.rationale ?? event?.error ?? "Waiting for analysis."}</p>
-        {analysis && <><p className="text-xs text-neutral-400">{analysis.tier === "llm" ? reasoningBackend === "mock" ? "Test reasoning heuristic" : reasoningBackend === "ollama" ? `Local AI reasoning (${event?.analysis?.model ?? "recorded model"})` : "Reasoning backend was not recorded" : analysis.tier} · Score {analysis.score.toFixed(1)}</p><p className="text-sm">{analysis.evidence}</p></>}
+        {analysis && <><p className="text-xs text-neutral-400">{analysis.tier === "llm" ? reasoningBackend === "mock" ? "Test reasoning heuristic" : reasoningBackend === "policy-fallback" ? "AI unavailable · escalated by safety policy" : reasoningBackend === "ollama-cloud" ? `Live cloud AI reasoning (${event?.analysis?.model ?? "recorded model"})` : reasoningBackend === "ollama" ? `Local AI reasoning (${event?.analysis?.model ?? "recorded model"})` : "Reasoning backend was not recorded" : analysis.tier} · Score {analysis.score.toFixed(1)}</p><p className="text-sm">{analysis.evidence}</p></>}
         <h3 className="font-medium">Response</h3>
         <p className="text-sm text-neutral-400">{demo ? "Simulation only. No changes are made to your device." : event?.protection_actions?.some(a => a.status === "executed") ? "Approved firewall response recorded below." : "An alert is a detection decision. Review response status below."}</p>
         {actionError && <p role="alert" className="text-amber-300">{actionError}</p>}

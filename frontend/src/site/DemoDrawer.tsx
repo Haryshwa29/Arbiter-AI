@@ -22,8 +22,7 @@ export default function DemoDrawer({onClose}: {onClose: () => void}) {
         else if(!e.shiftKey && document.activeElement === last){e.preventDefault();first?.focus();}
       }
     }}>
-      <header className="public-demo-header"><div><span className="product-eyebrow"><ArbiterMark />TRY ARBITER / ISOLATED SIMULATION</span><p>Your files. The same decision pipeline. Simulated responses.</p></div><button ref={close} onClick={onClose}>Close demo ×</button></header>
-      <p className="public-demo-notice">No login needed. This website demo uses deterministic test reasoning, not a connected AI model. Uploads are processed in a temporary session on the demo server; use sample or sanitized data. Idle sessions expire after 30 minutes. Closing this panel keeps your session available until expiry.</p>
+      <header className="public-demo-header"><div><span className="product-eyebrow"><ArbiterMark />TRY ARBITER / LIVE AI DEMO</span><p>Events arrive live. AI assesses ambiguous alerts. Responses stay simulated.</p></div><button ref={close} onClick={onClose}>Close demo ×</button></header>
       <DemoReplay publicDemo />
     </section>
   </div>;

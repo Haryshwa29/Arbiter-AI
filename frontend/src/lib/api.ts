@@ -391,6 +391,7 @@ export const importDataset = (body: Record<string, unknown>, prepared = false) =
 export const getInventory = () => apiFetch<{assets: {asset_id: string; host: string; last_seen: string; context: Record<string, unknown>}[]}>("/api/ingestion/assets");
 
 export interface DemoStatus {
+  inference?: {backend: string; model?: string; configured: boolean; active?: number; succeeded?: number; failed?: number; error?: string};
   session_id?: string; state: string; total: number; delivered: number; completed: number;
   interval_seconds?: number; error?: string; events: TelemetryRow[];
 }
