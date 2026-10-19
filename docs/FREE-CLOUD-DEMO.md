@@ -53,7 +53,7 @@ status labels. An escalation is not an analysis still in progress.
 
 Git-connected Pages uses root `frontend`, command `npm run build:public`, output
 `dist`. Save `OLLAMA_API_KEY` as a Production Secret and redeploy. Optional plain
-variable `OLLAMA_MODEL` selects a cloud API model ID; default `nemotron-3-super`.
+variable `OLLAMA_MODEL` selects a cloud API model ID; default `nemotron-3-nano:30b` (30-billion-parameter model class).
 The model is configurable and the policy does not depend on Qwen or a particular
 model's name. The API key is never placed in browser code or git. No new runtime
 packages, paid container, purchased domain, or always-on PC is needed.
@@ -84,3 +84,5 @@ Escalations receive a browser response-policy recommendation (not an AI-generate
 command). Approve records a simulated approval; Review defers action. Both remain
 in browser session memory. No device operation, provider call or installed response
 endpoint is invoked by these controls.
+
+Nemotron Super is reserved for a possible future L2 analyst architecture; the current demo uses Nano only. Nano model reference: https://ollama.com/library/nemotron-3-nano:30b-cloud

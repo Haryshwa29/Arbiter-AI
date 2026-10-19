@@ -23,7 +23,7 @@ function provider(data = answer) {
     assert.equal(url, "https://ollama.com/api/chat");
     assert.equal(options.headers.Authorization, "Bearer secret-test");
     const payload = JSON.parse(options.body);
-    assert.equal(payload.model, "nemotron-3-super");
+    assert.equal(payload.model, "nemotron-3-nano:30b");
     assert.equal(payload.messages.length, 2);
     return Response.json({message: {content: JSON.stringify(data)}});
   };
@@ -44,7 +44,7 @@ test("same origin, consent and event limits are enforced before inference", asyn
 test("live answer carries model provenance without actions", async () => {
   provider(); const result = await (await call()).json();
   assert.equal(result.backend, "ollama-cloud");
-  assert.equal(result.model, "nemotron-3-super");
+  assert.equal(result.model, "nemotron-3-nano:30b");
   assert.deepEqual(result.responses, []);
   assert.equal(result.rationale, answer.rationale);
 });

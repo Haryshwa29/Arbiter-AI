@@ -24,6 +24,7 @@ function matchesHistory(row: TelemetryRow, filters: Record<string, string>) {
 function InferenceStatus({session}: {session: DemoStatus | null}) {
   return <section className="rounded-lg border border-purple-800 p-4" aria-label="Live AI service">
       <p className="font-medium">{session?.inference?.model ?? "Nemotron"} · Ollama Cloud</p>
+      {session?.inference?.model === "nemotron-3-nano:30b" && <p className="mt-2 text-xs text-neutral-400">Nemotron 3 Nano · 30 billion parameters (30B).</p>}
       <p className="mt-2 text-sm" role="status">{!session?.inference ? "Checking AI configuration…" : session.inference.backend === "mock" ? "Test service: no AI model is connected" : !session.inference.configured ? "AI unavailable: the website operator must configure the cloud API key" : session.inference.active ? "Analyzing an event now…" : "Cloud AI configured · rules and context decide when model review is needed"}</p>
       {session?.inference?.succeeded !== undefined && <p className="mt-2 text-xs text-neutral-400">AI requests in this run: {session.inference.succeeded} successful · {session.inference.failed ?? 0} failed. Configuration alone does not confirm a working connection.</p>}
       {session?.inference?.error && <p role="alert" className="mt-2 text-sm text-amber-300">{session.inference.error}</p>}
