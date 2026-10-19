@@ -66,6 +66,9 @@ jobs:
       - name: Lint
         run: npx oxlint
 
+      - name: Hosted AI demo contracts
+        run: npm run test:demo
+
       # build:public is the strictest of the three builds: client bundle, SSR
       # bundle, then the prerender script that renders Site() to static HTML.
       # If the landing throws during SSR, this is where it shows up.

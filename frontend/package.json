@@ -9,7 +9,8 @@
     "build": "tsc -b && vite build",
     "build:public": "tsc -b && vite build --mode public && vite build --ssr src/entry-server.tsx --mode public && node scripts/prerender.mjs",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:demo": "node --test scripts/test-cloud-demo.mjs"
   },
   "dependencies": {
     "framer-motion": "^12.43.0",

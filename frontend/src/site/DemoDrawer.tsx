@@ -22,7 +22,7 @@ export default function DemoDrawer({onClose}: {onClose: () => void}) {
         else if(!e.shiftKey && document.activeElement === last){e.preventDefault();first?.focus();}
       }
     }}>
-      <header className="public-demo-header"><div><span className="product-eyebrow"><ArbiterMark />TRY ARBITER / LIVE AI DEMO</span><p>Events arrive live. AI assesses ambiguous alerts. Responses stay simulated.</p></div><button ref={close} onClick={onClose}>Close demo ×</button></header>
+      <header className="public-demo-header"><div><span className="product-eyebrow"><ArbiterMark />TRY ARBITER / LIVE AI DEMO</span><p>Live cloud AI preview. Each selected event gets a new analysis. No device actions.</p></div><button ref={close} onClick={onClose}>Close demo ×</button></header>
       <DemoReplay publicDemo />
     </section>
   </div>;
