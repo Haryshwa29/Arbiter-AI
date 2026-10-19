@@ -8,7 +8,7 @@ uninstall behavior.
 
 ## Download and install (development preview)
 
-1. [Download Install Arbiter.exe for Windows x64](https://github.com/Haryshwa29/Arbiter-AI/releases/download/v0.1.0/Install%20Arbiter.exe).
+1. [Download Install Arbiter.exe for Windows x64](https://github.com/Haryshwa29/Arbiter-AI/releases/download/v0.1.0/Install.Arbiter.exe).
 2. Run the downloaded file and choose **Local AI** or **Rules only**.
 3. Follow the prompts. Missing Python and Ollama can be installed through Windows
    Package Manager; local AI also downloads its model.

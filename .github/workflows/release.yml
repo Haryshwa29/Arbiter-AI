@@ -98,7 +98,10 @@ jobs:
           merge-multiple: true
           path: release
       - name: Add the setup executable to the release checksums
-        run: cd release && sha256sum "Install Arbiter.exe" >> SHA256SUMS
+        run: |
+          cd release
+          mv "Install Arbiter.exe" Install.Arbiter.exe
+          sha256sum Install.Arbiter.exe >> SHA256SUMS
       - uses: softprops/action-gh-release@v2
         with:
           files: release/*
