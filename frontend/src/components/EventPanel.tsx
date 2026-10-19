@@ -41,6 +41,12 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
     catch (e) {setActionError(e instanceof Error ? e.message : "Response failed.");}
     finally {setBusy(false);}
   }
+  async function reviewDemo(choice: "approved-simulation" | "reviewed") {
+    setBusy(true); setActionError("");
+    try {setEvent(await publicDemoApi.reviewResponse(id, choice));}
+    catch (e) {setActionError(e instanceof Error ? e.message : "Could not record review.");}
+    finally {setBusy(false);}
+  }
   const analysis = event?.analysis ?? verdict;
   const reasoningBackend = event?.analysis?.backend ?? "unrecorded";
   const status = event ? eventStatus(event) : verdict ? verdict.decision === "escalate" ? "Alerted · escalated for review" : "Suppressed" : "Loading…";
@@ -64,7 +70,7 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
         {event?.protection_actions?.map(action => <div key={action.id} className="rounded border border-neutral-700 p-3 text-sm">{action.status} · {action.target}<p className="text-xs text-neutral-400">Approved by {action.actor} · Cleanup scheduled for {new Date(action.expires_at).toLocaleString()}{action.status === "expiry_due" ? " · Scheduled expiry is due; removal has not been verified by Arbiter." : ""}</p>{user?.role === "admin" && ["executed", "expiry_due", "failed", "pending"].includes(action.status) && <button disabled={busy} className="mt-2 rounded border border-neutral-600 px-3 py-2" onClick={() => void act(action.id)}>Undo block</button>}</div>)}
         {demo && event?.analysis && !event.analysis.responses?.length && <p className="text-sm text-neutral-400">No protective response selected for this event.</p>}
         {demo && event && !event.analysis && <p className="text-sm text-neutral-400">No simulated response recorded yet.</p>}
-        {event?.analysis?.responses?.map((r, i) => <p key={i} className="rounded border border-neutral-700 p-3 text-sm">{r.status}: {r.kind} · {r.target}<br/>{r.reason}</p>)}
+        {event?.analysis?.responses?.map((r, i) => <div key={i} className="rounded border border-neutral-700 p-3 text-sm">{r.status === "awaiting-approval" ? "Awaiting approval" : r.status === "approved-simulation" ? "Approved (simulation only)" : r.status === "reviewed" ? "Reviewed · action deferred" : r.status}: {r.kind} · {r.target}<br/>{r.reason}{publicDemo && <div className="mt-3 flex flex-wrap gap-2"><button disabled={busy || r.status !== "awaiting-approval"} className="rounded border border-amber-700 px-3 py-2 disabled:opacity-40" onClick={() => void reviewDemo("approved-simulation")}>Approve simulated action</button><button disabled={busy || r.status !== "awaiting-approval"} className="rounded border border-neutral-600 px-3 py-2 disabled:opacity-40" onClick={() => void reviewDemo("reviewed")}>Mark reviewed · defer action</button><p className="w-full text-xs text-neutral-400">Recommendation from the demo response policy; verify targets and impact. Approval records a simulation only. Nothing is executed.</p></div>}</div>)}
         <details open><summary className="cursor-pointer">Event record</summary><pre className="mt-2 overflow-auto rounded bg-neutral-900 p-3 text-xs">{JSON.stringify(event ? {...event.event, raw_event: undefined} : JSON.parse(verdict?.detail ?? "{}"), null, 2)}</pre></details>
         {event && <><details><summary className="cursor-pointer">Original payload</summary><pre className="mt-2 overflow-auto rounded bg-neutral-900 p-3 text-xs">{JSON.stringify(event.event.raw_event, null, 2)}</pre></details><p className="text-xs">Related events: {event.related.join(", ") || "None"}</p></>}
       </>}

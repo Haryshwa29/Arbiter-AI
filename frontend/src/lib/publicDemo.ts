@@ -7,7 +7,7 @@ let generation = 0, succeeded = 0, failed = 0, active = 0;
 let historyToken: string | undefined;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let controller: AbortController | undefined;
-async function request<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+async function request<T>(path: string, body?: unknown, signal?: AbortSignal, attempt = 0): Promise<T> {
   let response: Response;
   try { response = await fetch(`/public-demo/${path}`, {
     method: body === undefined ? "GET" : "POST", credentials: "same-origin",
@@ -16,7 +16,21 @@ async function request<T>(path: string, body?: unknown, signal?: AbortSignal): P
   }); } catch { throw new Error("AI service could not be reached. No AI decision was produced."); }
   if (!response.headers.get("content-type")?.includes("application/json")) throw new Error("The live AI function is not deployed on this website yet.");
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "The cloud AI request failed.");
+  if (!response.ok) {
+    if (path === "analyze" && [429, 502, 503, 504].includes(response.status) && data.code !== "demo_rate_limit" && attempt < 4) {
+      const wait = Math.min(60, Math.max(2, Number(data.retry_after) || 2 ** (attempt + 1)));
+      run.error = `AI temporarily unavailable. Retrying this event in ${wait}s (${attempt + 1}/4).`;
+      await new Promise<void>((resolve, reject) => {
+        if (signal?.aborted) {reject(new Error("Request stopped.")); return;}
+        const stop = () => {clearTimeout(handle); reject(new Error("Request stopped."));};
+        const handle = setTimeout(() => {signal?.removeEventListener("abort", stop); resolve();}, wait * 1000);
+        signal?.addEventListener("abort", stop, {once: true});
+      });
+      return request<T>(path, body, signal, attempt + 1);
+    }
+    throw new Error(data.error || "The cloud AI request failed.");
+  }
+  if (path === "analyze") run.error = undefined;
   return data as T;
 }
 function normalize(raw: unknown): TelemetryEvent {
@@ -74,6 +88,18 @@ function prepare(body: Record<string, unknown>) {
   }
   return {events, files};
 }
+function recommendResponse(event: TelemetryEvent, decision: string) {
+  if (decision !== "escalate") return [];
+  const text = `${event.event_type} ${event.message}`.toLowerCase();
+  let kind = "Investigate and preserve evidence", reason = "Review source logs and nearby events, verify the affected asset with its owner, and preserve evidence before choosing containment.";
+  if (/ransom|encrypt|mass.*rename/.test(text)) {kind = "Isolate affected host after verification"; reason = "Verify unexpected encryption, preserve process and file evidence, then isolate the affected host and check backup integrity. Do not delete evidence.";}
+  else if (/disk|hardware|smart/.test(text)) {kind = "Protect data and inspect disk health"; reason = "Verify disk health alerts, check recoverable backups, reduce nonessential writes and arrange replacement with the asset owner.";}
+  else if (/firewall|expos|0\.0\.0\.0/.test(text)) {kind = "Review and restrict the exposed rule"; reason = "Compare the changed rule with approved access, identify required clients and propose a scoped rollback. Confirm service impact before applying it.";}
+  else if (/login|auth|brute|travel|credential|root.user/.test(text)) {kind = "Verify identity and revoke suspicious access"; reason = "Confirm the activity with the account owner and inspect authentication logs. If unauthorized, revoke affected sessions and reset credentials; verify impact before locking an account.";}
+  else if (/flood|syn|slowloris|ddos/.test(text)) {kind = "Validate traffic and apply scoped rate limits"; reason = "Identify offending traffic and distinguish legitimate demand. Review a temporary rate limit or narrowly scoped source block, preserving access for legitimate clients.";}
+  else if (/process|exec|privilege|tamper|mining|smb/.test(text)) {kind = "Investigate execution and contain affected access"; reason = "Inspect the process tree, signer, account and peer connections. Verify authorization, then propose stopping the specific process or restricting the affected account or host. Preserve evidence first.";}
+  return [{status: "awaiting-approval", kind, target: event.hostname, reason}];
+}
 function snapshot(): DemoStatus {return {...run, events: [...run.events], inference: configuration ? {...configuration, active, succeeded, failed} : undefined};}
 export const publicDemoApi = {
   getDatasets: async () => ({datasets: Object.keys(sampleDatasets)}),
@@ -99,12 +125,12 @@ export const publicDemoApi = {
       if (!event) {run.state = "completed"; return;}
       const row: TelemetryRow = {id: ++run.delivered, event_id: event.event_id, event: {...event, received_at: new Date().toISOString()}, state: "processing", error: "", related: [], analysis: null};
       run.events.unshift(row); active = 1; controller = new AbortController(); const currentController = controller;
-      const timeout = setTimeout(() => currentController.abort(), 55000);
+      const timeout = setTimeout(() => currentController.abort(), 300000);
       try {
         const result = await request<NonNullable<TelemetryRow["analysis"]> & {state?: string}>("analyze", {event: {hostname: event.hostname, source_type: event.source_type,
           event_type: event.event_type, message: event.message, severity: event.severity, timestamp: event.timestamp, fields: event.fields ?? {}}, cloud_consent: true, state: historyToken}, currentController.signal);
         const {state: nextToken, ...analysis} = result;
-        row.analysis = analysis;
+        row.analysis = {...analysis, responses: recommendResponse(event, analysis.decision)};
         if (version === generation) historyToken = nextToken;
         row.state = "completed"; if (version === generation && row.analysis.backend === "ollama-cloud") succeeded++;
       } catch (e) {row.state = "failed"; row.error = e instanceof Error ? e.message : "AI failed"; if (version === generation) {failed++; run.error = row.error;}}
@@ -128,9 +154,16 @@ export const publicDemoApi = {
     const events = run.events.filter(row => {
       if (filters.decision && filters.decision !== (row.analysis?.decision ?? (row.state === "failed" ? "failed" : "pending"))) return false;
       for (const [key, field] of [["host", "hostname"], ["event_type", "event_type"], ["source", "source_type"]]) if (filters[key] && !String(row.event[field]).toLowerCase().includes(filters[key].toLowerCase())) return false;
-      if (filters.response && filters.response !== (row.analysis ? "none" : "pending")) return false;
+      if (filters.response && filters.response !== (row.analysis?.responses?.length ? "selected" : row.analysis ? "none" : "pending")) return false;
       return !filters.search || JSON.stringify([row.event, row.analysis]).toLowerCase().includes(filters.search.toLowerCase());
     }); return {events: events.slice(offset, offset + 100), total: events.length};
   },
-  getEvent: async (id: string) => {const row = run.events.find(row => row.event_id === id); if (!row) throw new Error("This event is not in the current browser session."); return row;},
+  reviewResponse: async (id: string, choice: "approved-simulation" | "reviewed") => {
+    const row = run.events.find(row => row.event_id === id);
+    if (!row?.analysis?.responses?.length) throw new Error("No response recommendation available.");
+    if (row.analysis.responses[0].status !== "awaiting-approval") throw new Error("This recommendation has already been reviewed.");
+    row.analysis.responses[0].status = choice;
+    return {...row};
+  },
+  getEvent: async (id: string) => {const row = run.events.find(row => row.event_id === id); if (!row) throw new Error("This event is not in the current browser session."); return {...row};},
 };

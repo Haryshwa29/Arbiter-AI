@@ -62,7 +62,7 @@ test("provider limits and malformed answers do not become mock verdicts", async 
 });
 test("request allowance blocks repeated calls", async () => {
   provider();
-  for (let i = 0; i < 25; i++) assert.equal((await call()).status, 200);
+  for (let i = 0; i < 500; i++) assert.equal((await call()).status, 200);
   assert.equal((await call()).status, 429);
 });
 test("browser validates files without an AI call and processes fresh events", async () => {
@@ -70,16 +70,23 @@ test("browser validates files without an AI call and processes fresh events", as
   globalThis.fetch = async (url, options) => {
     if (String(url).endsWith("status")) return Response.json({configured: true, model: "nemotron-3-nano:30b", backend: "ollama-cloud"});
     assert.equal(JSON.parse(options.body).event.timestamp, "", "do not invent occurrence time for an untimed event");
-    calls++; return Response.json({...answer, backend: "ollama-cloud", model: "nemotron-3-nano:30b", tier: "llm", score: 5, kind: "alert", responses: []});
+    calls++;
+    if (calls === 1) return Response.json({code:"demo_busy",retry_after:2,error:"Busy"},{status:429});
+    return Response.json({...answer, backend: "ollama-cloud", model: "nemotron-3-nano:30b", tier: "llm", score: 5, kind: "alert", responses: []});
   };
   const body = {datasets: [], uploads: [{filename: "one.jsonl", content: JSON.stringify(event)}], speed: "10x", cloud_consent: true};
   assert.equal((await publicDemoApi.previewDemo(body)).files[0].valid_events, 1); assert.equal(calls, 0);
   await assert.rejects(publicDemoApi.startDemo({...body, cloud_consent: false}));
   await publicDemoApi.startDemo(body);
-  await new Promise(resolve => setTimeout(resolve, 700));
-  const state = await publicDemoApi.getDemo(); assert.equal(state.completed, 1); assert.equal(calls, 1);
+  await new Promise(resolve => setTimeout(resolve, 2700));
+  const state = await publicDemoApi.getDemo(); assert.equal(state.completed, 1); assert.equal(calls, 2);
   assert.equal((await publicDemoApi.getDemoHistory()).total, 1);
   assert.equal((await publicDemoApi.getEvent(state.events[0].event_id)).analysis.backend, "ollama-cloud");
+  const row = state.events[0];
+  assert.equal(row.analysis.responses[0].status, "awaiting-approval");
+  await publicDemoApi.reviewResponse(row.event_id, "approved-simulation");
+  assert.equal((await publicDemoApi.getEvent(row.event_id)).analysis.responses[0].status, "approved-simulation");
+  assert.equal((await publicDemoApi.getDemoHistory(0, {response:"selected"})).total,1);
   await publicDemoApi.controlDemo("stop");
 });
 
@@ -151,4 +158,18 @@ test("policy thresholds are independent of the configured model family", async (
     const result=await (await call('analyze',{event,cloud_consent:true},{OLLAMA_API_KEY:'secret-test',OLLAMA_MODEL:model})).json();
     assert.equal(result.model,model);assert.equal(result.decision,'escalate');assert.equal(result.tier,'llm');
   }
+});
+
+
+test("concurrent visitors receive distinct retryable busy responses", async () => {
+  let release;
+  const gate = new Promise(resolve => {release = resolve;});
+  globalThis.fetch = async () => {await gate; return Response.json({message:{content:JSON.stringify(answer)}});};
+  const pending = Array.from({length:4}, () => call());
+  await new Promise(resolve => setTimeout(resolve, 20));
+  try {
+    const busy = await call(); assert.equal(busy.status,429);
+    assert.equal(busy.headers.get("Retry-After"),"3");
+    assert.equal((await busy.json()).code,"demo_busy");
+  } finally {release(); await Promise.all(pending);}
 });

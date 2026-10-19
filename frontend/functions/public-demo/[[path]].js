@@ -6,7 +6,7 @@ import {readHistory, advanceHistory} from "../../server/demoHistory.js";
 const callers = new Map();
 let windowStart = 0, used = 0, active = 0;
 const headers = {"Content-Type": "application/json", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"};
-const reply = (status, body) => new Response(JSON.stringify(body), {status, headers});
+const reply = (status, body) => new Response(JSON.stringify(body), {status, headers: {...headers, ...(body.retry_after ? {"Retry-After": String(body.retry_after)} : {})}});
 export function resetLimitsForTest() { callers.clear(); windowStart = used = active = 0; }
 
 async function boundedText(stream, max) {
@@ -77,7 +77,8 @@ export async function onRequest({request, env}) {
   if (stamp - windowStart >= 3600000) { windowStart = stamp; used = 0; callers.clear(); }
   const ip = request.headers.get("CF-Connecting-IP") || "unknown";
   const count = callers.get(ip) || 0;
-  if (used >= 100 || count >= 25 || active >= 1) return reply(429, {error: "Free AI demo is busy or its allowance is used. Please try later."});
+  if (active >= 4) return reply(429, {code: "demo_busy", retry_after: 3, error: "Other demo analyses are running. Waiting for a free slot."});
+  if (used >= 2000 || count >= 500) return reply(429, {code: "demo_rate_limit", retry_after: Math.max(1, Math.ceil((windowStart + 3600000 - stamp) / 1000)), error: "Website demo hourly request limit reached. Your Ollama usage allowance is separate."});
   used++; callers.set(ip, count + 1); active++;
   let phase = "connecting";
   const abort = new AbortController();
@@ -95,8 +96,8 @@ export async function onRequest({request, env}) {
     });
     if (!response.ok) {
       await response.body?.cancel();
-      return reply(response.status === 429 ? 429 : 502, {error: response.status === 429
-        ? "Ollama's free allowance is exhausted or busy. No AI decision was produced."
+      return reply(response.status === 429 ? 429 : 502, {...(response.status === 429 ? {code: "provider_busy", retry_after: Math.min(60, Math.max(3, Number(response.headers.get("Retry-After")) || 10))} : {}), error: response.status === 429
+        ? "Ollama temporarily refused this request. This does not establish that your usage allowance is exhausted."
         : "Ollama could not run this model. Check the server key and model access. No AI decision was produced."});
     }
     phase = "reading response";

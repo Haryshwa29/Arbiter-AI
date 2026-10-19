@@ -64,8 +64,8 @@ explicit consent checks precede analysis. Payloads, response lengths, output tok
 budget and request duration are bounded. No payload/key logging is implemented.
 Static pages are excluded from Functions invocation using `_routes.json`.
 
-Limits are best effort per Worker isolate: one active model request, 25 model calls
-per caller IP per hour and 100 total per hour. Deterministic decisions do not consume
+Limits are best effort per Worker isolate: four active model requests, 500 model calls
+per caller IP per hour and 2,000 total per hour. Deterministic decisions do not consume
 that model allowance. Large selections can hit the shared allowance. Multiple
 isolates/restarts can exceed these totals; they are not a distributed spending cap.
 Use provider free-allowance/spending settings and do not add paid credits for a
@@ -75,3 +75,12 @@ Verification includes deterministic parity and controlled-provider tests. Live
 model evaluation must check benign and malicious scenarios separately; successful
 transport alone is not detection accuracy. UI changes adapt existing components;
 21st.dev Magic and ui-ux pro max were unavailable and were not used.
+
+
+Temporary busy responses carry distinct error codes and retry delays. The browser
+retries the same event up to four times without changing its history or inventing
+a verdict. Website hourly limits are explicitly distinguished from provider usage.
+Escalations receive a browser response-policy recommendation (not an AI-generated
+command). Approve records a simulated approval; Review defers action. Both remain
+in browser session memory. No device operation, provider call or installed response
+endpoint is invoked by these controls.
