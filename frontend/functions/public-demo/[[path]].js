@@ -61,9 +61,11 @@ export async function onRequest({request, env}) {
   if (used >= 100 || count >= 25 || active >= 1) return reply(429, {error: "Free AI demo is busy or its allowance is used. Please try later."});
   used++; callers.set(ip, count + 1); active++;
   let phase = "connecting";
+  const abort = new AbortController();
+  const timeout = setTimeout(() => abort.abort(), 45000);
   try {
     const response = await fetch("https://ollama.com/api/chat", {
-      method: "POST", redirect: "error", signal: AbortSignal.timeout(45000),
+      method: "POST", redirect: "manual", signal: abort.signal,
       headers: {"Content-Type": "application/json", Authorization: `Bearer ${env.OLLAMA_API_KEY.trim()}`},
       body: JSON.stringify({model, stream: false, think: false, format: "json",
         options: {temperature: .1, num_predict: 512}, messages: [
@@ -95,6 +97,10 @@ export async function onRequest({request, env}) {
       backend: "ollama-cloud", model, rationale: lowConfidence ? `Low-confidence suppression escalated for review. ${answer.rationale}` : answer.rationale,
       evidence: answer.evidence || (lowConfidence ? `Review ${event.host}: ${event.message}` : ""),
       kind: lowConfidence || answer.decision === "escalate" ? "alert" : "observation", responses: []});
-  } catch { return reply(502, {error: `AI failed while ${phase}. No AI decision was produced.`}); }
-  finally { active--; }
+  } catch (error) {
+    const reason = abort.signal.aborted ? "request timed out" : String(error?.message).toLowerCase().includes("header")
+      ? "invalid server credential header" : String(error?.message).toLowerCase().includes("redirect") ? "provider redirect rejected" : "provider connection or answer unavailable";
+    return reply(502, {error: `AI failed while ${phase}: ${reason}. No AI decision was produced.`});
+  }
+  finally { clearTimeout(timeout); active--; }
 }
