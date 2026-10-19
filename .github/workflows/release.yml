@@ -24,6 +24,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install test dependencies
+        run: python -m pip install pytest
+
       - name: Tests must pass before anything ships
         run: python -m unittest discover -s tests -v
 
@@ -100,7 +103,11 @@ jobs:
         with:
           files: release/*
           generate_release_notes: true
+          name: "${{ github.ref_name }} — Development preview"
           body: |
+            Development preview. Local installation and manual response approval only;
+            continuous boot/sleep reliability remains under validation.
+
             ## Install
 
             **Windows**

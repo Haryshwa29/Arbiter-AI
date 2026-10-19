@@ -6,6 +6,19 @@ the Python installer inside `arbiter-*.pyz` remains the single source of truth
 for layout, configuration, accounts, service registration, upgrade, and
 uninstall behavior.
 
+## Download and install (development preview)
+
+1. [Download Install Arbiter.exe for Windows x64](https://github.com/Haryshwa29/Arbiter-AI/releases/download/v0.1.0/Install%20Arbiter.exe).
+2. Run the downloaded file and choose **Local AI** or **Rules only**.
+3. Follow the prompts. Missing Python and Ollama can be installed through Windows
+   Package Manager; local AI also downloads its model.
+4. Keep the initial account credentials printed by setup and open the local
+   dashboard address it prints.
+
+[All release files and checksums](https://github.com/Haryshwa29/Arbiter-AI/releases/tag/v0.1.0).
+The launcher is unsigned and this is a development preview. Review the source
+and checksums before installation. No cloud inference is used after installation.
+
 ## What the user sees
 
 Setup checks 64-bit Windows, total RAM, and available disk space before making
