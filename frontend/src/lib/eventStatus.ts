@@ -6,9 +6,9 @@ import type { TelemetryRow } from "./api";
 export function eventStatus(row: Pick<TelemetryRow, "state" | "analysis">) {
   if (row.state === "failed") return "Analysis failed";
   if (row.analysis?.decision === "escalate") return "Alerted · escalated for review";
-  if (row.analysis?.decision === "suppress") return "Suppressed";
-  if (row.state === "processing") return "Under observation · analyzing";
-  return "Under observation · awaiting analysis";
+  if (row.analysis?.decision === "suppress") return "Suppressed · no review needed";
+  if (row.state === "processing") return "Analyzing";
+  return row.state === "completed" ? "Analysis unavailable" : "Awaiting analysis";
 }
 
 export function eventProgress(row: Pick<TelemetryRow, "state" | "analysis">) {

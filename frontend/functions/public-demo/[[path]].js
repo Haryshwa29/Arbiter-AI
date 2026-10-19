@@ -1,4 +1,6 @@
 import prompt from "../../server/cloudPrompt.js";
+import {guardrail, downgrade, scopedContext, screening, signature} from "../../server/demoPolicy.js";
+import {readHistory, advanceHistory} from "../../server/demoHistory.js";
 
 // Best-effort per-isolate limits, not a distributed spending cap. No payload logs.
 const callers = new Map();
@@ -38,10 +40,11 @@ export async function onRequest({request, env}) {
   }
   if (!env.OLLAMA_API_KEY) return reply(503, {error: "The website operator must configure OLLAMA_API_KEY."});
   if (!request.headers.get("Content-Type")?.startsWith("application/json")) return reply(415, {error: "Send JSON event data."});
-  let event;
+  let event, stateToken;
   try {
-    const body = JSON.parse(await boundedText(request.body, 16384));
+    const body = JSON.parse(await boundedText(request.body, 65536));
     if (body.cloud_consent !== true) return reply(400, {error: "Confirm cloud processing before starting."});
+    stateToken = body.state;
     const raw = body.event;
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error();
     for (const key of ["hostname", "event_type", "message", "source_type"]) {
@@ -51,8 +54,24 @@ export async function onRequest({request, env}) {
     if (!Number.isFinite(severity) || severity < 0 || severity > 10) throw new Error();
     event = {host: raw.hostname, type: raw.event_type, message: raw.message,
       source: raw.source_type, severity, timestamp: String(raw.timestamp || ""),
-      fields: raw.fields && typeof raw.fields === "object" ? raw.fields : {}};
-  } catch { return reply(400, {error: "Invalid event or event exceeds the 16 KiB request limit."}); }
+      fields: raw.fields && typeof raw.fields === "object" && !Array.isArray(raw.fields) ? Object.fromEntries(Object.entries(raw.fields).filter(([name]) => !name.startsWith("_"))) : {}};
+    if (JSON.stringify(event.fields).length > 12000) throw new Error();
+  } catch { return reply(400, {error: "Invalid event or event exceeds the demo request limit."}); }
+
+  let state;
+  try { state = await readHistory(stateToken, env.OLLAMA_API_KEY); }
+  catch { return reply(400, {error: "Demo history is invalid or expired. Start a new run."}); }
+  const sig = signature(event);
+  const history = Object.hasOwn(state.histories, sig) ? state.histories[sig] : {total:0,suppressed:0,escalated:0};
+  const context = scopedContext(event);
+  const pre = screening(event, history), hit = guardrail(event), standingFact = downgrade(hit,event);
+  async function finish(analysis) {
+    return reply(200, {...analysis, state: await advanceHistory(state,sig,analysis.decision,env.OLLAMA_API_KEY)});
+  }
+  if (hit && !standingFact) return finish({decision:"escalate",tier:"guardrail",score:10,backend:"deterministic",model:"",
+    rationale:`Security guardrail [${hit.code}]: ${hit.reason}.`,evidence:`Non-suppressible signal: ${event.message}`,kind:"alert",responses:[]});
+  if (!standingFact && pre.decision !== "ambiguous") return finish({...pre,tier:"prefilter",backend:"deterministic",model:"",
+    evidence:pre.decision === "escalate" ? `Auto-escalated by prefilter: ${event.message}` : "",kind:pre.decision === "escalate" ? "alert" : "observation",responses:[]});
 
   const stamp = Date.now();
   if (stamp - windowStart >= 3600000) { windowStart = stamp; used = 0; callers.clear(); }
@@ -70,8 +89,8 @@ export async function onRequest({request, env}) {
       body: JSON.stringify({model, stream: false, think: false, format: "json",
         options: {temperature: .1, num_predict: 512}, messages: [
           {role: "system", content: prompt.system},
-          {role: "user", content: JSON.stringify({event, asset_criticality: 1,
-            signature_history: "Hosted preview: no installed-device history is available.", environment_facts: []})},
+          {role: "user", content: JSON.stringify({event, asset_criticality: context.criticality,
+            signature_history: history.total ? `seen ${history.total}x before: ${history.suppressed} suppressed, ${history.escalated} escalated, 0 human-overruled` : "first occurrence of this signature", environment_facts: context.facts})},
         ]}),
     });
     if (!response.ok) {
@@ -93,8 +112,8 @@ export async function onRequest({request, env}) {
       || typeof answer.rationale !== "string" || !answer.rationale.trim()
       || typeof answer.evidence !== "string" || (answer.decision === "escalate" && !answer.evidence.trim())) throw new Error();
     const lowConfidence = answer.decision === "suppress" && answer.confidence < .7;
-    return reply(200, {decision: lowConfidence ? "escalate" : answer.decision, tier: "llm", score: event.severity,
-      backend: "ollama-cloud", model, rationale: lowConfidence ? `Low-confidence suppression escalated for review. ${answer.rationale}` : answer.rationale,
+    return finish({decision: lowConfidence ? "escalate" : answer.decision, tier: "llm", score: pre.score,
+      backend: "ollama-cloud", model, rationale: (standingFact ? `[guardrail ${hit.name} downgraded to LLM decision by standing fact: "${standingFact}"] ` : "") + (lowConfidence ? `Low-confidence suppression escalated for review. ${answer.rationale}` : answer.rationale),
       evidence: answer.evidence || (lowConfidence ? `Review ${event.host}: ${event.message}` : ""),
       kind: lowConfidence || answer.decision === "escalate" ? "alert" : "observation", responses: []});
   } catch (error) {

