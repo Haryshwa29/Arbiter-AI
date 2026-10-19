@@ -7,14 +7,14 @@ export default {
   },
   "facts": [
     {
-      "text": "backups run at 02:00 — nightly IO spike is normal",
+      "text": "backups run at 02:00 — nightly IO spike on db-prod-01 is normal",
       "host": "db-prod-01",
       "event_types": [
         "io_anomaly"
       ]
     },
     {
-      "text": "CI runner process churn is expected",
+      "text": "ci-runner-01 spawns many short-lived containers; process churn is expected",
       "host": "ci-runner-01",
       "event_types": [
         "process_anomaly",

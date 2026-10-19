@@ -140,3 +140,14 @@ test("AI status labels never classify a completed verdict as awaiting analysis",
   assert.equal(eventStatus({state:'processing',analysis:null}),'Analyzing');
   assert.equal(eventStatus({state:'pending',analysis:null}),'Awaiting analysis');
 });
+
+test("policy thresholds are independent of the configured model family", async () => {
+  for (const model of ['nemotron-3-nano:30b','nemotron-3-super']) {
+    globalThis.fetch=async (_url,options) => {
+      assert.equal(JSON.parse(options.body).model,model);
+      return Response.json({message:{content:JSON.stringify({...answer,decision:'suppress',confidence:.6})}});
+    };
+    const result=await (await call('analyze',{event,cloud_consent:true},{OLLAMA_API_KEY:'secret-test',OLLAMA_MODEL:model})).json();
+    assert.equal(result.model,model);assert.equal(result.decision,'escalate');assert.equal(result.tier,'llm');
+  }
+});

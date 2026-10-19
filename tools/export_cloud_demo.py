@@ -15,13 +15,14 @@ from arbiter.facts import render_all
 from arbiter.ingestion.files import parse_upload
 from arbiter.memory import Memory
 from arbiter.prefilter import prefilter
+from arbiter.llm import SYSTEM_PROMPT
 
 
 def artifacts():
     assets = {"db-prod-01": 2, "web-prod-01": 1.6, "ci-runner-01": .8, "dev-laptop-42": .5}
     facts = [
-        {"text": "backups run at 02:00 — nightly IO spike is normal", "host": "db-prod-01", "event_types": ["io_anomaly"]},
-        {"text": "CI runner process churn is expected", "host": "ci-runner-01", "event_types": ["process_anomaly", "process_burst", "process_exec"]},
+        {"text": "backups run at 02:00 — nightly IO spike on db-prod-01 is normal", "host": "db-prod-01", "event_types": ["io_anomaly"]},
+        {"text": "ci-runner-01 spawns many short-lived containers; process churn is expected", "host": "ci-runner-01", "event_types": ["process_anomaly", "process_burst", "process_exec"]},
     ]
     names = ["_SENSITIVE_PORTS", "_SENSITIVE_SVC", "_BROAD_SCOPE", "_INTERNAL", "_EXTERNAL_SINKS", "_LOLBINS", "_LOLBIN_CTX", "_PRIV_MARKER_GROUPS"]
     config = {"assets": assets, "facts": facts, "constants": {name: getattr(guardrails, name) for name in names},
@@ -55,6 +56,7 @@ def artifacts():
             datasets[name] = events
         encode = lambda value: json.dumps(value, ensure_ascii=False, indent=2)
         return {
+            "frontend/server/cloudPrompt.js": "export default " + json.dumps({"system": SYSTEM_PROMPT}) + ";\n",
             "frontend/server/demoPolicyConfig.js": "export default " + encode(config) + ";\n",
             "frontend/src/lib/cloudDemoSamples.ts": "export const sampleDatasets: Record<string, unknown[]> = " + encode(datasets) + ";\n",
             "frontend/scripts/fixtures/policy-parity.json": encode(parity),

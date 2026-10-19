@@ -62,7 +62,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -85,7 +85,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -297,7 +297,7 @@
     "score": 6.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -318,7 +318,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'security_group_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'security_group_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -413,7 +413,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -430,7 +430,7 @@
     "score": 3.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'cron_job' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'cron_job' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -691,7 +691,7 @@
     "score": 1.6,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -821,7 +821,7 @@
     "score": 2.0,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -846,7 +846,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'reverse_shell' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'reverse_shell' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -965,7 +965,7 @@
     "score": 9.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'dns_query_burst' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'dns_query_burst' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1027,7 +1027,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'user_created' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'user_created' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1052,7 +1052,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1093,7 +1093,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1112,7 +1112,7 @@
     "score": 3.2,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1203,7 +1203,7 @@
     "score": 2.8000000000000003,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'sudo_usage' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'sudo_usage' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1317,7 +1317,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1336,7 +1336,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1355,7 +1355,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1374,7 +1374,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1393,7 +1393,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1412,7 +1412,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1431,7 +1431,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1475,7 +1475,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1540,7 +1540,7 @@
     "score": 3.2,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -1702,7 +1702,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'file_integrity' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'file_integrity' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1743,7 +1743,7 @@
     "score": 2.4000000000000004,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1794,7 +1794,7 @@
     "score": 6.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'login' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'login' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1886,7 +1886,7 @@
     "score": 2.8000000000000003,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'auth_anomaly' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'auth_anomaly' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1942,7 +1942,7 @@
     "score": 6.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -1976,7 +1976,7 @@
     "score": 5.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'cron_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'cron_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2011,7 +2011,7 @@
     "score": 6.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'login' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'login' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2064,7 +2064,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2114,7 +2114,7 @@
     "score": 2.0,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -2149,7 +2149,7 @@
     "score": 6.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -2166,7 +2166,7 @@
     "score": 2.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'healthcheck' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'healthcheck' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2240,7 +2240,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2317,7 +2317,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -2577,7 +2577,7 @@
     "score": 6.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'package_update' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'package_update' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2594,7 +2594,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'service_create' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'service_create' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2872,7 +2872,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'security_group_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'security_group_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -2914,7 +2914,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -3094,7 +3094,7 @@
     "score": 2.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'healthcheck' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'healthcheck' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -3587,7 +3587,7 @@
     "score": 2.8000000000000003,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -3604,7 +3604,7 @@
     "score": 7.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'oom' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'oom' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -3676,7 +3676,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -3759,7 +3759,7 @@
     "score": 3.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'maintenance' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'maintenance' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -3866,7 +3866,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_upload' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -4016,7 +4016,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_query' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'data_query' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -4262,7 +4262,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -4408,7 +4408,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -4449,7 +4449,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -4525,7 +4525,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -4542,7 +4542,7 @@
     "score": 4.2,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -4772,7 +4772,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -4789,7 +4789,7 @@
     "score": 4.4,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -4844,7 +4844,7 @@
     "score": 2.72,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -4865,7 +4865,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'firewall_change' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -4901,7 +4901,7 @@
     "score": 4.2,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -4933,7 +4933,7 @@
     "score": 1.6800000000000002,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -4992,7 +4992,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -5047,7 +5047,7 @@
     "score": 2.4000000000000004,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5114,7 +5114,7 @@
     "score": 2.8800000000000003,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -5131,7 +5131,7 @@
     "score": 3.3600000000000003,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -5186,7 +5186,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -5242,7 +5242,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5262,7 +5262,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5282,7 +5282,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5302,7 +5302,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5322,7 +5322,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5342,7 +5342,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5362,7 +5362,7 @@
     "score": 4.0,
     "decision": "ambiguous",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [scope verified: this event matches the fact's scope]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5408,7 +5408,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'process_exec' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -5476,7 +5476,7 @@
     "score": 3.2,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [scope verified: this event matches the fact's scope]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [scope verified: this event matches the fact's scope]"
     ]
   },
   {
@@ -5646,7 +5646,7 @@
     "score": 10.0,
     "decision": "escalate",
     "facts": [
-      "backups run at 02:00 — nightly IO spike is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'file_integrity' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
+      "backups run at 02:00 — nightly IO spike on db-prod-01 is normal [SCOPE MISMATCH — this fact does NOT cover this event: event type 'file_integrity' is not covered (fact covers: io_anomaly). It must not be used to justify suppression.]"
     ]
   },
   {
@@ -5689,7 +5689,7 @@
     "score": 2.4000000000000004,
     "decision": "ambiguous",
     "facts": [
-      "CI runner process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
+      "ci-runner-01 spawns many short-lived containers; process churn is expected [SCOPE MISMATCH — this fact does NOT cover this event: event type 'disk_degradation' is not covered (fact covers: process_anomaly, process_burst, process_exec). It must not be used to justify suppression.]"
     ]
   }
 ]
