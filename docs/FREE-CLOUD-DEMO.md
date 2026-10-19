@@ -34,7 +34,8 @@ Incoming uploaded data cannot assert internal trusted telemetry/collector flags.
 All eight original JSONL datasets and sixteen named Active scenarios are included.
 `python tools/export_cloud_demo.py` regenerates their normalized event data, policy
 constants and Python parity fixtures. CI checks these generated files for drift
-and runs `npm run test:demo`. Labels such as expected decisions are not inputs to
+and runs `npm run test:demo`. Missing occurrence timestamps stay unknown; receive time is not treated as event time.
+Labels such as expected decisions are not inputs to
 cloud inference. Demo assets and the two scoped facts match the demo context.
 Only scope-verified matching facts can explain routine behavior; a fact about IO
 cannot justify a new shell command on the same host.
@@ -52,7 +53,7 @@ status labels. An escalation is not an analysis still in progress.
 
 Git-connected Pages uses root `frontend`, command `npm run build:public`, output
 `dist`. Save `OLLAMA_API_KEY` as a Production Secret and redeploy. Optional plain
-variable `OLLAMA_MODEL` selects a cloud API model ID; default `nemotron-3-nano:30b`.
+variable `OLLAMA_MODEL` selects a cloud API model ID; default `nemotron-3-super`.
 The model is configurable and the policy does not depend on Qwen or a particular
 model's name. The API key is never placed in browser code or git. No new runtime
 packages, paid container, purchased domain, or always-on PC is needed.

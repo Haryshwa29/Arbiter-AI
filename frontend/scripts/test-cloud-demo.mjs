@@ -23,7 +23,7 @@ function provider(data = answer) {
     assert.equal(url, "https://ollama.com/api/chat");
     assert.equal(options.headers.Authorization, "Bearer secret-test");
     const payload = JSON.parse(options.body);
-    assert.equal(payload.model, "nemotron-3-nano:30b");
+    assert.equal(payload.model, "nemotron-3-super");
     assert.equal(payload.messages.length, 2);
     return Response.json({message: {content: JSON.stringify(data)}});
   };
@@ -44,7 +44,7 @@ test("same origin, consent and event limits are enforced before inference", asyn
 test("live answer carries model provenance without actions", async () => {
   provider(); const result = await (await call()).json();
   assert.equal(result.backend, "ollama-cloud");
-  assert.equal(result.model, "nemotron-3-nano:30b");
+  assert.equal(result.model, "nemotron-3-super");
   assert.deepEqual(result.responses, []);
   assert.equal(result.rationale, answer.rationale);
 });
@@ -67,8 +67,9 @@ test("request allowance blocks repeated calls", async () => {
 });
 test("browser validates files without an AI call and processes fresh events", async () => {
   let calls = 0;
-  globalThis.fetch = async url => {
+  globalThis.fetch = async (url, options) => {
     if (String(url).endsWith("status")) return Response.json({configured: true, model: "nemotron-3-nano:30b", backend: "ollama-cloud"});
+    assert.equal(JSON.parse(options.body).event.timestamp, "", "do not invent occurrence time for an untimed event");
     calls++; return Response.json({...answer, backend: "ollama-cloud", model: "nemotron-3-nano:30b", tier: "llm", score: 5, kind: "alert", responses: []});
   };
   const body = {datasets: [], uploads: [{filename: "one.jsonl", content: JSON.stringify(event)}], speed: "10x", cloud_consent: true};

@@ -54,7 +54,7 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
       {error ? <p role="alert">{error}</p> : !event && !verdict ? <p role="status">Loading…</p> : <>
         <h3>{event?.event.event_type ?? verdict?.signature} · {event?.event.hostname ?? verdict?.host}</h3>
         <p className="text-sm text-sky-300">{status}</p>{event && <p className="text-xs text-neutral-400">{eventProgress(event)}</p>}
-        {event && <p className="text-xs text-neutral-400">Source: {event.event.source_type}<br/>Occurred: {new Date(event.event.timestamp).toLocaleString()}<br/>Received: {new Date(event.event.received_at).toLocaleString()}</p>}
+        {event && <p className="text-xs text-neutral-400">Source: {event.event.source_type}<br/>Occurred: {event.event.timestamp ? new Date(event.event.timestamp).toLocaleString() : "Unknown (not supplied)"}<br/>Received: {new Date(event.event.received_at).toLocaleString()}</p>}
         <h3 className="font-medium">Analysis</h3><p className="text-sm">{analysis?.rationale ?? event?.error ?? "Waiting for analysis."}</p>
         {analysis && <><p className="text-xs text-neutral-400">{analysis.tier === "llm" ? reasoningBackend === "mock" ? "Test reasoning heuristic" : reasoningBackend === "policy-fallback" ? "AI unavailable · escalated by safety policy" : reasoningBackend === "ollama-cloud" ? `Live cloud AI reasoning (${event?.analysis?.model ?? "recorded model"})` : reasoningBackend === "ollama" ? `Local AI reasoning (${event?.analysis?.model ?? "recorded model"})` : "Reasoning backend was not recorded" : analysis.tier} · Score {analysis.score.toFixed(1)}</p><p className="text-sm">{analysis.evidence}</p></>}
         <h3 className="font-medium">Response</h3>

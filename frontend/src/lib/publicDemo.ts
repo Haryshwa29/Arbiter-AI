@@ -28,7 +28,7 @@ function normalize(raw: unknown): TelemetryEvent {
   const severity = Number(v.severity ?? 5);
   if (!Number.isFinite(severity) || severity < 0 || severity > 10) throw new Error("Severity must be between 0 and 10.");
   const event = {...v, event_id: crypto.randomUUID(), hostname, event_type, source_type, severity,
-    message: v.message, timestamp: String(v.timestamp || new Date().toISOString()), received_at: new Date().toISOString(),
+    message: v.message, timestamp: String(v.timestamp || ""), received_at: new Date().toISOString(),
     event_category: String(v.event_category || "demo"), username: String(v.username || ""), metadata: {}, raw_event: v,
     fields: v.fields ?? (v.raw_event as Record<string, unknown> | undefined)?.fields ?? {}} as TelemetryEvent;
   if (new TextEncoder().encode(JSON.stringify(event)).length > 12000) throw new Error("Each preview event must fit within 12 KiB.");

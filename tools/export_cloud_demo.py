@@ -45,7 +45,7 @@ def artifacts():
                 event = telemetry.to_event()
                 raw = telemetry.raw_event
                 if not isinstance(raw, dict) or not raw.get("timestamp"):
-                    event.timestamp = "2026-01-01T00:00:00+00:00"
+                    event.timestamp = ""
                 data = {"source_type": event.source, "hostname": event.host, "event_type": event.event_type,
                         "message": event.message, "severity": event.severity, "timestamp": event.timestamp, "fields": event.fields}
                 events.append(data)

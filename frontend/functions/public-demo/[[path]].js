@@ -29,7 +29,7 @@ async function boundedText(stream, max) {
 
 export async function onRequest({request, env}) {
   const url = new URL(request.url);
-  const model = env.OLLAMA_MODEL || "nemotron-3-nano:30b";
+  const model = env.OLLAMA_MODEL || "nemotron-3-super";
   if (url.pathname === "/public-demo/status" && request.method === "GET") {
     return reply(200, {backend: "ollama-cloud", model, configured: Boolean(env.OLLAMA_API_KEY)});
   }
