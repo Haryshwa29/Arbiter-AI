@@ -60,10 +60,11 @@ export async function onRequest({request, env}) {
   const count = callers.get(ip) || 0;
   if (used >= 100 || count >= 25 || active >= 1) return reply(429, {error: "Free AI demo is busy or its allowance is used. Please try later."});
   used++; callers.set(ip, count + 1); active++;
+  let phase = "connecting";
   try {
     const response = await fetch("https://ollama.com/api/chat", {
       method: "POST", redirect: "error", signal: AbortSignal.timeout(45000),
-      headers: {"Content-Type": "application/json", Authorization: `Bearer ${env.OLLAMA_API_KEY}`},
+      headers: {"Content-Type": "application/json", Authorization: `Bearer ${env.OLLAMA_API_KEY.trim()}`},
       body: JSON.stringify({model, stream: false, think: false, format: "json",
         options: {temperature: .1, num_predict: 512}, messages: [
           {role: "system", content: prompt.system},
@@ -77,10 +78,14 @@ export async function onRequest({request, env}) {
         ? "Ollama's free allowance is exhausted or busy. No AI decision was produced."
         : "Ollama could not run this model. Check the server key and model access. No AI decision was produced."});
     }
+    phase = "reading response";
     const result = JSON.parse(await boundedText(response.body, 65536));
     const content = result.message?.content;
+    phase = "reading model answer";
     if (typeof content !== "string") throw new Error();
+    phase = "parsing model answer";
     const answer = JSON.parse(content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1));
+    phase = "validating model answer";
     if (!["escalate", "suppress"].includes(answer.decision) || typeof answer.confidence !== "number"
       || !Number.isFinite(answer.confidence) || answer.confidence < 0 || answer.confidence > 1
       || typeof answer.rationale !== "string" || !answer.rationale.trim()
@@ -90,6 +95,6 @@ export async function onRequest({request, env}) {
       backend: "ollama-cloud", model, rationale: lowConfidence ? `Low-confidence suppression escalated for review. ${answer.rationale}` : answer.rationale,
       evidence: answer.evidence || (lowConfidence ? `Review ${event.host}: ${event.message}` : ""),
       kind: lowConfidence || answer.decision === "escalate" ? "alert" : "observation", responses: []});
-  } catch { return reply(502, {error: "AI timed out or returned an invalid answer. No AI decision was produced."}); }
+  } catch { return reply(502, {error: `AI failed while ${phase}. No AI decision was produced.`}); }
   finally { active--; }
 }
