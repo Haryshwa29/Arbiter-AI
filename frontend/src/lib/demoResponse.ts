@@ -7,7 +7,7 @@ export function initializeDemoResponse(row: TelemetryRow, now = Date.now() / 100
   const window = {critical: 60, high: 300, medium: 1800, low: null}[severity];
   row.response_case = {event_id: row.event_id, severity, deadline: window === null ? null : now + window,
     state: "pending", mode: "review", deferred: false, simulation: true,
-    note: "Review required. Deadline expiry marks this demo case overdue; no device changes are made."};
+    note: window === null ? "Low severity has no automatic deadline. Review the event and record your findings; no device changes are made." : "Review required. Deadline expiry marks this demo case overdue; no device changes are made."};
   row.response_schedule_available = !!row.analysis.responses?.length && window !== null;
   if (!row.analysis.guidance) {
     const packageUpdate = /package|update/.test(row.event.event_type);

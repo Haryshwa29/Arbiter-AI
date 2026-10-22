@@ -83,7 +83,7 @@ class ResponseWorkflow:
             case = {"event_id": row["event_id"], "severity": severity, "window": window,
                     "deadline": created + window if window is not None else None,
                     "state": "pending", "mode": "review", "deferred": False,
-                    "note": "Review required. Deadline expiry marks this case overdue; it does not authorize containment.",
+                    "note": "Low severity has no automatic deadline. Operator review remains available." if window is None else "Review required. Deadline expiry marks this case overdue; it does not authorize containment.",
                     "simulation": self.simulation}
             self.save(case, "l1_review_created")
             return case
