@@ -1,126 +1,52 @@
-import { useCallback, useEffect, useState } from "react";
-import { getDay, getSummary, getRecords } from "../lib/api";
+import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { getDay, getSummary, getRecords, parseDetail } from "../lib/api";
 import type { DayBucket, SummaryResponse, RecordRow } from "../lib/api";
+import { DASH_BASE } from "../lib/routing";
 import { EventPanel } from "../components/EventPanel";
-import { StatTile } from "../components/StatTile";
 import { VolumeChart } from "../components/VolumeChart";
-import { ErrorNotice } from "../components/ErrorNotice";
-
-const WINDOWS = [
-  { hours: 24 as const, label: "24h" },
-  { hours: 72 as const, label: "72h" },
-  { hours: 168 as const, label: "7d" },
-];
+import { SignalMap, DecisionRing } from "../components/SignalMap";
 
 export function Overview() {
   const [recent, setRecent] = useState<RecordRow[]>([]);
   const [eventId, setEventId] = useState<string | null>(null);
   const [summary, setSummary] = useState<SummaryResponse | null>(null);
-  const [summaryError, setSummaryError] = useState(false);
   const [buckets, setBuckets] = useState<DayBucket[]>([]);
-  const [bucketsError, setBucketsError] = useState(false);
   const [hours, setHours] = useState<24 | 72 | 168>(24);
-  const [loading, setLoading] = useState(true);
-
-  // `useCallback` so the Retry buttons below can call the same function the
-  // effects use, rather than duplicating the fetch-and-set logic.
-  const loadSummary = useCallback(() => {
-    setSummaryError(false);
-    getSummary()
-      .then(setSummary)
-      .catch(() => setSummaryError(true));
-  }, []);
-
-  const loadDay = useCallback(() => {
-    setLoading(true);
-    setBucketsError(false);
-    getDay(hours)
-      .then((r) => setBuckets(r.buckets))
-      .catch(() => setBucketsError(true))
-      .finally(() => setLoading(false));
-  }, [hours]);
-
+  const [error, setError] = useState("");
+  const [updated, setUpdated] = useState("");
   useEffect(() => {
-    const refresh = () => {loadSummary(); void getRecords({limit: 10}).then(r => setRecent(r.rows)).catch(() => {});};
-    refresh(); const timer = setInterval(refresh, 3000); return () => clearInterval(timer);
-  }, [loadSummary]);
-  useEffect(loadDay, [loadDay]);
-
-  const prefilterShare =
-    summary && summary.today.today > 0
-      ? Math.round((summary.today.prefilter / summary.today.today) * 100)
-      : null;
-
-  return (
-    <div className="flex max-w-4xl flex-col gap-8">
-      <div>
-        <h1 className="text-lg font-medium text-neutral-900 dark:text-neutral-100">Overview</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          How much this handled for you, and how much needed you.
-        </p>
-      </div>
-
-      {summaryError ? (
-        <section className="rounded-lg border border-neutral-200 dark:border-neutral-800">
-          <ErrorNotice message="Couldn't load today's and lifetime stats." onRetry={loadSummary} />
-        </section>
-      ) : (
-        <>
-          <section>
-            <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">Today</h2>
-            <div className="grid grid-cols-3 gap-3">
-              <StatTile label="Verdicts today" value={summary?.today.today ?? "—"} />
-              <StatTile label="Escalated today" value={summary?.today.escalated ?? "—"} accent="red" />
-              <StatTile
-                label="Prefilter share"
-                value={prefilterShare !== null ? `${prefilterShare}%` : "—"}
-              />
-            </div>
-          </section>
-
-          <section>
-            <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-neutral-500">Lifetime</h2>
-            <div className="grid grid-cols-3 gap-3">
-              <StatTile label="Triaged" value={summary?.lifetime.triaged ?? "—"} />
-              <StatTile label="Suppressed" value={summary?.lifetime.suppressed ?? "—"} />
-              <StatTile label="Escalated" value={summary?.lifetime.escalated ?? "—"} accent="red" />
-            </div>
-          </section>
-        </>
-      )}
-
-      {eventId && <EventPanel id={eventId} onClose={() => setEventId(null)} />}
-      <section><h2 className="mb-3 text-sm">Recent device detections</h2><p className="mb-3 text-xs text-neutral-400">Detection decisions; no protective actions have been executed.</p>{recent.map(row => <button key={row.id} className="mb-2 block w-full rounded border border-neutral-700 p-3 text-left text-sm" onClick={() => setEventId(row.event_id)}>{row.decision === "escalate" ? "Alert" : "Observation"} · {row.host} · {row.signature}<span className="block text-xs text-neutral-400">{row.rationale}</span></button>)}</section>
-      <section>
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-xs font-medium uppercase tracking-wide text-neutral-500">Volume</h2>
-          <div className="flex gap-1 rounded-md border border-neutral-200 p-0.5 dark:border-neutral-800">
-            {WINDOWS.map((w) => (
-              <button
-                key={w.hours}
-                type="button"
-                onClick={() => setHours(w.hours)}
-                className={`rounded px-2 py-1 text-xs transition-colors ${
-                  hours === w.hours
-                    ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
-                    : "text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-300"
-                }`}
-              >
-                {w.label}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-lg border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-900/40">
-          {bucketsError ? (
-            <ErrorNotice message="Couldn't load volume." onRetry={loadDay} />
-          ) : loading ? (
-            <p className="py-12 text-center text-sm text-neutral-500">Loading…</p>
-          ) : (
-            <VolumeChart buckets={buckets} />
-          )}
-        </div>
-      </section>
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    async function refresh() {
+      try {
+        const [stats, day, records] = await Promise.all([getSummary(), getDay(hours), getRecords({limit: 100})]);
+        if (active) {setSummary(stats); setBuckets(day.buckets); setRecent(records.rows); setError(""); setUpdated(new Date().toLocaleTimeString());}
+      } catch {if (active) setError("Could not refresh analytics. Displayed values may be from the last successful update.");}
+      if (active) timer = setTimeout(() => void refresh(), 5000);
+    }
+    void refresh();
+    return () => {active = false; clearTimeout(timer);};
+  }, [hours]);
+  const suppressed = buckets.reduce((n, b) => n + b.suppressed, 0);
+  const escalated = buckets.reduce((n, b) => n + b.escalated, 0);
+  const total = suppressed + escalated;
+  const share = summary?.today.today ? Math.round(summary.today.prefilter / summary.today.today * 100) : null;
+  return <div className="overview-premium">
+    <header className="overview-heading"><div><p className="eyebrow">SECURITY, IN PERSPECTIVE</p><h1>Your environment.<br/><span>Clarity in every signal.</span></h1><p>A clear view of the signals, the reasoning, and what needs you.</p></div><div className="overview-status"><span className="dot quiet-dot"/> {error ? "Refresh interrupted" : updated ? "Analytics connected" : "Connecting"}<small>{updated ? `Last updated ${updated}` : "Loading local records"}</small><Link to={`${DASH_BASE}/live`}>Open live workspace ↗</Link></div></header>
+    {error && <p role="alert" className="text-sm text-amber-300">{error} Retrying automatically.</p>}
+    <section className="metric-grid" aria-label="Today's security metrics">
+      {[{label: "Events triaged", value: summary?.today.today, note: "Today · completed verdicts", color: "gold"}, {label: "Escalated for review", value: summary?.today.escalated, note: "Today · alerts, not actions", color: "coral"}, {label: "Prefilter share", value: share === null ? undefined : `${share}%`, note: "Today · deterministic decisions", color: "blue"}, {label: "Lifetime triaged", value: summary?.lifetime.triaged, note: "All recorded verdicts", color: "mint"}].map(metric => <article key={metric.label} className={`premium-panel metric metric-${metric.color}`}><p>{metric.label}</p><strong>{metric.value ?? "—"}</strong><span>{metric.note}</span></article>)}
+    </section>
+    <SignalMap events={recent.map(row => ({id: row.event_id, source: parseDetail(row)?.source || "Unknown", decision: row.decision}))} onInspect={setEventId}/>
+    <div className="analytics-grid">
+      <section className="premium-panel chart-panel"><div className="panel-heading"><div><p className="eyebrow">THE BIGGER PICTURE</p><h2>Signal volume</h2></div><div className="window-tabs" aria-label="Analytics time window">{([24,72,168] as const).map(h => <button key={h} aria-pressed={hours === h} onClick={() => {setHours(h); setBuckets([]);}}>{h === 168 ? "7d" : `${h}h`}</button>)}</div></div><p className="chart-summary"><strong>{total.toLocaleString()}</strong> verdicts in the selected window</p><VolumeChart buckets={buckets}/></section>
+      <section className="premium-panel mix-panel"><p className="eyebrow">DECISION BALANCE</p><h2>Attention, where it matters</h2><DecisionRing suppressed={suppressed} escalated={escalated}/><div className="mix-legend"><span><i className="dot quiet-dot"/> Suppressed <strong>{suppressed}</strong></span><span><i className="dot alert-dot"/> Escalated <strong>{escalated}</strong></span></div><p className="text-xs text-neutral-400">Selected {hours === 168 ? "7-day" : `${hours}-hour`} window · suppression is a verdict, not a guarantee of safety.</p></section>
     </div>
-  );
+    <div className="analytics-grid">
+      <section className="premium-panel recent-panel"><div className="panel-heading"><div><p className="eyebrow">FROM SIGNAL TO EXPLANATION</p><h2>Latest decisions</h2></div><Link to={`${DASH_BASE}/audit`}>View audit ↗</Link></div>{recent.slice(0,5).map(row => <button key={row.id} className="decision-row" onClick={() => setEventId(row.event_id)}><span className={`decision-badge ${row.decision}`}>{row.decision === "escalate" ? "REVIEW" : "QUIET"}</span><span><strong>{row.host}</strong><small>{row.signature}</small><p>{row.rationale}</p></span><span className="row-arrow">↗</span></button>)}{!recent.length && <p className="empty-copy">{updated ? "No recorded decisions yet. Enable a data source to begin." : "Loading recent decisions…"}</p>}</section>
+      <section className="premium-panel tier-panel"><p className="eyebrow">HOW DECISIONS WERE REACHED</p><h2>Analysis paths</h2><p className="text-xs text-neutral-400">Latest {recent.length} verdicts · independent of chart window</p>{[{id:"prefilter", name:"Deterministic screening",color:"#82b5f4"},{id:"llm", name:"Model analysis",color:"#b1a3ef"},{id:"guardrail", name:"Security guardrails",color:"#dcc080"}].map(t => {const count = recent.filter(r => r.tier === t.id).length;return <div className="tier-item" key={t.id}><div><span>{t.name}</span><strong>{count}</strong></div><div className="tier-track"><span style={{width:`${recent.length ? count/recent.length*100 : 0}%`, background:t.color}}/></div></div>;})}<p className="empty-copy">Open a decision to inspect its evidence, model provenance and recommended next steps.</p></section>
+    </div>
+    {eventId && <EventPanel id={eventId} onClose={() => setEventId(null)}/>}
+  </div>;
 }

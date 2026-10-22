@@ -4,12 +4,11 @@ import { ApiError } from "../lib/api";
 import { publicDemoApi } from "../lib/publicDemo";
 import type { DemoStatus, ImportSummary, TelemetryRow } from "../lib/api";
 import { useOptionalAuth } from "../lib/auth";
+import { DemoAnalytics } from "../components/DemoAnalytics";
+import { SignalMap } from "../components/SignalMap";
 import { EventPanel } from "../components/EventPanel";
-
 import { eventStatus, eventProgress } from "../lib/eventStatus";
-
 const control = "rounded border border-neutral-600 bg-neutral-900 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-sky-500 disabled:opacity-40";
-
 function matchesHistory(row: TelemetryRow, filters: Record<string, string>) {
   const decision = row.state === "failed" ? "failed" : row.analysis?.decision ?? "pending";
   if (filters.decision && filters.decision !== decision) return false;
@@ -20,7 +19,6 @@ function matchesHistory(row: TelemetryRow, filters: Record<string, string>) {
   if (filters.response && filters.response !== response) return false;
   return !filters.search || JSON.stringify([row.event, row.analysis]).toLowerCase().includes(filters.search.toLowerCase());
 }
-
 function InferenceStatus({session}: {session: DemoStatus | null}) {
   return <section className="rounded-lg border border-purple-800 p-4" aria-label="Live AI service">
       <p className="font-medium">{session?.inference?.model === "nemotron-3-nano:30b" ? "Nemotron 3 Nano · 30B" : session?.inference?.model ?? "Nemotron"} · Ollama Cloud</p>
@@ -30,7 +28,6 @@ function InferenceStatus({session}: {session: DemoStatus | null}) {
       <p className="mt-2 text-xs text-neutral-400">Security rules run first. Ambiguous events receive asset context, scoped demo facts and verified session history before live AI analysis. Open an event to see its decision tier and evidence. This browser demo does not collect device activity or execute responses.</p>
     </section>;
 }
-
 export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
   const auth = useOptionalAuth();
   const user = publicDemo ? {role: "admin", backend: "mock"} : auth?.user;
@@ -101,7 +98,7 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
   const filteredHistory = historyEvents.filter(row => matchesHistory(row, historyFilters));
   function changeHistoryFilter(key: string, value: string) {setHistoryFilters({...historyFilters, [key]: value});setHistoryOffset(0);}
   const active = session && ["running", "paused"].includes(session.state);
-  return <div className="flex max-w-3xl flex-col gap-5">
+  return <div className="operations-view flex max-w-5xl flex-col gap-5">
     <header><h1 className="text-lg font-medium">Demo & Replay</h1><p className="mt-2 text-sm text-neutral-400">A separate simulation workspace. Demo records never enter real monitoring, its counts, or device responses.</p></header>
     {publicDemo && <InferenceStatus session={session} />}
     {error && <p role="alert" className="text-amber-300">{error}</p>}
@@ -132,6 +129,8 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
         <p className="mt-2 text-sm text-amber-300">SIMULATION · Responses are simulated. Your PC is never modified by demo events.</p>
         <p className="mt-4 text-sm" role="status">{session?.state} · {session?.delivered ?? 0} / {session?.total ?? 0} delivered · {session?.completed ?? 0} processed</p>
         <p className="mt-2 text-sm text-neutral-300">{currentEvents.filter(e => e.analysis?.decision === "suppress").length} suppressed · {currentEvents.filter(e => e.analysis?.decision === "escalate").length} escalated for review · {currentEvents.filter(e => !e.analysis && e.state !== "failed").length} awaiting analysis · {currentEvents.filter(e => e.state === "failed").length} failed</p>
+        {<SignalMap key={session?.session_id} demo events={currentEvents.map(row => ({id: row.event_id, source: row.event.source_type, decision: row.analysis?.decision}))} onInspect={setDetail} />}
+        <DemoAnalytics events={currentEvents} delivered={session?.delivered ?? 0} completed={session?.completed ?? 0} />
         <progress className="mt-2 w-full" max={session?.total || 1} value={session?.delivered ?? 0}/>
         {user?.role === "admin" && <div className="my-4 flex gap-3"><button className={control} disabled={busy || session?.state !== "running"} onClick={() => void action("pause")}>Pause delivery</button><button className={control} disabled={busy || session?.state !== "paused"} onClick={() => void action("resume")}>Resume</button><button className={control} disabled={busy || !active} onClick={() => void action("stop")}>Stop delivery</button></div>}
         <p className="mb-4 text-xs text-neutral-400">Pause and Stop halt new arrivals; analysis already queued can finish. Session history lasts until a new simulation; hosted preview history is also cleared on page refresh.</p>
@@ -165,7 +164,6 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
           <button className={`${control} mt-3`} onClick={() => setDetail(row.event_id)}>Inspect original event & full details</button>
         </td></tr>}</Fragment>)}</tbody></table>{!(history ? filteredHistory.length : currentEvents.length) && <p className="p-6 text-sm text-neutral-400">{history ? "No simulation events match these filters." : "Waiting for the first event…"}</p>}</div>
         {history && <div className="mt-4 flex items-center gap-3"><button className={control} disabled={!historyOffset} onClick={() => setHistoryOffset(Math.max(0, historyOffset - 100))}>Newer</button><span className="text-xs">{filteredHistory.length ? `${historyOffset + 1}–${historyOffset + filteredHistory.length}` : "0 events"}</span><button className={control} disabled={historyTotal !== null ? historyOffset + 100 >= historyTotal : filteredHistory.length < 100} onClick={() => setHistoryOffset(historyOffset + 100)}>Older</button></div>}
-
       </section>
     </div>}
     {detail && <EventPanel id={detail} demo publicDemo={publicDemo} onClose={() => setDetail(null)}/>}

@@ -1,7 +1,6 @@
 import { NavLink, Outlet } from "react-router";
 import { useAuth } from "../lib/auth";
 import { DASH_BASE } from "../lib/routing";
-
 // Explicit DASH_BASE-prefixed paths — see the comment on RequireAuth in
 // App.tsx for why bare relative targets aren't safe in this pathless
 // layout-route context.
@@ -13,12 +12,10 @@ const NAV_ITEMS = [
   { to: `${DASH_BASE}/audit`, label: "Verdicts & audit" },
   { to: `${DASH_BASE}/assets`, label: "Assets & facts" },
 ];
-
 export function AppShell() {
   const { user, logout, reachable } = useAuth();
-
   return (
-    <div className="flex h-full flex-col">
+    <div className="premium-dashboard flex h-full flex-col">
       {user?.demo && (
         <div role="status" className="shrink-0 bg-amber-950 px-4 py-2 text-center text-sm text-amber-200">
           Sample replay active · Live sources collect only after you enable them in Data Sources
@@ -42,20 +39,18 @@ export function AppShell() {
           running, then retry below. This clears on its own once a request gets through again.
         </div>
       )}
-
-      <div className="flex min-h-0 flex-1">
-        <aside className="flex w-56 shrink-0 flex-col border-r border-neutral-200 bg-white px-3 py-4 dark:border-neutral-800 dark:bg-neutral-900/40">
-          <p className="mb-6 px-2 text-sm font-medium tracking-wide text-neutral-600 dark:text-neutral-400">
-            Arbiter AI
+      <div className="flex min-h-0 flex-1 flex-col md:flex-row">
+        <aside className="premium-sidebar flex w-full shrink-0 flex-col border-b border-neutral-200 bg-white px-3 py-3 md:w-56 md:border-b-0 md:border-r md:py-4 dark:border-neutral-800 dark:bg-neutral-900/40">
+          <p className="mb-2 px-2 text-sm font-medium tracking-wide text-neutral-600 md:mb-6 dark:text-neutral-400">
+            <span className="brand-mark">A</span> ARBITER <span className="brand-ai">AI</span>
           </p>
-
-          <nav className="flex flex-1 flex-col gap-0.5">
+          <nav aria-label="Dashboard" className="flex gap-1 overflow-x-auto md:flex-1 md:flex-col md:gap-0.5">
             {NAV_ITEMS.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `rounded-md px-2 py-1.5 text-sm transition-colors ${
+                  `flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-md px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400 ${
                     isActive
                       ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
                       : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-200"
@@ -66,9 +61,8 @@ export function AppShell() {
               </NavLink>
             ))}
           </nav>
-
           {user && (
-            <div className="flex flex-col gap-2 border-t border-neutral-200 pt-3 dark:border-neutral-800">
+            <div className="mt-2 flex items-center justify-between gap-2 md:mt-0 md:flex-col md:items-stretch md:border-t md:border-neutral-800 md:pt-3">
               <p className="truncate px-2 text-xs text-neutral-500">
                 {user.username} · {user.role}
               </p>
@@ -82,8 +76,8 @@ export function AppShell() {
             </div>
           )}
         </aside>
-
-        <main className="min-w-0 flex-1 overflow-y-auto p-6">
+        <main className="premium-main min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
+          <div className="workspace-bar"><span>PRIVATE INTELLIGENCE WORKSPACE</span><span>{reachable ? "Backend reachable" : "Connection interrupted"} · {user?.backend === "mock" ? "Test backend" : "Local workspace"}</span></div>
           <Outlet />
         </main>
       </div>
