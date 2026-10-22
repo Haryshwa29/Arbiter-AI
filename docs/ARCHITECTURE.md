@@ -2,6 +2,8 @@
 
 > A self-hosted AI security analyst for companies with no security team.
 > Your data never leaves your network. For the full product vision see [`CONCEPT.md`](../CONCEPT.md).
+>
+> **New direction:** Arbiter is evolving from a single-host analyst into a controller + trusted edge architecture for authorized remote breach response. See [`BREACH_CONTAINMENT_ARCHITECTURE.md`](BREACH_CONTAINMENT_ARCHITECTURE.md).
 
 ![Arbiter architecture](architecture.svg)
 
@@ -47,6 +49,27 @@ flowchart TD
 The guardrail layer wraps the model on both sides — `Event → guardrails → LLM → guardrails → Decision`. See "Guardrails" below for why.
 
 The cost-control idea: a cheap rule-based **prefilter** handles the large majority of events (an LLM call per alert is far too expensive at log volume), and the **local LLM** only sees the ambiguous minority. The model runs on the customer's own hardware via Ollama (open weights), which is what makes "nothing leaves the network" true rather than marketing.
+
+## Remote deployment model
+
+The same decision pipeline now has a defined path for remote breach response:
+
+```text
+protected endpoint / sensor
+    -> Arbiter Edge Agent
+    -> authenticated encrypted telemetry channel
+    -> Arbiter Controller
+    -> guardrails / deterministic triage / correlation / local LLM
+    -> typed containment proposal
+    -> approval/policy
+    -> signed typed action request
+    -> Edge Agent actuator
+    -> verification / expiry / rollback / audit
+```
+
+The Edge Agent is intentionally not a second AI runtime and does not expose an arbitrary shell. It collects approved telemetry, applies local response policy, executes only registered typed actions, and reports verified results. The controller owns reasoning, incident state and operator workflow.
+
+For the detailed trust model, deployment modes, typed actuator registry, host isolation, priority queues, breakout-time metrics and implementation phases, see [`BREACH_CONTAINMENT_ARCHITECTURE.md`](BREACH_CONTAINMENT_ARCHITECTURE.md).
 
 ## The trust model (the make-or-break)
 
@@ -97,6 +120,8 @@ Arbiter gets smarter about *your* environment through a local, human-readable SQ
 
 Escalations can carry a recommended response action (block an IP, kill a session, lock an account, quarantine a host). Actions are **surgical, TTL-limited, and reversible** — never service-wide. Auto-execution is reserved for the deterministic prefilter tier; the LLM tier only ever *recommends*, and a human approves. Blocking requires stronger justification than alerting, mirroring the trust model.
 
+Remote response follows the same principle: the controller dispatches typed action requests only, and the edge agent independently validates local policy and target scope before execution. Arbitrary model-generated commands are never part of the response contract.
+
 ## API and frontend
 
 The first web layer — a stdlib-only dashboard plus a Svelte SPA (see [`ADR-001`](ADR-001-dashboard-retention-iam.md), now superseded) — was removed on 2026-07-26 and rebuilt. What replaced it:
@@ -108,9 +133,11 @@ The operator model is unchanged from ADR-001: two signed-in roles, **analyst** (
 
 ## What ships vs. what's deferred
 
-**In the current slice:** the Event/Verdict contract, the memory layer, both triage tiers (mock + local qwen), shadow mode, the JSONL/SQLite audit trail, the response actuator (dry-run), and built-in IAM. The web frontend has been removed pending a rebuild.
+**In the current slice:** the Event/Verdict contract, the memory layer, both triage tiers (mock + local qwen), shadow mode, the JSONL/SQLite audit trail, the response actuator (dry-run), built-in IAM, live endpoint/security-tool ingestion and manually approved TTL-limited local Windows IP blocking.
 
-**Deferred:** the shared threat-pattern feed (the network-effect moat — needs more than one customer, and ships anonymized *lessons*, never data), LoRA adaptation, and the collector-stack decision (Vector vs. Wazuh).
+**Next architectural slice:** controller/edge enrollment, authenticated remote telemetry, typed response RPC, host isolation, priority breach-processing lane and incident breakout metrics.
+
+**Deferred:** the shared threat-pattern feed (the network-effect moat — needs more than one customer, and ships anonymized *lessons*, never data), LoRA adaptation, broad multi-host fleet scale, identity/cloud containment providers and production-grade distributed ingestion.
 
 ## Component map
 
@@ -123,7 +150,8 @@ The operator model is unchanged from ADR-001: two signed-in roles, **analyst** (
 | Non-suppressible security guardrails | `arbiter/guardrails.py` |
 | Adversarial evaluation suite + gate | `samples/adversarial_suite.jsonl`, `arbiter/eval.py` |
 | Orchestrator, shadow mode, audit trail | `arbiter/triage.py` |
-| Response actuator (surgical, dry-run) | `arbiter/respond.py` |
+| Response actuator / future typed provider registry | `arbiter/respond.py` |
 | Queryable audit store + 30-day retention | `arbiter/store.py` |
 | Built-in IAM (scrypt, signed cookies, roles) | `arbiter/iam.py` |
-| Self-hosted dashboard (stdlib http.server) | `arbiter/web/` |
+| Authenticated dashboard/API | `arbiter/api/`, `frontend/` |
+| Remote breach containment target architecture | `docs/BREACH_CONTAINMENT_ARCHITECTURE.md` |
