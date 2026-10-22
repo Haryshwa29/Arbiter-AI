@@ -6,9 +6,56 @@ import {readFileSync} from "node:fs";
 import {guardrail, screening, scopedContext} from "../server/demoPolicy.js";
 import {readHistory} from "../server/demoHistory.js";
 import {eventStatus} from "../src/lib/eventStatus.ts";
+import {initializeDemoResponse, refreshDemoResponse, controlDemoResponse} from "../src/lib/demoResponse.ts";
 
 const realFetch = globalThis.fetch;
 afterEach(() => { globalThis.fetch = realFetch; resetLimitsForTest(); });
+
+function reviewFixture(severity = 8, tier = "prefilter") {
+  const row = {event_id:"demo-review", event:{severity,event_type:"package_update"}, analysis:{decision:"escalate",tier,responses:[{kind:"Review package provenance",status:"awaiting-approval",reason:"Verify authorization."}]}};
+  initializeDemoResponse(row, 1000);
+  return row;
+}
+test("public review deadlines use severity and default to no simulated action", () => {
+  const high = reviewFixture();
+  assert.equal(high.response_case.deadline, 1300);
+  assert.equal(high.analysis.guidance.source, "policy");
+  refreshDemoResponse(high, 1301);
+  assert.equal(high.response_case.state,"overdue");
+  assert.equal(high.analysis.responses[0].status,"awaiting-approval");
+  assert.equal(reviewFixture(3).response_case.deadline,null);
+  assert.equal(reviewFixture(3,"guardrail").response_case.deadline,1060);
+});
+test("public timed approval, undo, cancellation and expiry are browser simulation only", () => {
+  globalThis.fetch = () => {throw new Error("response controls must never make network calls");};
+  const row = reviewFixture();
+  controlDemoResponse([row],row.event_id,"schedule","",1001);
+  refreshDemoResponse(row,1301);
+  assert.equal(row.response_case.state,"executed");
+  assert.equal(row.analysis.responses[0].status,"approved-simulation");
+  controlDemoResponse([row],row.event_id,"undo","",1302);
+  assert.equal(row.response_case.state,"undone");
+  const expires = reviewFixture();
+  controlDemoResponse([expires],expires.event_id,"schedule","",1001);
+  refreshDemoResponse(expires,1601);
+  assert.equal(expires.response_case.state,"expired");
+  const stopped = reviewFixture();
+  controlDemoResponse([stopped],stopped.event_id,"schedule","",1001);
+  controlDemoResponse([stopped],stopped.event_id,"stop","",1002);
+  controlDemoResponse([stopped],stopped.event_id,"resume","",1003);
+  refreshDemoResponse(stopped,1301);
+  assert.equal(stopped.response_case.state,"overdue");
+});
+test("public deferral is bounded and rejection cancels the simulated schedule", () => {
+  const row = reviewFixture();
+  controlDemoResponse([row],row.event_id,"defer","Checking authorization",1001);
+  assert.equal(row.response_case.deadline,1600);
+  assert.throws(() => controlDemoResponse([row],row.event_id,"defer","Again",1002));
+  controlDemoResponse([row],row.event_id,"schedule","",1003);
+  controlDemoResponse([row],row.event_id,"reject","Authorized update",1004);
+  refreshDemoResponse(row,1700);
+  assert.equal(row.response_case.state,"rejected");
+});
 const event = {hostname: "synthetic-host", source_type: "sample", event_type: "process_exec", severity: 5, message: "Unknown process started"};
 function call(path = "analyze", body = {event, cloud_consent: true}, env = {OLLAMA_API_KEY: "secret-test"}, extra = {}) {
   return onRequest({env, request: new Request(`https://arbiter-ai.pages.dev/public-demo/${path}`, {
@@ -74,11 +121,12 @@ test("browser validates files without an AI call and processes fresh events", as
     if (calls === 1) return Response.json({code:"demo_busy",retry_after:2,error:"Busy"},{status:429});
     return Response.json({...answer, backend: "ollama-cloud", model: "nemotron-3-nano:30b", tier: "llm", score: 5, kind: "alert", responses: []});
   };
-  const body = {datasets: [], uploads: [{filename: "one.jsonl", content: JSON.stringify(event)}], speed: "10x", cloud_consent: true};
+  const body = {datasets: [], uploads: [{filename: "one.jsonl", content: JSON.stringify(event)}], speed: "2x", cloud_consent: true};
   assert.equal((await publicDemoApi.previewDemo(body)).files[0].valid_events, 1); assert.equal(calls, 0);
   await assert.rejects(publicDemoApi.startDemo({...body, cloud_consent: false}));
   await publicDemoApi.startDemo(body);
-  await new Promise(resolve => setTimeout(resolve, 2700));
+  const completionDeadline = Date.now() + 6000;
+  while ((await publicDemoApi.getDemo()).completed < 1 && Date.now() < completionDeadline) await new Promise(resolve => setTimeout(resolve, 50));
   const state = await publicDemoApi.getDemo(); assert.equal(state.completed, 1); assert.equal(calls, 2);
   assert.equal((await publicDemoApi.getDemoHistory()).total, 1);
   assert.equal((await publicDemoApi.getEvent(state.events[0].event_id)).analysis.backend, "ollama-cloud");

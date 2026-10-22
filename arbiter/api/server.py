@@ -54,6 +54,7 @@ from ..ingestion.demo import DemoManager
 from ..ingestion.files import parse_upload
 from ..ingestion.permissions import request_elevation
 from ..ingestion.protection import Protection
+from ..ingestion.response_workflow import ResponseWorkflow
 from ..ingestion.models import available_models
 
 SESSION_COOKIE = "arb_session"
@@ -81,6 +82,7 @@ class Ctx:
     simulator: DemoManager | None = None
     elevate: Callable[[], None] | None = None
     protection: Protection | None = None
+    responses: ResponseWorkflow | None = None
     local_access: bool = False
 
 
@@ -423,6 +425,9 @@ def make_handler(ctx: Ctx):
                 event = ctx.simulator.detail((query.get("id") or [""])[0])
                 return self._send_json(200 if event else 404, event or {"error": "event not found"})
 
+            if path == "/api/response/status":
+                return self._send_json(200, ctx.responses.status() if ctx.responses else {"stopped": True, "error": "Response workflow unavailable; restart the dashboard server.", "cases": []})
+
             if path in {"/api/ingestion/status", "/api/events", "/api/event", "/api/ingestion/assets", "/api/datasets"}:
                 if not ctx.ingestion:
                     return self._send_json(503, {"error": "ingestion service unavailable"})
@@ -434,6 +439,8 @@ def make_handler(ctx: Ctx):
                     return self._send_json(200, {"datasets": list(prepared_datasets())})
                 if path == "/api/event":
                     event = ctx.ingestion.buffer.detail((query.get("id") or [""])[0])
+                    if event and ctx.responses:
+                        event = ctx.responses.enrich(event)
                     if event and ctx.protection:
                         event["protection_proposal"] = ctx.protection.proposal(event)
                         event["protection_actions"] = ctx.protection.actions(event["event_id"])
@@ -513,13 +520,34 @@ def make_handler(ctx: Ctx):
                 except (ValueError, OSError, RuntimeError):
                     return self._send_json(400, {"error": "local model unavailable; check the inference service and installed models"})
 
+            if path in {"/api/response/control", "/api/demo/response/control"}:
+                if not require_admin(user) or not ipaddress.ip_address(self.client_address[0]).is_loopback:
+                    return self._send_json(403, {"error": "local administrator session required"})
+                try:
+                    if path == "/api/demo/response/control" and ctx.simulator:
+                        result = ctx.simulator.response_control(body.get("event_id", ""), body.get("command", ""), user["username"], body.get("reason", ""))
+                    elif path == "/api/response/control" and ctx.responses:
+                        reason = body.get("reason", "")
+                        if not isinstance(reason, str): raise ValueError("invalid reason")
+                        result = ctx.responses.control(body.get("event_id", ""), body.get("command", ""), user["username"], reason, body.get("protected_networks"))
+                    else: raise ValueError("response workflow unavailable")
+                    return self._send_json(200, result)
+                except (ValueError, TypeError, OSError) as exc:
+                    return self._send_json(400, {"error": str(exc) if isinstance(exc, ValueError) else "invalid response request"})
+
             if path in {"/api/protection/approve", "/api/protection/undo"}:
                 if not require_admin(user) or not ipaddress.ip_address(self.client_address[0]).is_loopback:
                     return self._send_json(403, {"error": "local administrator session required"})
                 if not ctx.protection:
                     return self._send_json(400, {"error": "device protection unavailable"})
                 try:
-                    result = ctx.protection.approve(body.get("event_id", ""), user["username"]) if path.endswith("approve") else ctx.protection.undo(body.get("action_id", ""), user["username"])
+                    with (ctx.responses.lock if ctx.responses else ctx.protection.lock):
+                        result = ctx.protection.approve(body.get("event_id", ""), user["username"]) if path.endswith("approve") else ctx.protection.undo(body.get("action_id", ""), user["username"])
+                        if ctx.responses and result:
+                            case = ctx.responses.ensure(ctx.ingestion.buffer.detail(result[0]["event_id"]))
+                            if case:
+                                case.update(state="executed" if path.endswith("approve") else "undone", mode="manual", note="Operator-approved native action; inspect the verified action record below.")
+                                ctx.responses.save(case, "l1_manual_action", user["username"])
                     return self._send_json(200, {"actions": result})
                 except (ValueError, OSError):
                     return self._send_json(400, {"error": "action unavailable or failed; check event evidence and Windows administrator access"})
@@ -766,7 +794,8 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
     ctx.ingestion = IngestionService(ingestion_path(store_db), mem, store, backend, model, ollama_url)
     ctx.backend = ctx.ingestion.backend
     ctx.simulator = DemoManager(ctx.ingestion.backend, ctx.ingestion.model, ollama_url)
-    ctx.protection = Protection(ctx.ingestion.buffer, store)
+    ctx.protection = Protection(ctx.ingestion.buffer, store, verify=True)
+    ctx.responses = ResponseWorkflow(ctx.ingestion.buffer, store, ctx.protection)
     # Preserve earlier demo imports as an archive rather than device detections.
     with ctx.ingestion.buffer.lock:
         old_demo_ids = [r[0] for r in ctx.ingestion.buffer.conn.execute("SELECT event_id FROM telemetry WHERE connector IN ('file','replay')")]
@@ -788,12 +817,13 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
                 threading.Timer(.5, httpd.shutdown).start()
             ctx.elevate = elevate
         ctx.ingestion.start(discover=True)
+        ctx.responses.start()
         if health_callback:
             def monitor():
                 while not stop.is_set():
                     try:
                         with ctx.ingestion.lock:
-                            health = ctx.ingestion.status()
+                            health = ctx.ingestion.status(include_metrics=False)
                             worker = ctx.ingestion.pipeline
                             if not health["worker_alive"] or time.monotonic() - worker.last_activity > 180:
                                 raise RuntimeError("analysis worker stopped or stalled")
@@ -801,9 +831,9 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
                                 if not collector.thread or not collector.thread.is_alive():
                                     raise RuntimeError("enabled collector stopped")
                         health_callback(health)
-                    except Exception:
+                    except Exception as exc:
                         health_failure.append(True)
-                        print("Monitoring health check failed; restarting the installed process")
+                        print(f"Monitoring health check failed ({type(exc).__name__}); restarting the installed process")
                         httpd.shutdown()
                         return
                     stop.wait(10)
@@ -830,6 +860,7 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
             poller.join(timeout=2)
         if demo_thread:
             demo_thread.join(timeout=3)
+        ctx.responses.close()
         ctx.simulator.close()
         ctx.ingestion.stop()
         mem.close()

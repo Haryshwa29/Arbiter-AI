@@ -41,7 +41,6 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
   const [cloudConsent, setCloudConsent] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [speed, setSpeed] = useState("1x");
-  const [traffic, setTraffic] = useState("steady");
   const [order, setOrder] = useState("mixed");
   const [seed, setSeed] = useState(0);
   const [session, setSession] = useState<DemoStatus | null>(null);
@@ -84,7 +83,7 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
       if (files.reduce((size, file) => size + file.size, 0) > 5 * 1024 * 1024) throw new Error("Combined upload limit is 5 MiB.");
       const uploads = await Promise.all(files.map(async file => ({filename: file.name, content: await file.text()})));
       if (validate) setPreview((await previewDemo({datasets: selected, uploads})).files);
-      else {setSession(await startDemo({datasets: selected, uploads, speed, order, seed, traffic, cloud_consent: cloudConsent})); setWorkspace(true);setHistory(false);setHistoryOffset(0);setHistoryFilters({});setDetail(null);setPreview(null);}
+      else {setSession(await startDemo({datasets: selected, uploads, speed, order, seed, traffic: "steady", cloud_consent: cloudConsent})); setWorkspace(true);setHistory(false);setHistoryOffset(0);setHistoryFilters({});setDetail(null);setPreview(null);}
     } catch (e) {setError(e instanceof Error ? e.message : "Could not start simulation.");}
     finally {setBusy(false);}
   }
@@ -115,12 +114,11 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
       {publicDemo && <label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" checked={cloudConsent} onChange={e => setCloudConsent(e.target.checked)} />I understand that selected sample or sanitized events are sent to Ollama Cloud.</label>}
       <p className="mt-2 text-xs text-neutral-400">{publicDemo ? "Cloud demo: at most 500 events per run; shared AI limits may stop large selections. " : ""}Choose your own JSON, JSONL or CSV event files. Up to 5 MiB combined. {publicDemo ? "500" : "5,000"} events per session. Arbitrary documents and executable files are not event datasets.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <label className="flex flex-col gap-2 text-sm">Delivery speed<select className={control} value={speed} onChange={e => setSpeed(e.target.value)}>{["1x", "2x", "5x", "10x"].map(value => <option key={value}>{value}</option>)}</select></label>
+        <label className="flex flex-col gap-2 text-sm">Playback<select className={control} value={speed} onChange={e => setSpeed(e.target.value)}>{["1x", "2x"].map(value => <option key={value}>{value}</option>)}</select></label>
         <label className="flex flex-col gap-2 text-sm">Event order<select className={control} value={order} onChange={e => setOrder(e.target.value)}><option value="mixed">Mix datasets, preserve each sequence</option><option value="random">Shuffle all events</option></select></label>
         <label className="flex flex-col gap-2 text-sm">Random seed<input className={control} type="number" min="0" max="4294967296" value={seed} onChange={e => setSeed(Number(e.target.value))}/></label>
       </div>
-      <label className="mt-4 flex flex-col gap-2 text-sm">Arrival pattern<select className={control} value={traffic} onChange={e => setTraffic(e.target.value)}><option value="steady">Steady arrivals</option><option value="bursts">Bursts and pauses</option><option value="delayed">Variable delays</option></select></label>
-      <p className="mt-3 text-xs text-neutral-400">1x sends one event every three seconds; faster speeds shorten that interval. Original timestamps stay available for analysis. The seed makes ordering repeatable.</p>
+      <p className="mt-3 text-xs text-neutral-400">Playback is capped at 2×. Arbiter waits for the current event to finish analysis before delivering another. 1× uses a three-second minimum interval; 2× uses 1.5 seconds. Original timestamps remain available for analysis.</p>
       <div className="mt-4 flex gap-3"><button className={control} disabled={busy || user?.role !== "admin"} onClick={() => void start(true)}>Validate selection</button><button className={control} disabled={busy || !!active || user?.role !== "admin" || (publicDemo && (!session?.inference?.configured || !cloudConsent))} onClick={() => void start(false)}>Start simulation</button>{session?.session_id && <button className={control} onClick={() => setWorkspace(true)}>Open simulation workspace</button>}</div>
     </section>
     {preview && <section aria-label="Dataset validation" className="rounded border border-neutral-700 p-4"><h2 className="mb-3">Selection preview · no events delivered</h2>{preview.map((file, i) => <div key={i} className="mb-2 text-sm">{file.filename}: {file.valid_events} valid · {file.invalid_events} invalid{file.errors.map((error, j) => <p key={j} className="text-xs text-amber-300">{error}</p>)}</div>)}</section>}

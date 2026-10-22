@@ -4,6 +4,16 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 21 L1 guided response: the dashboard now has recommended investigation
+steps (model-provided advice when available, labelled policy fallback otherwise),
+durable severity review deadlines, bounded deferral/rejection, per-incident
+explicitly approved timed peer blocks, persistent emergency stop and verified
+undo. Timed execution independently rebuilds fresh supported evidence; default
+expiry is overdue review only. Demo cases remain isolated, and playback is capped
+at steady 2x with one in-flight event. No new runtime dependencies. Source/build
+validation does not establish real Windows enforcement or model quality; the
+installed app requires the new release and service restart. See docs/L1-RESPONSE.md.
+
 October 13 local access: this PC's owner requested a dashboard without sign-in.
 Explicit `serve --local-access` / installed `[server] local_access = true` opens
 as Local owner (admin), requires loopback binding and direct local Host/Origin

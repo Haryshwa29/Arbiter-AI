@@ -364,16 +364,29 @@ export interface TelemetryEvent {
 }
 export interface ProtectionAction {id: string; status: string; target: string; expires_at: string; actor: string;}
 export interface TelemetryRow {
+  response_case?: ResponseCase | null;
+  response_stopped?: boolean;
+  response_schedule_available?: boolean;
+  response_workflow_error?: string;
   protection_proposal?: {kind: string; target: string; minutes: number; reason: string; status: string} | null;
   protection_actions?: ProtectionAction[];
   id: number; event_id: string; event: TelemetryEvent; state: string; error: string;
   related: string[]; analysis: {
     decision: Decision; tier: Tier; score: number; rationale: string;
     backend?: string; model?: string;
+    guidance?: {source: "model" | "policy"; steps: string[]; caution: string} | null;
     evidence: string; kind: "alert" | "observation"; correlation?: unknown; incident_id?: string;
     responses?: {status: string; kind: string; target: string; reason: string}[];
   } | null;
 }
+export interface ResponseCase {
+  event_id: string; severity: string; deadline: number | null; state: string;
+  mode: string; note: string; deferred: boolean; simulation: boolean;
+  target?: string; expires_at?: number;
+}
+export const controlResponse = (event_id: string, command: string, demo: boolean, reason = "", protected_networks: string[] = []) =>
+  apiFetch(`${demo ? "/api/demo" : "/api"}/response/control`, {method: "POST", body: {event_id, command, reason, protected_networks}, timeoutMs: 45_000});
+export const getResponseStatus = () => apiFetch<{stopped: boolean; error: string; cases: ResponseCase[]}>("/api/response/status");
 export interface ImportSummary {
   filename: string; detected_format: string; number_of_events: number;
   valid_events: number; invalid_events: number; import_status: string;

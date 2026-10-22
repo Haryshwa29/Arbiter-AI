@@ -389,6 +389,35 @@ class IngestionApiTests(unittest.TestCase):
         self.login()
         self.assertEqual(self.client.post("/api/ingestion/import", {}, csrf=False)[0], 403)
 
+    def test_l1_response_routes_require_session_csrf_and_admin(self):
+        from arbiter.ingestion.response_workflow import ResponseWorkflow
+        self.ctx.responses = ResponseWorkflow(self.service.buffer, self.audit)
+        self.assertEqual(self.client.get("/api/response/status")[0], 401)
+        self.login("analyst")
+        self.assertEqual(self.client.get("/api/response/status")[0], 200)
+        self.assertEqual(self.client.post("/api/response/control", {"command": "stop"})[0], 403)
+        self.login()
+        self.assertEqual(self.client.post("/api/response/control", {"command": "stop"}, csrf=False)[0], 403)
+        self.assertEqual(self.client.post("/api/response/control", {"command": "stop"})[0], 200)
+        self.assertTrue(self.client.get("/api/response/status")[1]["stopped"])
+        self.assertEqual(self.client.post("/api/response/control", {"command": "schedule", "event_id": "missing"})[0], 400)
+        self.assertEqual(self.client.post("/api/response/control", {"command": "resume"})[0], 200)
+
+    def test_l1_event_detail_returns_durable_review_and_guidance(self):
+        from arbiter.ingestion.response_workflow import ResponseWorkflow
+        self.ctx.responses = ResponseWorkflow(self.service.buffer, self.audit)
+        event = SecurityEvent(source_type="dpkg", hostname="test-db", event_type="package_update", message="Update", severity=5)
+        self.service.buffer.enqueue(event, "api")
+        row = self.service.buffer.claim()
+        self.service.buffer.finish(row["id"], {"decision": "escalate", "tier": "llm", "score": 5, "rationale": "Review update", "evidence": "package update", "backend": "mock"}, [], 0)
+        self.login()
+        code, detail = self.client.get("/api/event?id=" + event.event_id)
+        self.assertEqual(code, 200)
+        self.assertEqual(detail["response_case"]["severity"], "medium")
+        self.assertEqual(detail["analysis"]["guidance"]["source"], "policy")
+        self.assertEqual(self.client.post("/api/response/control", {"event_id": event.event_id, "command": "reviewed", "reason": "Approved maintenance"})[0], 200)
+        self.assertEqual(self.client.get("/api/event?id=" + event.event_id)[1]["response_case"]["state"], "reviewed")
+
     def test_upload_events_details_and_bad_path(self):
         self.login()
         code, result = self.client.post("/api/ingestion/submit", {"source": "sysmon", "event": FIXTURES["sysmon"]})
