@@ -12,7 +12,7 @@ export default function DemoDrawer({onClose}: {onClose: () => void}) {
     return () => {document.body.style.overflow = overflow;previous?.focus();};
   }, []);
   return <div className="public-demo-backdrop" onMouseDown={e => {if(e.target === e.currentTarget) onClose();}}>
-    <section className="public-demo" data-theme="dark" role="dialog" aria-modal="true" aria-label="Try Arbiter demo" onKeyDown={e => {
+    <section className="public-demo premium-dashboard" data-theme="dark" role="dialog" aria-modal="true" aria-label="Try Arbiter demo" onKeyDown={e => {
       if((e.target as HTMLElement).closest('[role="dialog"]') !== e.currentTarget) return;
       if(e.key === "Escape") {e.stopPropagation();onClose();}
       if(e.key === "Tab") {
@@ -23,7 +23,7 @@ export default function DemoDrawer({onClose}: {onClose: () => void}) {
       }
     }}>
       <header className="public-demo-header"><div><span className="product-eyebrow"><ArbiterMark />TRY ARBITER / LIVE AI DEMO</span><p>Live demo: security rules, scoped context and cloud AI when needed. No device actions.</p></div><button ref={close} onClick={onClose}>Close demo ×</button></header>
-      <DemoReplay publicDemo />
+      <div className="premium-main"><DemoReplay publicDemo /></div>
     </section>
   </div>;
 }

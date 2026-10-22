@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { getEvents, getResponseStatus } from "../lib/api";
+import { SignalMap } from "../components/SignalMap";
 import { EventPanel } from "../components/EventPanel";
 import { eventStatus, eventProgress } from "../lib/eventStatus";
 import type { TelemetryRow, ResponseCase } from "../lib/api";
-
 const control = "rounded border border-neutral-700 bg-neutral-900 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-sky-500";
-
 export function LiveEvents() {
   const [rows, setRows] = useState<TelemetryRow[]>([]);
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -32,8 +31,9 @@ export function LiveEvents() {
     return () => { active = false; clearTimeout(timer); };
   }, [filters, hours, offset]);
   function filter(key: string, value: string) { setFilters({...filters, [key]: value}); setOffset(0); }
-  return <div className="flex max-w-6xl flex-col gap-5">
+  return <div className="operations-view flex max-w-6xl flex-col gap-5">
     <header><h1 className="text-lg font-medium">Live</h1><p className="mt-1 text-sm text-neutral-400">Follow each event from arrival through analysis to its decision. Click any event for evidence, reasoning and response.</p><p className="mt-2 text-xs text-neutral-500">Under observation means analysis is pending or running. Suppressed means no alert was raised. Alerted events are escalated for review; this does not mean a protective action was executed. Updates every second.</p></header>
+    <SignalMap key={JSON.stringify([filters,hours,offset])} events={rows.map(row => ({id: row.event_id, source: row.event.source_type, decision: row.analysis?.decision}))} onInspect={setDetail} />
     {responseError && <p role="alert" className="text-sm text-amber-300">{responseError}</p>}
     {!!reviews.length && <section aria-label="Response review queue" className="space-y-3 border-l-2 border-amber-700 pl-4"><h2 className="font-medium">Response reviews · {reviews.length}{reviews.length === 50 ? "+" : ""}</h2><p className="text-xs text-neutral-400">Deadlines run independently of AI analysis. Only explicitly approved timed actions can change the device.</p><div className="flex flex-wrap gap-2">{reviews.slice(0, 8).map(review => <button key={review.event_id} className={control} onClick={() => setDetail(review.event_id)}>{review.severity} · {review.state === "pending" && review.deadline && review.deadline < Date.now() / 1000 ? "deadline passed" : review.state.replaceAll("_", " ")} · {review.mode === "automatic" ? "action scheduled" : "review required"} · {review.event_id.slice(0, 8)}</button>)}</div></section>}
     <section aria-label="Event filters" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
