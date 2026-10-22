@@ -71,8 +71,11 @@ class Pipeline:
                 verdict = self.engine.triage(legacy)
                 self.audit.record_verdict(legacy, verdict)
                 analysis = safe_json(verdict.to_json())
+                analysis["recommended_steps"] = getattr(verdict, "recommended_steps", [])
                 analysis["backend"] = backend if analysis["tier"] == "llm" else "deterministic"
-                analysis["model"] = model if analysis["backend"] == "ollama" else ""
+                analysis["model"] = model if analysis["backend"] in {"ollama", "ollama-cloud"} else ""
+            if analysis["tier"] == "llm" and analysis["rationale"].startswith("LLM tier failed ("):
+                analysis["backend"] = "policy-fallback"
             analysis["kind"] = "alert" if analysis["decision"] == "escalate" else "observation"
             # Planning is pure. Neither simulated nor live ingestion executes commands.
             from ..respond import plan
@@ -84,6 +87,8 @@ class Pipeline:
                 "kind": action.kind.value, "target": action.target, "reason": action.reason,
                 "executed": False} for action in plan(event.to_event(), decision)]
             analysis["correlation"] = correlations
+            from .recommendations import guidance
+            analysis["guidance"] = guidance(event.__dict__, analysis)
             if related and analysis["decision"] == "escalate":
                 analysis["incident_id"] = self.buffer.incident(event, related, correlations[0]["rule"])
             self.buffer.finish(row["id"], analysis, related, (time.monotonic() - started) * 1000)

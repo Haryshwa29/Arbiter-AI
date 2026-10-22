@@ -113,10 +113,12 @@ export async function onRequest({request, env}) {
       || typeof answer.rationale !== "string" || !answer.rationale.trim()
       || typeof answer.evidence !== "string" || (answer.decision === "escalate" && !answer.evidence.trim())) throw new Error();
     const lowConfidence = answer.decision === "suppress" && answer.confidence < .7;
+    const steps = Array.isArray(answer.recommended_steps) ? answer.recommended_steps.slice(0,4).filter(s => typeof s === "string" && s.trim() && s.length <= 500).map(s => s.trim()) : [];
     return finish({decision: lowConfidence ? "escalate" : answer.decision, tier: "llm", score: pre.score,
       backend: "ollama-cloud", model, rationale: (standingFact ? `[guardrail ${hit.name} downgraded to LLM decision by standing fact: "${standingFact}"] ` : "") + (lowConfidence ? `Low-confidence suppression escalated for review. ${answer.rationale}` : answer.rationale),
       evidence: answer.evidence || (lowConfidence ? `Review ${event.host}: ${event.message}` : ""),
-      kind: lowConfidence || answer.decision === "escalate" ? "alert" : "observation", responses: []});
+      kind: lowConfidence || answer.decision === "escalate" ? "alert" : "observation", responses: [],
+      guidance: steps.length && (lowConfidence || answer.decision === "escalate") ? {source:"model",steps,caution:"AI-suggested investigation steps; verify against the original evidence. Advice cannot authorize execution."} : null});
   } catch (error) {
     const reason = abort.signal.aborted ? "request timed out" : String(error?.message).toLowerCase().includes("header")
       ? "invalid server credential header" : String(error?.message).toLowerCase().includes("redirect") ? "provider redirect rejected" : "provider connection or answer unavailable";

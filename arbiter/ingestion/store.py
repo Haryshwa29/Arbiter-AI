@@ -137,6 +137,7 @@ class EventBuffer:
         return None
 
     def finish(self, row_id, analysis, related, latency_ms):
+        analysis = {**analysis, "completed_at": analysis.get("completed_at") or now()}
         with self.lock, self.conn:
             self.conn.execute("UPDATE telemetry SET state='done',analysis=?,related=?,latency_ms=?,error='',decision=?,tier=? WHERE id=?",
                               (json.dumps(analysis), json.dumps(related), latency_ms, analysis.get("decision"), analysis.get("tier"), row_id))

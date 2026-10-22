@@ -1,5 +1,6 @@
 import type { DemoStatus, ImportSummary, TelemetryEvent, TelemetryRow } from "./api";
 import { sampleDatasets } from "./cloudDemoSamples.ts";
+import {initializeDemoResponse, refreshDemoResponse, controlDemoResponse} from "./demoResponse.ts";
 type Configuration = NonNullable<DemoStatus["inference"]>;
 let configuration: Configuration | null = null;
 let run: DemoStatus = {state: "ready", total: 0, delivered: 0, completed: 0, events: []};
@@ -7,6 +8,7 @@ let generation = 0, succeeded = 0, failed = 0, active = 0;
 let historyToken: string | undefined;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let controller: AbortController | undefined;
+let responsesStopped = false;
 async function request<T>(path: string, body?: unknown, signal?: AbortSignal, attempt = 0): Promise<T> {
   let response: Response;
   try { response = await fetch(`/public-demo/${path}`, {
@@ -100,7 +102,7 @@ function recommendResponse(event: TelemetryEvent, decision: string) {
   else if (/process|exec|privilege|tamper|mining|smb/.test(text)) {kind = "Investigate execution and contain affected access"; reason = "Inspect the process tree, signer, account and peer connections. Verify authorization, then propose stopping the specific process or restricting the affected account or host. Preserve evidence first.";}
   return [{status: "awaiting-approval", kind, target: event.hostname, reason}];
 }
-function snapshot(): DemoStatus {return {...run, events: [...run.events], inference: configuration ? {...configuration, active, succeeded, failed} : undefined};}
+function snapshot(): DemoStatus {run.events.forEach(row => refreshDemoResponse(row)); return {...run, events: [...run.events], inference: configuration ? {...configuration, active, succeeded, failed} : undefined};}
 export const publicDemoApi = {
   getDatasets: async () => ({datasets: Object.keys(sampleDatasets)}),
   getDemo: async () => {configuration ??= await request<Configuration>("status"); return snapshot();},
@@ -113,10 +115,13 @@ export const publicDemoApi = {
     if (!configuration.configured) throw new Error("The website operator must configure OLLAMA_API_KEY.");
     if (["running", "paused"].includes(run.state)) throw new Error("Stop the active run first.");
     clearTimeout(timer); controller?.abort(); const version = ++generation; succeeded = failed = active = 0; historyToken = undefined;
-    const speed = {"1x": 1, "2x": 2, "5x": 5, "10x": 10}[String(body.speed)] ?? 1, delay = 3000 / speed;
+    const playback = String(body.speed ?? "1x");
+    if (!["1x", "2x"].includes(playback) || (body.traffic !== undefined && body.traffic !== "steady")) throw new Error("Playback supports only steady 1× or 2× delivery.");
+    const speed = playback === "2x" ? 2 : 1, delay = 3000 / speed;
     let seed = Number(body.seed) >>> 0;
     const random = () => {seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296;};
     if (body.order === "random") for (let i = prepared.events.length - 1; i > 0; i--) {const j = Math.floor(random() * (i + 1)); [prepared.events[i], prepared.events[j]] = [prepared.events[j], prepared.events[i]];}
+    responsesStopped = false;
     run = {state: "running", session_id: crypto.randomUUID(), total: prepared.events.length, delivered: 0, completed: 0, interval_seconds: delay / 1000, events: []};
     async function next() {
       if (version !== generation || run.state === "stopped") return;
@@ -131,6 +136,7 @@ export const publicDemoApi = {
           event_type: event.event_type, message: event.message, severity: event.severity, timestamp: event.timestamp, fields: event.fields ?? {}}, cloud_consent: true, state: historyToken}, currentController.signal);
         const {state: nextToken, ...analysis} = result;
         row.analysis = {...analysis, responses: recommendResponse(event, analysis.decision)};
+        initializeDemoResponse(row); row.response_stopped = responsesStopped;
         if (version === generation) historyToken = nextToken;
         row.state = "completed"; if (version === generation && row.analysis.backend === "ollama-cloud") succeeded++;
       } catch (e) {row.state = "failed"; row.error = e instanceof Error ? e.message : "AI failed"; if (version === generation) {failed++; run.error = row.error;}}
@@ -138,8 +144,7 @@ export const publicDemoApi = {
       if (version !== generation || run.state === "stopped") return;
       if (row.state === "failed") {run.state = "failed"; return;}
       if (run.completed === run.total) {run.state = "completed"; return;}
-      const gap = body.traffic === "delayed" ? delay * (.5 + random() * 2.5) : body.traffic === "bursts" ? delay * (run.delivered % 5 ? .25 : 4) : delay;
-      timer = setTimeout(() => void next(), gap);
+      timer = setTimeout(() => void next(), delay);
     }
     timer = setTimeout(() => void next(), delay); return snapshot();
   },
@@ -162,8 +167,12 @@ export const publicDemoApi = {
     const row = run.events.find(row => row.event_id === id);
     if (!row?.analysis?.responses?.length) throw new Error("No response recommendation available.");
     if (row.analysis.responses[0].status !== "awaiting-approval") throw new Error("This recommendation has already been reviewed.");
-    row.analysis.responses[0].status = choice;
+    controlDemoResponse(run.events, id, choice === "approved-simulation" ? "approve" : "reviewed", "Reviewed by the demo operator.");
     return {...row};
   },
-  getEvent: async (id: string) => {const row = run.events.find(row => row.event_id === id); if (!row) throw new Error("This event is not in the current browser session."); return {...row};},
+  controlResponse: async (id: string, command: string, reason = "") => {
+    controlDemoResponse(run.events, id, command, reason);
+    if (command === "stop" || command === "resume") responsesStopped = command === "stop";
+  },
+  getEvent: async (id: string) => {const row = run.events.find(row => row.event_id === id); if (!row) throw new Error("This event is not in the current browser session."); refreshDemoResponse(row); return {...row};},
 };

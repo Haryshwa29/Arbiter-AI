@@ -43,7 +43,7 @@ def test_visitors_have_isolated_events_and_no_operational_access(website):
     first, second = visitor(), visitor()
     for client in (first, second):
         assert request(client, base, "/public-demo/status")[0] == 200
-    payload = {"datasets": ["events.jsonl"], "speed": "10x", "order": "random", "seed": 8, "traffic": "bursts"}
+    payload = {"datasets": ["events.jsonl"], "speed": "2x", "order": "random", "seed": 8, "traffic": "steady"}
     assert request(first, base, "/public-demo/preview", payload)[1]["files"][0]["valid_events"] > 0
     assert request(first, base, "/public-demo/start", payload)[0] == 200
     manager = next(entry["manager"] for entry in pool.entries.values() if entry["manager"].session)
