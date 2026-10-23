@@ -48,7 +48,8 @@ def test_materialized_backend_migration_and_metrics_without_analysis_reads(tmp_p
         assert metrics["events_escalated_to_ai"] == 2
         assert metrics["events_handled_deterministically"] == 1
         assert metrics["alerts_created"] == 3
-        buffer.conn.set_authorizer(None)
+        # Python 3.10 cannot clear the authorizer with None (added in 3.11).
+        buffer.conn.set_authorizer(lambda *args: sqlite3.SQLITE_OK)
         event = SecurityEvent("test", "pc", "new", "new owned fixture")
         buffer.enqueue(event)
         row = buffer.claim()
