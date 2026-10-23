@@ -398,7 +398,7 @@ export interface TelemetryRow {
   related: string[]; analysis: {
     decision: Decision; tier: Tier; score: number; rationale: string;
     backend?: string; model?: string;
-    brief?: {why: string; origin: Record<string, string>; uncertainty: string; guidance: {source: "model" | "policy"; steps: string[]; caution: string} | null} | null;
+    brief?: {observed?: string; why: string; decision_basis?: string; origin: Record<string, string>; uncertainty: string; guidance: {source: "model" | "policy"; steps: string[]; caution: string} | null} | null;
     guidance?: {source: "model" | "policy"; steps: string[]; caution: string} | null;
     evidence: string; kind: "alert" | "observation"; correlation?: unknown; incident_id?: string;
     responses?: {status: string; kind: string; target: string; reason: string}[];

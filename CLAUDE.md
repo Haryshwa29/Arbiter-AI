@@ -4,6 +4,15 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 23 evidence presentation: alert details and expanded audit entries lead
+with the source event description, separate from the decision rationale. Priority
+scores are not diagnoses. Flood/connection alerts explain the reported service
+risk and use network/service checks; authentication alerts distinguish missing
+context from demonstrated credential misuse. Only recorded origin fields appear.
+Read-only enrichment updates historical views without rewriting saved verdicts;
+model guidance remains labelled separately from policy guidance. The local model
+prompt asks for observed behavior, concrete concern and evidence gaps.
+
 October 23 portable isolation: portable monitoring state is now scoped to a hash
 of the Windows installation identity under `data/devices/`. Audit, memory,
 ingestion/source checkpoints, IAM and runtime logs/cache stay within that device

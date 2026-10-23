@@ -155,6 +155,7 @@ export function Audit() {
                   <div className="border-t border-neutral-200 px-4 py-3 text-sm dark:border-neutral-800">
                     <button className="mb-3 text-sky-300 underline" onClick={() => setEventId(row.event_id)}>Inspect original event · {row.event_id}</button>
                     {briefs[row.event_id]?.brief ? <section aria-label="Alert explanation" className="mb-4 space-y-3 rounded border border-neutral-700 p-3">
+                      {briefs[row.event_id]?.brief?.observed && <><h3 className="font-medium">What was recorded</h3><p className="whitespace-pre-wrap break-words">{briefs[row.event_id]?.brief?.observed}</p></>}
                       <h3 className="font-medium">Why this triggered</h3><p>{briefs[row.event_id]?.brief?.why}</p>
                       <dl className="space-y-2">{Object.entries(briefs[row.event_id]?.brief?.origin ?? {}).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-500">{label}</dt><dd className="max-h-28 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
                       <h3 className="font-medium">What still needs checking</h3><p>{briefs[row.event_id]?.brief?.uncertainty}</p>

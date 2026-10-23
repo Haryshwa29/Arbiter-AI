@@ -63,6 +63,7 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
         <p className="text-sm text-sky-300">{status}</p>{event && <p className="text-xs text-neutral-400">{eventProgress(event)}</p>}
         {event && <p className="text-xs text-neutral-400">Source: {event.event.source_type}<br/>Occurred: {event.event.timestamp ? new Date(event.event.timestamp).toLocaleString() : "Unknown (not supplied)"}<br/>Received: {new Date(event.event.received_at).toLocaleString()}</p>}
         {event?.analysis?.brief && <section aria-label="Alert explanation" className="space-y-3 rounded border border-neutral-700 p-4 text-sm">
+          {event.analysis.brief.observed && <><h3 className="font-medium">What was recorded</h3><p className="whitespace-pre-wrap break-words">{event.analysis.brief.observed}</p><p className="text-xs text-neutral-400">Reported by the event source; verify against the original payload below.</p></>}
           <h3 className="font-medium">Why this triggered</h3><p>{event.analysis.brief.why}</p>
           <dl className="space-y-2">{Object.entries(event.analysis.brief.origin).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-400">{label}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
           <h3 className="font-medium">What still needs checking</h3><p>{event.analysis.brief.uncertainty}</p>
