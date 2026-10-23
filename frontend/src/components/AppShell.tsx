@@ -1,7 +1,6 @@
 import { NavLink, Outlet } from "react-router";
 import { useAuth } from "../lib/auth";
 import { DASH_BASE } from "../lib/routing";
-
 // Explicit DASH_BASE-prefixed paths — see the comment on RequireAuth in
 // App.tsx for why bare relative targets aren't safe in this pathless
 // layout-route context.
@@ -14,10 +13,8 @@ const NAV_ITEMS = [
   { to: `${DASH_BASE}/assets`, label: "Assets & facts" },
   { to: `${DASH_BASE}/brief`, label: "Brief Arbiter" },
 ];
-
 export function AppShell() {
   const { user, logout, reachable } = useAuth();
-
   return (
     <div className="premium-dashboard flex h-full flex-col">
       {user?.demo && (
@@ -67,7 +64,6 @@ export function AppShell() {
               </NavLink>
             ))}
           </nav>
-
           {user && (
             <div className="mt-2 flex items-center justify-between gap-2 md:mt-0 md:flex-col md:items-stretch md:border-t md:border-neutral-800 md:pt-3">
               <p className="truncate px-2 text-xs text-neutral-500">
