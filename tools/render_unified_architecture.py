@@ -8,14 +8,14 @@ from render_architecture import font
 
 OUT = Path(__file__).resolve().parents[1] / 'docs' / 'architecture'
 W, H = 1120, 3160
-INK, MUTED = '#142a3d', '#43596c'
-BLUE, PURPLE, RED, GREEN, GOLD = '#2368b5', '#7846bd', '#c33f48', '#247756', '#946215'
-base = Image.new('RGB', (W, H), '#f7f9fc')
+INK, MUTED = '#eef3fa', '#b8c5d8'
+BLUE, PURPLE, RED, GREEN, GOLD = '#82b7ff', '#c4a0ff', '#ff939b', '#7cddb0', '#f2c777'
+base = Image.new('RGB', (W, H), '#0d1420')
 d = ImageDraw.Draw(base)
 svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="title desc">',
        '<title id="title">Arbiter AI: one event, from evidence to explained decision</title>',
        '<desc id="desc">A connected vertical flowchart of collection, validation, queueing, context, guardrails, prefilter, optional local reasoning, verdicts, audit and operator review. Direct rule decisions bypass the model. No model output authorizes a device action.</desc>',
-       f'<rect width="{W}" height="{H}" fill="#f7f9fc"/>']
+       f'<rect width="{W}" height="{H}" fill="#0d1420"/>']
 
 
 def rect(box, fill, stroke=None, radius=16):
@@ -35,15 +35,15 @@ def text(x,y,value,size=23,color=INK,bold=False,max_width=None):
 def band(y,n,title,subtitle,color,fill):
     rect((24,y,W-48,70),fill,radius=12)
     rect((42,y+15,38,38),color,radius=10)
-    text(54,y+18,n,22,'#ffffff',True)
+    text(54,y+18,n,22,'#0d1420',True)
     text(96,y+11,title,25,color,True)
     text(96,y+42,subtitle,17,MUTED)
 
 
-def node(y,n,title,lines,color=BLUE,fill='#ffffff'):
+def node(y,n,title,lines,color=BLUE,fill='#172335'):
     rect((210,y,700,150),fill,color)
     rect((228,y+18,38,34),color,radius=9)
-    text(238,y+19,n,20,'#ffffff',True)
+    text(238,y+19,n,20,'#0d1420',True)
     text(280,y+17,title,27,color,True,max_width=605)
     for i,line in enumerate(lines): text(236,y+65+31*i,line,22,MUTED,max_width=646)
 
@@ -62,14 +62,14 @@ def edge(points,color=BLUE,label=None,lx=0,ly=0):
     if label:
         for i,line in enumerate(label.split('|')):
             width=d.textlength(line,font=font(18,True))+12
-            rect((lx-6,ly+i*24,width,25),'#f7f9fc',radius=3)
+            rect((lx-6,ly+i*24,width,25),'#0d1420',radius=3)
             text(lx,ly+i*24,line,18,color,True)
 
 
 def decision(y,n,title,line):
     pts=[(560,y),(910,y+80),(560,y+160),(210,y+80)]
-    d.polygon(pts,fill='#fff3d8',outline=GOLD,width=2)
-    svg.append(f'<polygon points="{" ".join(f"{x},{yy}" for x,yy in pts)}" fill="#fff3d8" stroke="{GOLD}" stroke-width="2"/>')
+    d.polygon(pts,fill='#302719',outline=GOLD,width=2)
+    svg.append(f'<polygon points="{" ".join(f"{x},{yy}" for x,yy in pts)}" fill="#302719" stroke="{GOLD}" stroke-width="2"/>')
     text(410,y+37,n+'  '+title,26,GOLD,True,max_width=550)
     text(365,y+83,line,20,MUTED,max_width=640)
 
@@ -79,10 +79,10 @@ text(52,78,'From raw evidence to a clear next step',39,INK,True)
 text(52,135,'Follow the arrows. Rules take shortcuts. Local AI handles ambiguity.',24,MUTED)
 
 for x,title,lines,color,fill in [
-    (50,'HOST SIGNALS',['Windows / Sysmon','Defender / osquery'],BLUE,'#e8f1ff'),
-    (310,'NETWORK + DEVICES',['Suricata / syslog','USB / local processes'],BLUE,'#e8f1ff'),
-    (570,'OPTIONAL SOURCES',['AWS readers / API','Configured permissions'],BLUE,'#e8f1ff'),
-    (830,'DEMO / REPLAY',['Isolated simulation','No native actuator'],PURPLE,'#f0e8fc'),
+    (50,'HOST SIGNALS',['Windows / Sysmon','Defender / osquery'],BLUE,'#162840'),
+    (310,'NETWORK + DEVICES',['Suricata / syslog','USB / local processes'],BLUE,'#162840'),
+    (570,'OPTIONAL SOURCES',['AWS readers / API','Configured permissions'],BLUE,'#162840'),
+    (830,'DEMO / REPLAY',['Isolated simulation','No native actuator'],PURPLE,'#29203d'),
 ]:
     rect((x,205,240,112),fill,color)
     text(x+15,218,title,18,color,True,max_width=210)
@@ -90,23 +90,23 @@ for x,title,lines,color,fill in [
 
 # Source paths converge; demo uses an isolated instance of the same pipeline.
 for x in (170,430,690,950): edge([(x,317),(x,341),(560,341),(560,425)],BLUE)
-band(355,'1','COLLECT + PRESERVE','Turn source-specific records into recoverable evidence.',BLUE,'#e5effc')
+band(355,'1','COLLECT + PRESERVE','Turn source-specific records into recoverable evidence.',BLUE,'#192c46')
 node(435,'01','Read configured sources',['Collectors retain source checkpoints and original records.','Collection does not call the model or execute a response.'])
 edge([(560,585),(560,635)])
 node(635,'02','Validate + normalize',['SecurityEvent v1.0: host, time, account, process, network.','Reject invalid fields; retain raw payload; 256 KiB limit.'])
 edge([(560,785),(560,835)])
 node(835,'03','Queue durably in SQLite',['Deduplicate event IDs; recover interrupted work on restart.','10,000 pending/processing cap; expose pressure and retries.'])
 edge([(560,985),(560,1055)])
-band(1000,'2','ADD CONTEXT + DECIDE','One priority worker; every 100th claim preserves FIFO progress.',BLUE,'#e5effc')
+band(1000,'2','ADD CONTEXT + DECIDE','One priority worker; every 100th claim preserves FIFO progress.',BLUE,'#192c46')
 node(1080,'04','Connect the evidence',['Correlate related records; add asset criticality and history.','Scope-check curated facts; adapt to the stable Event contract.'])
 edge([(560,1230),(560,1280)])
 decision(1280,'05','Guardrail hit?','Dangerous behavior / trusted tool finding')
 edge([(560,1440),(560,1540)],BLUE,'No blocking rule',570,1460)
 decision(1540,'06','Clear rule decision?','Severity + criticality + reviewed history')
 edge([(560,1700),(560,1820)],PURPLE,'Unclear: ask local AI',574,1740)
-node(1820,'07','Reason locally with Ollama',['Use event context and scoped facts; propose a verdict.','Return rationale, evidence and bounded investigation advice.'],PURPLE,'#f5efff')
+node(1820,'07','Reason locally with Ollama',['Use event context and scoped facts; propose a verdict.','Return rationale, evidence and bounded investigation advice.'],PURPLE,'#241c35')
 edge([(560,1970),(560,2050)],PURPLE,'Model answer',574,1990)
-node(2050,'08','Check the proposed answer',['Validate output; recheck guardrails and confidence.','Model failure or suppression confidence < 0.7 -> escalate.'],PURPLE,'#f5efff')
+node(2050,'08','Check the proposed answer',['Validate output; recheck guardrails and confidence.','Model failure or suppression confidence < 0.7 -> escalate.'],PURPLE,'#241c35')
 
 # Conditional early exits are explicit and labelled, rather than hidden in prose.
 edge([(910,1360),(1060,1360),(1060,2300),(810,2300),(810,2425)],RED,'Yes: raise|an alert',925,1390)
@@ -116,8 +116,8 @@ edge([(560,2200),(560,2290),(370,2290),(370,2425)],GREEN,'Supported benign',312,
 edge([(560,2200),(560,2290),(700,2290),(700,2425)],RED,'Suspicious / uncertain',605,2230)
 text(454,2350,'THE TWO OUTCOMES',18,MUTED,True)
 for x,title,lines,color,fill in [
-    (90,'SUPPRESS / OBSERVATION',['Write why it is considered benign.','Retain the event and decision history.'],GREEN,'#e8f5ed'),
-    (600,'ESCALATE / ALERT',['Show the reason and supporting evidence.','Uncertainty is explicit; no action implied.'],RED,'#ffeded'),
+    (90,'SUPPRESS / OBSERVATION',['Write why it is considered benign.','Retain the event and decision history.'],GREEN,'#163027'),
+    (600,'ESCALATE / ALERT',['Show the reason and supporting evidence.','Uncertainty is explicit; no action implied.'],RED,'#351e28'),
 ]:
     rect((x,2425,430,130),fill,color)
     text(x+20,2442,title,23,color,True,max_width=390)

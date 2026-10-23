@@ -1,160 +1,160 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="3160" viewBox="0 0 1120 3160" role="img" aria-labelledby="title desc">
 <title id="title">Arbiter AI: one event, from evidence to explained decision</title>
 <desc id="desc">A connected vertical flowchart of collection, validation, queueing, context, guardrails, prefilter, optional local reasoning, verdicts, audit and operator review. Direct rule decisions bypass the model. No model output authorizes a device action.</desc>
-<rect width="1120" height="3160" fill="#f7f9fc"/>
-<text x="52" y="56" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="700">ARBITER AI / SYSTEM ARCHITECTURE</text>
-<text x="52" y="117" fill="#142a3d" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="39" font-weight="700">From raw evidence to a clear next step</text>
-<text x="52" y="159" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="24" font-weight="400">Follow the arrows. Rules take shortcuts. Local AI handles ambiguity.</text>
-<rect x="50" y="205" width="240" height="112" rx="16" fill="#e8f1ff" stroke="#2368b5" stroke-width="2"/>
-<text x="65" y="236" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">HOST SIGNALS</text>
-<text x="65" y="268" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Windows / Sysmon</text>
-<text x="65" y="293" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Defender / osquery</text>
-<rect x="310" y="205" width="240" height="112" rx="16" fill="#e8f1ff" stroke="#2368b5" stroke-width="2"/>
-<text x="325" y="236" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">NETWORK + DEVICES</text>
-<text x="325" y="268" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Suricata / syslog</text>
-<text x="325" y="293" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">USB / local processes</text>
-<rect x="570" y="205" width="240" height="112" rx="16" fill="#e8f1ff" stroke="#2368b5" stroke-width="2"/>
-<text x="585" y="236" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">OPTIONAL SOURCES</text>
-<text x="585" y="268" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">AWS readers / API</text>
-<text x="585" y="293" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Configured permissions</text>
-<rect x="830" y="205" width="240" height="112" rx="16" fill="#f0e8fc" stroke="#7846bd" stroke-width="2"/>
-<text x="845" y="236" fill="#7846bd" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">DEMO / REPLAY</text>
-<text x="845" y="268" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Isolated simulation</text>
-<text x="845" y="293" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">No native actuator</text>
-<polyline points="170,317 170,341 560,341 560,425" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#2368b5"/>
-<polyline points="430,317 430,341 560,341 560,425" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#2368b5"/>
-<polyline points="690,317 690,341 560,341 560,425" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#2368b5"/>
-<polyline points="950,317 950,341 560,341 560,425" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#2368b5"/>
-<rect x="24" y="355" width="1072" height="70" rx="12" fill="#e5effc" stroke="#e5effc" stroke-width="2"/>
-<rect x="42" y="370" width="38" height="38" rx="10" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="54" y="395" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">1</text>
-<text x="96" y="391" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="700">COLLECT + PRESERVE</text>
-<text x="96" y="414" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="17" font-weight="400">Turn source-specific records into recoverable evidence.</text>
-<rect x="210" y="435" width="700" height="150" rx="16" fill="#ffffff" stroke="#2368b5" stroke-width="2"/>
-<rect x="228" y="453" width="38" height="34" rx="9" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="238" y="474" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">01</text>
-<text x="280" y="479" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Read configured sources</text>
-<text x="236" y="522" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Collectors retain source checkpoints and original records.</text>
-<text x="236" y="553" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Collection does not call the model or execute a response.</text>
-<polyline points="560,585 560,635" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,635 554.0,624.0 566.0,624.0" fill="#2368b5"/>
-<rect x="210" y="635" width="700" height="150" rx="16" fill="#ffffff" stroke="#2368b5" stroke-width="2"/>
-<rect x="228" y="653" width="38" height="34" rx="9" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="238" y="674" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">02</text>
-<text x="280" y="679" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Validate + normalize</text>
-<text x="236" y="722" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">SecurityEvent v1.0: host, time, account, process, network.</text>
-<text x="236" y="753" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Reject invalid fields; retain raw payload; 256 KiB limit.</text>
-<polyline points="560,785 560,835" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,835 554.0,824.0 566.0,824.0" fill="#2368b5"/>
-<rect x="210" y="835" width="700" height="150" rx="16" fill="#ffffff" stroke="#2368b5" stroke-width="2"/>
-<rect x="228" y="853" width="38" height="34" rx="9" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="238" y="874" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">03</text>
-<text x="280" y="879" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Queue durably in SQLite</text>
-<text x="236" y="922" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Deduplicate event IDs; recover interrupted work on restart.</text>
-<text x="236" y="953" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">10,000 pending/processing cap; expose pressure and retries.</text>
-<polyline points="560,985 560,1055" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1055 554.0,1044.0 566.0,1044.0" fill="#2368b5"/>
-<rect x="24" y="1000" width="1072" height="70" rx="12" fill="#e5effc" stroke="#e5effc" stroke-width="2"/>
-<rect x="42" y="1015" width="38" height="38" rx="10" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="54" y="1040" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">2</text>
-<text x="96" y="1036" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="700">ADD CONTEXT + DECIDE</text>
-<text x="96" y="1059" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="17" font-weight="400">One priority worker; every 100th claim preserves FIFO progress.</text>
-<rect x="210" y="1080" width="700" height="150" rx="16" fill="#ffffff" stroke="#2368b5" stroke-width="2"/>
-<rect x="228" y="1098" width="38" height="34" rx="9" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="238" y="1119" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">04</text>
-<text x="280" y="1124" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Connect the evidence</text>
-<text x="236" y="1167" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Correlate related records; add asset criticality and history.</text>
-<text x="236" y="1198" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Scope-check curated facts; adapt to the stable Event contract.</text>
-<polyline points="560,1230 560,1280" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1280 554.0,1269.0 566.0,1269.0" fill="#2368b5"/>
-<polygon points="560,1280 910,1360 560,1440 210,1360" fill="#fff3d8" stroke="#946215" stroke-width="2"/>
-<text x="410" y="1343" fill="#946215" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">05  Guardrail hit?</text>
-<text x="365" y="1383" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Dangerous behavior / trusted tool finding</text>
-<polyline points="560,1440 560,1540" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1540 554.0,1529.0 566.0,1529.0" fill="#2368b5"/>
-<rect x="564" y="1460" width="153.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="570" y="1478" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">No blocking rule</text>
-<polygon points="560,1540 910,1620 560,1700 210,1620" fill="#fff3d8" stroke="#946215" stroke-width="2"/>
-<text x="410" y="1603" fill="#946215" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">06  Clear rule decision?</text>
-<text x="365" y="1643" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Severity + criticality + reviewed history</text>
-<polyline points="560,1700 560,1820" fill="none" stroke="#7846bd" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1820 554.0,1809.0 566.0,1809.0" fill="#7846bd"/>
-<rect x="568" y="1740" width="184.015625" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="574" y="1758" fill="#7846bd" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Unclear: ask local AI</text>
-<rect x="210" y="1820" width="700" height="150" rx="16" fill="#f5efff" stroke="#7846bd" stroke-width="2"/>
-<rect x="228" y="1838" width="38" height="34" rx="9" fill="#7846bd" stroke="#7846bd" stroke-width="2"/>
-<text x="238" y="1859" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">07</text>
-<text x="280" y="1864" fill="#7846bd" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Reason locally with Ollama</text>
-<text x="236" y="1907" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Use event context and scoped facts; propose a verdict.</text>
-<text x="236" y="1938" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Return rationale, evidence and bounded investigation advice.</text>
-<polyline points="560,1970 560,2050" fill="none" stroke="#7846bd" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2050 554.0,2039.0 566.0,2039.0" fill="#7846bd"/>
-<rect x="568" y="1990" width="131.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="574" y="2008" fill="#7846bd" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Model answer</text>
-<rect x="210" y="2050" width="700" height="150" rx="16" fill="#f5efff" stroke="#7846bd" stroke-width="2"/>
-<rect x="228" y="2068" width="38" height="34" rx="9" fill="#7846bd" stroke="#7846bd" stroke-width="2"/>
-<text x="238" y="2089" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">08</text>
-<text x="280" y="2094" fill="#7846bd" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Check the proposed answer</text>
-<text x="236" y="2137" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Validate output; recheck guardrails and confidence.</text>
-<text x="236" y="2168" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Model failure or suppression confidence &lt; 0.7 -&gt; escalate.</text>
-<polyline points="910,1360 1060,1360 1060,2300 810,2300 810,2425" fill="none" stroke="#c33f48" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="810,2425 804.0,2414.0 816.0,2414.0" fill="#c33f48"/>
-<rect x="919" y="1390" width="90.984375" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="925" y="1408" fill="#c33f48" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Yes: raise</text>
-<rect x="919" y="1414" width="77.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="925" y="1432" fill="#c33f48" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">an alert</text>
-<polyline points="910,1620 1000,1620 1000,2280 865,2280 865,2425" fill="none" stroke="#c33f48" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="865,2425 859.0,2414.0 871.0,2414.0" fill="#c33f48"/>
-<rect x="919" y="1650" width="101.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="925" y="1668" fill="#c33f48" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Suspicious</text>
-<polyline points="210,1620 60,1620 60,2300 280,2300 280,2425" fill="none" stroke="#247756" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="280,2425 274.0,2414.0 286.0,2414.0" fill="#247756"/>
-<rect x="66" y="1660" width="135.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="72" y="1678" fill="#247756" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Known benign</text>
-<rect x="66" y="1684" width="134.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="72" y="1702" fill="#247756" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">with sufficient</text>
-<rect x="66" y="1708" width="78.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="72" y="1726" fill="#247756" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">support</text>
-<polyline points="560,2200 560,2290 370,2290 370,2425" fill="none" stroke="#247756" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="370,2425 364.0,2414.0 376.0,2414.0" fill="#247756"/>
-<rect x="306" y="2230" width="165.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="312" y="2248" fill="#247756" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Supported benign</text>
-<polyline points="560,2200 560,2290 700,2290 700,2425" fill="none" stroke="#c33f48" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="700,2425 694.0,2414.0 706.0,2414.0" fill="#c33f48"/>
-<rect x="599" y="2230" width="200.0" height="25" rx="3" fill="#f7f9fc" stroke="#f7f9fc" stroke-width="2"/>
-<text x="605" y="2248" fill="#c33f48" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Suspicious / uncertain</text>
-<text x="454" y="2368" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">THE TWO OUTCOMES</text>
-<rect x="90" y="2425" width="430" height="130" rx="16" fill="#e8f5ed" stroke="#247756" stroke-width="2"/>
-<text x="110" y="2465" fill="#247756" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">SUPPRESS / OBSERVATION</text>
-<text x="110" y="2503" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Write why it is considered benign.</text>
-<text x="110" y="2531" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Retain the event and decision history.</text>
-<rect x="600" y="2425" width="430" height="130" rx="16" fill="#ffeded" stroke="#c33f48" stroke-width="2"/>
-<text x="620" y="2465" fill="#c33f48" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">ESCALATE / ALERT</text>
-<text x="620" y="2503" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Show the reason and supporting evidence.</text>
-<text x="620" y="2531" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Uncertainty is explicit; no action implied.</text>
-<polyline points="305,2555 305,2590 560,2590 560,2630" fill="none" stroke="#247756" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2630 554.0,2619.0 566.0,2619.0" fill="#247756"/>
-<polyline points="815,2555 815,2590 560,2590 560,2630" fill="none" stroke="#c33f48" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2630 554.0,2619.0 566.0,2619.0" fill="#c33f48"/>
-<rect x="210" y="2630" width="700" height="150" rx="16" fill="#ffffff" stroke="#2368b5" stroke-width="2"/>
-<rect x="228" y="2648" width="38" height="34" rx="9" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="238" y="2669" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">09</text>
-<text x="280" y="2674" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Persist an auditable verdict</text>
-<text x="236" y="2717" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">SQLite audit + memory history + JSONL decision trail.</text>
-<text x="236" y="2748" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Record tier and available backend/model provenance.</text>
-<polyline points="560,2780 560,2830" fill="none" stroke="#2368b5" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2830 554.0,2819.0 566.0,2819.0" fill="#2368b5"/>
-<rect x="210" y="2830" width="700" height="150" rx="16" fill="#ffffff" stroke="#2368b5" stroke-width="2"/>
-<rect x="228" y="2848" width="38" height="34" rx="9" fill="#2368b5" stroke="#2368b5" stroke-width="2"/>
-<text x="238" y="2869" fill="#ffffff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">10</text>
-<text x="280" y="2874" fill="#2368b5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Explain it to the operator</text>
-<text x="236" y="2917" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Same-origin API / SSE -&gt; dashboard: trigger, origin, gaps.</text>
-<text x="236" y="2948" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Recommended steps + review; device actions need approval.</text>
-<text x="52" y="3028" fill="#946215" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">TRUST BOUNDARY</text>
-<text x="52" y="3068" fill="#142a3d" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">The model advises. Policy and explicit authority control execution.</text>
-<text x="52" y="3108" fill="#43596c" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Guardrail exception: a narrowly matching standing fact can route to AI review, never directly suppress.</text>
+<rect width="1120" height="3160" fill="#0d1420"/>
+<text x="52" y="56" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="700">ARBITER AI / SYSTEM ARCHITECTURE</text>
+<text x="52" y="117" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="39" font-weight="700">From raw evidence to a clear next step</text>
+<text x="52" y="159" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="24" font-weight="400">Follow the arrows. Rules take shortcuts. Local AI handles ambiguity.</text>
+<rect x="50" y="205" width="240" height="112" rx="16" fill="#162840" stroke="#82b7ff" stroke-width="2"/>
+<text x="65" y="236" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">HOST SIGNALS</text>
+<text x="65" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Windows / Sysmon</text>
+<text x="65" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Defender / osquery</text>
+<rect x="310" y="205" width="240" height="112" rx="16" fill="#162840" stroke="#82b7ff" stroke-width="2"/>
+<text x="325" y="236" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">NETWORK + DEVICES</text>
+<text x="325" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Suricata / syslog</text>
+<text x="325" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">USB / local processes</text>
+<rect x="570" y="205" width="240" height="112" rx="16" fill="#162840" stroke="#82b7ff" stroke-width="2"/>
+<text x="585" y="236" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">OPTIONAL SOURCES</text>
+<text x="585" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">AWS readers / API</text>
+<text x="585" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Configured permissions</text>
+<rect x="830" y="205" width="240" height="112" rx="16" fill="#29203d" stroke="#c4a0ff" stroke-width="2"/>
+<text x="845" y="236" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">DEMO / REPLAY</text>
+<text x="845" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Isolated simulation</text>
+<text x="845" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">No native actuator</text>
+<polyline points="170,317 170,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
+<polyline points="430,317 430,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
+<polyline points="690,317 690,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
+<polyline points="950,317 950,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
+<rect x="24" y="355" width="1072" height="70" rx="12" fill="#192c46" stroke="#192c46" stroke-width="2"/>
+<rect x="42" y="370" width="38" height="38" rx="10" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="54" y="395" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">1</text>
+<text x="96" y="391" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="700">COLLECT + PRESERVE</text>
+<text x="96" y="414" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="17" font-weight="400">Turn source-specific records into recoverable evidence.</text>
+<rect x="210" y="435" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<rect x="228" y="453" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="238" y="474" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">01</text>
+<text x="280" y="479" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Read configured sources</text>
+<text x="236" y="522" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Collectors retain source checkpoints and original records.</text>
+<text x="236" y="553" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Collection does not call the model or execute a response.</text>
+<polyline points="560,585 560,635" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,635 554.0,624.0 566.0,624.0" fill="#82b7ff"/>
+<rect x="210" y="635" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<rect x="228" y="653" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="238" y="674" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">02</text>
+<text x="280" y="679" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Validate + normalize</text>
+<text x="236" y="722" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">SecurityEvent v1.0: host, time, account, process, network.</text>
+<text x="236" y="753" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Reject invalid fields; retain raw payload; 256 KiB limit.</text>
+<polyline points="560,785 560,835" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,835 554.0,824.0 566.0,824.0" fill="#82b7ff"/>
+<rect x="210" y="835" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<rect x="228" y="853" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="238" y="874" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">03</text>
+<text x="280" y="879" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Queue durably in SQLite</text>
+<text x="236" y="922" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Deduplicate event IDs; recover interrupted work on restart.</text>
+<text x="236" y="953" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">10,000 pending/processing cap; expose pressure and retries.</text>
+<polyline points="560,985 560,1055" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,1055 554.0,1044.0 566.0,1044.0" fill="#82b7ff"/>
+<rect x="24" y="1000" width="1072" height="70" rx="12" fill="#192c46" stroke="#192c46" stroke-width="2"/>
+<rect x="42" y="1015" width="38" height="38" rx="10" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="54" y="1040" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">2</text>
+<text x="96" y="1036" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="700">ADD CONTEXT + DECIDE</text>
+<text x="96" y="1059" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="17" font-weight="400">One priority worker; every 100th claim preserves FIFO progress.</text>
+<rect x="210" y="1080" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<rect x="228" y="1098" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="238" y="1119" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">04</text>
+<text x="280" y="1124" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Connect the evidence</text>
+<text x="236" y="1167" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Correlate related records; add asset criticality and history.</text>
+<text x="236" y="1198" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Scope-check curated facts; adapt to the stable Event contract.</text>
+<polyline points="560,1230 560,1280" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,1280 554.0,1269.0 566.0,1269.0" fill="#82b7ff"/>
+<polygon points="560,1280 910,1360 560,1440 210,1360" fill="#302719" stroke="#f2c777" stroke-width="2"/>
+<text x="410" y="1343" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">05  Guardrail hit?</text>
+<text x="365" y="1383" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Dangerous behavior / trusted tool finding</text>
+<polyline points="560,1440 560,1540" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,1540 554.0,1529.0 566.0,1529.0" fill="#82b7ff"/>
+<rect x="564" y="1460" width="153.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="570" y="1478" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">No blocking rule</text>
+<polygon points="560,1540 910,1620 560,1700 210,1620" fill="#302719" stroke="#f2c777" stroke-width="2"/>
+<text x="410" y="1603" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">06  Clear rule decision?</text>
+<text x="365" y="1643" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Severity + criticality + reviewed history</text>
+<polyline points="560,1700 560,1820" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,1820 554.0,1809.0 566.0,1809.0" fill="#c4a0ff"/>
+<rect x="568" y="1740" width="184.015625" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="574" y="1758" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Unclear: ask local AI</text>
+<rect x="210" y="1820" width="700" height="150" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
+<rect x="228" y="1838" width="38" height="34" rx="9" fill="#c4a0ff" stroke="#c4a0ff" stroke-width="2"/>
+<text x="238" y="1859" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">07</text>
+<text x="280" y="1864" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Reason locally with Ollama</text>
+<text x="236" y="1907" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Use event context and scoped facts; propose a verdict.</text>
+<text x="236" y="1938" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Return rationale, evidence and bounded investigation advice.</text>
+<polyline points="560,1970 560,2050" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,2050 554.0,2039.0 566.0,2039.0" fill="#c4a0ff"/>
+<rect x="568" y="1990" width="131.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="574" y="2008" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Model answer</text>
+<rect x="210" y="2050" width="700" height="150" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
+<rect x="228" y="2068" width="38" height="34" rx="9" fill="#c4a0ff" stroke="#c4a0ff" stroke-width="2"/>
+<text x="238" y="2089" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">08</text>
+<text x="280" y="2094" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Check the proposed answer</text>
+<text x="236" y="2137" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Validate output; recheck guardrails and confidence.</text>
+<text x="236" y="2168" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Model failure or suppression confidence &lt; 0.7 -&gt; escalate.</text>
+<polyline points="910,1360 1060,1360 1060,2300 810,2300 810,2425" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="810,2425 804.0,2414.0 816.0,2414.0" fill="#ff939b"/>
+<rect x="919" y="1390" width="90.984375" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="925" y="1408" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Yes: raise</text>
+<rect x="919" y="1414" width="77.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="925" y="1432" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">an alert</text>
+<polyline points="910,1620 1000,1620 1000,2280 865,2280 865,2425" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="865,2425 859.0,2414.0 871.0,2414.0" fill="#ff939b"/>
+<rect x="919" y="1650" width="101.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="925" y="1668" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Suspicious</text>
+<polyline points="210,1620 60,1620 60,2300 280,2300 280,2425" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="280,2425 274.0,2414.0 286.0,2414.0" fill="#7cddb0"/>
+<rect x="66" y="1660" width="135.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="72" y="1678" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Known benign</text>
+<rect x="66" y="1684" width="134.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="72" y="1702" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">with sufficient</text>
+<rect x="66" y="1708" width="78.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="72" y="1726" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">support</text>
+<polyline points="560,2200 560,2290 370,2290 370,2425" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="370,2425 364.0,2414.0 376.0,2414.0" fill="#7cddb0"/>
+<rect x="306" y="2230" width="165.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="312" y="2248" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Supported benign</text>
+<polyline points="560,2200 560,2290 700,2290 700,2425" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="700,2425 694.0,2414.0 706.0,2414.0" fill="#ff939b"/>
+<rect x="599" y="2230" width="200.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="605" y="2248" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Suspicious / uncertain</text>
+<text x="454" y="2368" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">THE TWO OUTCOMES</text>
+<rect x="90" y="2425" width="430" height="130" rx="16" fill="#163027" stroke="#7cddb0" stroke-width="2"/>
+<text x="110" y="2465" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">SUPPRESS / OBSERVATION</text>
+<text x="110" y="2503" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Write why it is considered benign.</text>
+<text x="110" y="2531" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Retain the event and decision history.</text>
+<rect x="600" y="2425" width="430" height="130" rx="16" fill="#351e28" stroke="#ff939b" stroke-width="2"/>
+<text x="620" y="2465" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">ESCALATE / ALERT</text>
+<text x="620" y="2503" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Show the reason and supporting evidence.</text>
+<text x="620" y="2531" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Uncertainty is explicit; no action implied.</text>
+<polyline points="305,2555 305,2590 560,2590 560,2630" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,2630 554.0,2619.0 566.0,2619.0" fill="#7cddb0"/>
+<polyline points="815,2555 815,2590 560,2590 560,2630" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,2630 554.0,2619.0 566.0,2619.0" fill="#ff939b"/>
+<rect x="210" y="2630" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<rect x="228" y="2648" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="238" y="2669" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">09</text>
+<text x="280" y="2674" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Persist an auditable verdict</text>
+<text x="236" y="2717" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">SQLite audit + memory history + JSONL decision trail.</text>
+<text x="236" y="2748" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Record tier and available backend/model provenance.</text>
+<polyline points="560,2780 560,2830" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,2830 554.0,2819.0 566.0,2819.0" fill="#82b7ff"/>
+<rect x="210" y="2830" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<rect x="228" y="2848" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
+<text x="238" y="2869" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">10</text>
+<text x="280" y="2874" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Explain it to the operator</text>
+<text x="236" y="2917" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Same-origin API / SSE -&gt; dashboard: trigger, origin, gaps.</text>
+<text x="236" y="2948" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Recommended steps + review; device actions need approval.</text>
+<text x="52" y="3028" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">TRUST BOUNDARY</text>
+<text x="52" y="3068" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">The model advises. Policy and explicit authority control execution.</text>
+<text x="52" y="3108" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Guardrail exception: a narrowly matching standing fact can route to AI review, never directly suppress.</text>
 </svg>
