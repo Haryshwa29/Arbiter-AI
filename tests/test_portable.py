@@ -6,15 +6,75 @@ import subprocess
 import sys
 import threading
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from arbiter.memory import Memory
 from arbiter.portable import (OwnedJob, model_files, ollama_environment,
-                              seed_demo_memory)
+                              seed_demo_memory, device_data_dir)
+from arbiter.store import AuditStore
+from arbiter.ingestion.store import EventBuffer
+from arbiter.ingestion.service import ingestion_path
 from tests import test_api
 
 
 class PortableFilesTests(unittest.TestCase):
+    def test_device_profiles_isolate_history_context_and_collector_state(self):
+        registry = MagicMock()
+        with tempfile.TemporaryDirectory() as tmp, patch.dict("sys.modules", {"winreg": registry}):
+            root = Path(tmp)
+            legacy = root / "data" / "arbiter_memory.db"
+            legacy.parent.mkdir()
+            legacy.write_bytes(b"legacy mixed history must not be opened")
+            registry.QueryValueEx.return_value = ("11111111-1111-1111-1111-111111111111", 1)
+            first = device_data_dir(root)
+            first.mkdir(parents=True)
+            memory = Memory(first / "arbiter_memory.db")
+            memory.upsert_asset("previous-pc", 2, "private previous PC", True)
+            memory.add_fact("Previous PC maintenance", scope="previous-pc")
+            memory.close()
+            audit = AuditStore(first / "arbiter_audit.db")
+            audit.record_verdict(*test_api._verdict(host="previous-pc"))
+            audit.close()
+            buffer = EventBuffer(ingestion_path(first / "arbiter_audit.db"))
+            buffer.configure("previous-source", True, {"path": "previous-pc.log"})
+            buffer.close()
+            # Even when a computer has the same hostname, OS identity separates it.
+            registry.QueryValueEx.return_value = ("22222222-2222-2222-2222-222222222222", 1)
+            second = device_data_dir(root)
+            self.assertNotEqual(first, second)
+            second.mkdir(parents=True)
+            memory = Memory(second / "arbiter_memory.db")
+            self.assertEqual(memory.list_assets(), [])
+            self.assertEqual(memory.list_facts(), [])
+            memory.close()
+            audit = AuditStore(second / "arbiter_audit.db")
+            self.assertEqual(audit.query(), [])
+            self.assertEqual(audit.lifetime_counts()["triaged"], 0)
+            audit.close()
+            buffer = EventBuffer(ingestion_path(second / "arbiter_audit.db"))
+            self.assertEqual(buffer.configs(), [])
+            buffer.close()
+            registry.QueryValueEx.return_value = ("11111111-1111-1111-1111-111111111111", 1)
+            self.assertEqual(device_data_dir(root), first)
+            memory = Memory(first / "arbiter_memory.db")
+            self.assertEqual(memory.list_assets()[0]["host"], "previous-pc")
+            memory.close()
+            self.assertEqual(legacy.read_bytes(), b"legacy mixed history must not be opened")
+            env = ollama_environment(root, 12345, second)
+            self.assertEqual(env["TEMP"], str(second / "temp"))
+            self.assertEqual(env["HOME"], str(second / "runtime-home"))
+
+    def test_missing_device_identity_never_falls_back_to_shared_history(self):
+        registry = MagicMock()
+        with patch.dict("sys.modules", {"winreg": registry}):
+            registry.OpenKey.side_effect = OSError("unavailable")
+            with self.assertRaisesRegex(ValueError, "refusing to open shared"):
+                device_data_dir(Path("portable"))
+            registry.OpenKey.side_effect = None
+            registry.QueryValueEx.return_value = ("", 1)
+            with self.assertRaises(ValueError):
+                device_data_dir(Path("portable"))
+
     def test_demo_memory_adds_only_missing_context(self):
         with tempfile.TemporaryDirectory() as tmp:
             memory = Memory(Path(tmp) / "memory.db")

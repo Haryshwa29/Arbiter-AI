@@ -4,6 +4,14 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 23 portable isolation: portable monitoring state is now scoped to a hash
+of the Windows installation identity under `data/devices/`. Audit, memory,
+ingestion/source checkpoints, IAM and runtime logs/cache stay within that device
+profile. Unidentified Windows installations fail closed. Legacy shared databases
+are preserved but never automatically loaded because they may mix devices.
+Explicit portable `local_access: true` opens as loopback-only Local owner without
+credentials. Updating source does not replace an existing USB zipapp.
+
 October 23 alert explanations: audit entries and event details show the rule
 match, executable/parent/account, uncertainty and manual next steps before raw
 records. Historical telemetry gets a read-only explanation on retrieval.

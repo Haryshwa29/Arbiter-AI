@@ -9,6 +9,12 @@ the browser session and stops Arbiter. Wait for the start window to report
 if the browser is closed or unavailable; Ctrl+C in the start window also requests
 a clean stop. Do not pull the USB while analysis is running.
 
+For a presentation on a trusted computer, set `"local_access": true` in
+`config/portable.json`. The dashboard opens directly as **Local owner**, without
+credentials. This mode accepts only direct loopback requests and retains CSRF
+checks. Remove the setting or set it to `false` to restore sign-in. Other portable
+bundles require sign-in by default. Accounts belong to the current device profile.
+
 Open **Install Arbiter.exe** when Arbiter should remain on the computer after
 the USB is removed. It checks hardware, offers Local AI or rules-only mode, and
 uses the dependencies already on the drive. See `docs/WINDOWS-INSTALLER.md` in
@@ -52,12 +58,33 @@ dashboard.
 
 ## Data and processes
 
-`data/` contains local accounts, memory, audit records, and runtime temporary files.
-`logs/ollama.log` explains model/driver startup failures. `config/portable.json`
+`data/devices/<device-key>/` contains this Windows installation's accounts,
+memory, audit records, ingestion queue, inventory, source configuration and
+checkpoints, logs, and runtime temporary files. The key is a hash of the local
+Windows installation identity, not its hostname or drive letter. A new computer
+starts with an empty profile; returning to a known computer resumes only that
+computer's history and context. The launcher prints the current device and profile
+path. If Windows identity cannot be read, startup stops rather than using shared
+history. `logs/ollama.log` inside that profile explains model startup failures.
+`config/portable.json`
 selects a model already included under `models/`. Do not select a cloud model.
 The local server binds only to loopback and chooses available ports. Your installed
 Ollama is not reused, stopped, or reconfigured. Cloud features are disabled in the
 bundled process. The launcher's Windows Job Object contains its Ollama descendants.
+
+Older versions stored shared databases directly in `data/`. Those files may mix
+several computers, so this version leaves them untouched and never automatically
+loads them into a device profile. The first launch after upgrading starts clean,
+including on the original PC. Existing shared history is preserved for manual
+review. Model weights are shared; each inference request gets only the current
+profile's context. Isolated Demo & Replay sessions remain separate from live data.
+
+To update an existing USB copy, shut Arbiter down, back up `app/arbiter.pyz`, and
+replace it with the newly built release zipapp, renamed to `arbiter.pyz`. Keep
+the bundled runtime, models and `config/portable.json`. Setting `local_access`
+to `true` continues to open directly without sign-in. Updating GitHub alone does
+not update an existing USB copy. Old data remains physically on the USB; device
+profiles separate application context, not access by someone browsing its files.
 
 Arbiter-controlled state stays in this folder. Windows, GPU drivers and your
 browser can still create their own caches, history, paging or diagnostic records;

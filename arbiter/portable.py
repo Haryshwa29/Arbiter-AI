@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import ctypes
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,7 @@ import sys
 import threading
 import time
 import urllib.request
+import uuid
 import webbrowser
 
 from .api.server import Ctx, Hub, build_httpd, demo_feed_loop, tail_poller
@@ -58,13 +60,36 @@ def local_port() -> int:
         return sock.getsockname()[1]
 
 
-def ollama_environment(root: Path, port: int) -> dict[str, str]:
+def device_data_dir(root: Path) -> Path:
+    """Use an OS installation identity, never a shared USB or hostname identity.
+
+    Legacy flat databases may already mix devices. Leave them untouched and
+    never import them into a device profile automatically.
+    """
+    import winreg
+    try:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                            r"SOFTWARE\Microsoft\Cryptography", 0,
+                            winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as key:
+            value, _ = winreg.QueryValueEx(key, "MachineGuid")
+        parsed = uuid.UUID(value)
+        if not parsed.int:
+            raise ValueError("empty machine identity")
+        identity = str(parsed)
+    except (OSError, ValueError, TypeError, AttributeError) as exc:
+        raise ValueError("Cannot identify this Windows installation; refusing to open shared device history.") from exc
+    digest = hashlib.sha256(("arbiter-device-v1:" + identity).encode()).hexdigest()
+    return root / "data" / "devices" / digest
+
+
+def ollama_environment(root: Path, port: int, data: Path | None = None) -> dict[str, str]:
     env = os.environ.copy()
     for key in list(env):
         if key.upper().startswith("OLLAMA_") or key.upper() in {"HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY"}:
             env.pop(key)
-    home = root / "data" / "runtime-home"
-    temp = root / "data" / "temp"
+    data = data if data is not None else root / "data"
+    home = data / "runtime-home"
+    temp = data / "temp"
     home.mkdir(parents=True, exist_ok=True)
     temp.mkdir(parents=True, exist_ok=True)
     env.update(OLLAMA_HOST=f"127.0.0.1:{port}", OLLAMA_MODELS=str(root / "models"),
@@ -145,6 +170,7 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
     urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler({})))
     config = json.loads((root / "config" / "portable.json").read_text(encoding="utf-8"))
     model = config["model"]
+    local_access = config.get("local_access") is True
     model_files(root / "models", model)
     executable = root / "runtime" / "ollama" / "ollama.exe"
     if not executable.is_file():
@@ -177,13 +203,18 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
     threads = []
     httpd = store = iam = memory = job = process = log = ingestion = simulator = None
     try:
-        logs = root / "logs"; logs.mkdir(exist_ok=True)
+        device_data = device_data_dir(root)
+        device_data.mkdir(parents=True, exist_ok=True)
+        print(f"Current device: {socket.gethostname()}\nDevice history: {device_data}", flush=True)
+        if (data / "arbiter_audit.db").exists() or (data / "arbiter_memory.db").exists():
+            print("Previous shared history is preserved separately and will not be loaded on this device.", flush=True)
+        logs = device_data / "logs"; logs.mkdir(exist_ok=True)
         log = (logs / "ollama.log").open("ab")
         port = local_port()
         url = f"http://127.0.0.1:{port}"
         job = OwnedJob()
-        process = subprocess.Popen([str(executable), "serve"], cwd=data,
-                                   env=ollama_environment(root, port), stdout=log, stderr=log,
+        process = subprocess.Popen([str(executable), "serve"], cwd=device_data,
+                                   env=ollama_environment(root, port, device_data), stdout=log, stderr=log,
                                    creationflags=subprocess.CREATE_NO_WINDOW)
         job.assign(process)
         print("Starting bundled local AI (no downloads)...", flush=True)
@@ -196,23 +227,25 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
                 break
             except (OSError, ValueError):
                 if time.monotonic() > deadline:
-                    raise ValueError("Local AI did not start within 45 seconds. See logs/ollama.log.")
+                    raise ValueError(f"Local AI did not start within 45 seconds. See {logs / 'ollama.log'}.")
                 if stop.wait(.25) or request.exists():
                     return 0
         if model not in {m["name"] for m in tags.get("models", [])}:
             raise ValueError("The bundled model is unavailable. No download or mock fallback was attempted.")
         print("Checking that the model can load on this computer; first load may take a few minutes...", flush=True)
         request_json(url + "/api/generate", {"model": model, "stream": False, "keep_alive": "5m"}, timeout=180)
-        store = AuditStore(data / "arbiter_audit.db")
-        iam = IAM(data / "arbiter_iam.db", secret=load_or_create_secret(data / "arbiter_iam.db.secret"))
-        if not iam.any_users():
+        store = AuditStore(device_data / "arbiter_audit.db")
+        iam = IAM(device_data / "arbiter_iam.db", secret=load_or_create_secret(device_data / "arbiter_iam.db.secret"))
+        if not local_access and not iam.any_users():
             password = secrets.token_urlsafe(12)
             iam.create_user("admin", password, "admin")
             print(f"First sign-in: admin\nPassword: {password}\nKeep this password for the next launch.", flush=True)
-        memory = Memory(data / "arbiter_memory.db")
+        memory = Memory(device_data / "arbiter_memory.db")
         ctx = Ctx(store, iam, memory, Hub(), demo=False, backend="ollama",
-                  shutdown=stop.set)
-        ingestion = IngestionService(ingestion_path(data / "arbiter_audit.db"), memory, store,
+                  shutdown=stop.set, local_access=local_access)
+        if local_access:
+            print("Local owner access: dashboard opens without sign-in on this computer.", flush=True)
+        ingestion = IngestionService(ingestion_path(device_data / "arbiter_audit.db"), memory, store,
                                      "ollama", model, url)
         simulator = DemoManager("ollama", model, url)
         ctx.simulator = simulator
@@ -238,7 +271,7 @@ def run(root: Path, open_browser=True, check_only=False) -> int:
             webbrowser.open(address)
         while not stop.wait(.5) and not request.exists():
             if process.poll() is not None:
-                raise ValueError("Local AI stopped unexpectedly. See logs/ollama.log.")
+                raise ValueError(f"Local AI stopped unexpectedly. See {logs / 'ollama.log'}.")
         return 0
     finally:
         print("Stopping Arbiter; waiting for current analysis to finish...", flush=True)
