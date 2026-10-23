@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1686" viewBox="0 0 1000 1686" role="img" aria-labelledby="title desc">
+<title id="title">Explain the alert. Bound the action.</title><desc id="desc">An alert, an acknowledgement and a device action are different states. Read the accompanying architecture walkthrough for a complete text equivalent.</desc>
+<rect width="1000" height="1686" fill="#101820"/>
+<text x="70" y="60" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="600">03 / REVIEW + RESPONSE</text>
+<text x="70" y="119" fill="#edf2f5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="37" font-weight="600">Explain the alert. Bound the action.</text>
+<text x="70" y="161" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">An alert, an acknowledgement and a device action are different states</text>
+<polyline points="500.0,352 500.0,379.0 500.0,379.0 500.0,406" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,397 L500.0,406 L506.0,397" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,548 500.0,575.0 500.0,575.0 500.0,602" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,593 L500.0,602 L506.0,593" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,744 500.0,771.0 500.0,771.0 500.0,798" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,789 L500.0,798 L506.0,789" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,940 500.0,967.0 500.0,967.0 500.0,994" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,985 L500.0,994 L506.0,985" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,1136 500.0,1163.0 500.0,1163.0 500.0,1190" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,1181 L500.0,1190 L506.0,1181" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,1332 500.0,1359.0 500.0,1359.0 500.0,1386" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,1377 L500.0,1386 L506.0,1377" fill="none" stroke="#536575" stroke-width="3"/>
+<rect x="70" y="210" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,230 V332" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Same-origin API + live SSE</text>
+<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Operational reads require a session; writes require CSRF</text>
+<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Admin checks protect privileged controls; local owner is loopback-only</text>
+<rect x="70" y="406" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,426 V528" stroke="#ff9c95" stroke-width="4"/>
+<text x="94" y="450" fill="#ff9c95" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Operator-facing alert explanation</text>
+<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Why it triggered / executable / parent / account / command</text>
+<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Uncertainty + next steps; model advice is labelled separately</text>
+<rect x="70" y="602" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,622 V724" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="646" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Record a review</text>
+<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Acknowledgement marks reviewed; it does not mark benign</text>
+<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Feedback changes scoped memory/history, not model weights</text>
+<rect x="70" y="798" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,818 V920" stroke="#eac080" stroke-width="4"/>
+<text x="94" y="842" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Independent L1 response workflow</text>
+<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Critical 60s / high 5m / medium 30m / low: no deadline</text>
+<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Default expiry: overdue review only; no device change</text>
+<rect x="70" y="994" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1014 V1116" stroke="#eac080" stroke-width="4"/>
+<text x="94" y="1038" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Explicit approval + fresh evidence + scope</text>
+<text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Eligible correlation and exact peer; protect management networks</text>
+<text x="94" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Per-incident timed action needs separate authorization</text>
+<rect x="70" y="1190" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1210 V1312" stroke="#ff9c95" stroke-width="4"/>
+<text x="94" y="1234" fill="#ff9c95" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Typed native firewall operation</text>
+<text x="94" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Supported peer block only; five-minute OS-owned expiry</text>
+<text x="94" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Check native rule state; no model-generated shell execution</text>
+<rect x="70" y="1386" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1406 V1508" stroke="#94d7b4" stroke-width="4"/>
+<text x="94" y="1430" fill="#94d7b4" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Verify / audit / expire / undo</text>
+<text x="94" y="1470" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Persist action and review state; verify removal when possible</text>
+<text x="94" y="1499" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Undo removes a rule; it cannot restore interrupted sessions</text>
+<text x="70" y="1634" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">The action path is conditional. Most reviews need no native operation.</text>
+</svg>

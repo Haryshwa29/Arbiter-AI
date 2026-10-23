@@ -11,6 +11,20 @@ syslog and optional AWS CloudTrail/GuardDuty collectors are implemented. Azure,
 GCP, Zeek and additional AWS transports are explicitly Coming Soon. Real AWS
 account validation and production-scale delivery remain future validation work.
 
+## Follow the architecture
+
+**[Explore the detailed animated architecture walkthrough →](docs/ARCHITECTURE-WALKTHROUGH.md)**
+
+Scroll through four vertical flowcharts: intake, local triage, operator review
+and bounded response, then optional L2 and deployment boundaries. Each stage
+explains what happens, what is stored, which code owns it, and what cannot act
+without authorization. Implemented behavior is separated from the planned
+controller/edge design.
+
+[![Animated vertical architecture preview: sources, normalization, durable queue, priority worker and correlation.](docs/architecture/01-intake.gif)](docs/ARCHITECTURE-WALKTHROUGH.md)
+
+[Read without animation](docs/architecture/STILL.md).
+
 ## Live telemetry and Demo & Replay
 
 Sign in as administrator and open **Data Sources → Add Data Source**. Enable

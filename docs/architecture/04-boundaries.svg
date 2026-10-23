@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1490" viewBox="0 0 1000 1490" role="img" aria-labelledby="title desc">
+<title id="title">Separate reasoning from authority</title><desc id="desc">Optional L2 is an agent feature; the public simulator is a separate system. Read the accompanying architecture walkthrough for a complete text equivalent.</desc>
+<rect width="1000" height="1490" fill="#101820"/>
+<text x="70" y="60" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="600">04 / BOUNDARIES</text>
+<text x="70" y="119" fill="#edf2f5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="37" font-weight="600">Separate reasoning from authority</text>
+<text x="70" y="161" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Optional L2 is an agent feature; the public simulator is a separate system</text>
+<polyline points="500.0,352 500.0,379.0 500.0,379.0 500.0,406" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,397 L500.0,406 L506.0,397" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,548 500.0,575.0 500.0,575.0 500.0,602" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,593 L500.0,602 L506.0,593" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,744 500.0,771.0 500.0,771.0 500.0,798" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,789 L500.0,798 L506.0,789" fill="none" stroke="#536575" stroke-width="3"/>
+<rect x="70" y="210" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,230 V332" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L1 escalation in the terminal agent</text>
+<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Same local telemetry; independent L2 is explicitly enabled</text>
+<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Default: advice only; no automatic model download</text>
+<rect x="70" y="406" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,426 V528" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="450" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Independent bounded L2 dossier</text>
+<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Rebuild trusted evidence; assign fact IDs; limit to 64 records</text>
+<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Reject stale, cross-host, replayed or unsupported action evidence</text>
+<rect x="70" y="602" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,622 V724" stroke="#c4a7ff" stroke-width="4"/>
+<text x="94" y="646" fill="#c4a7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Separate local investigation + challenge</text>
+<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Distinct local model; metadata must report more than 4B parameters</text>
+<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Structured assessment, gaps, alternatives, recovery and critique</text>
+<rect x="70" y="798" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,818 V920" stroke="#eac080" stroke-width="4"/>
+<text x="94" y="842" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L2 policy + typed executor gate</text>
+<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Model recommends human review or an exact supported peer block</text>
+<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Automatic eligibility requires explicit local policy and scope</text>
+<rect x="70" y="994" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1014 V1116" stroke="#94d7b4" stroke-width="4"/>
+<text x="94" y="1038" fill="#94d7b4" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Customer installation</text>
+<text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Local inference + local state</text>
+<text x="94" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">No runtime CDN or analytics</text>
+<rect x="516" y="994" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M517,1014 V1116" stroke="#8bbcff" stroke-width="4"/>
+<text x="540" y="1038" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Public simulator</text>
+<text x="540" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Consented cloud AI exception</text>
+<text x="540" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">No native device actuator</text>
+<rect x="70" y="1190" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1210 V1312" stroke="#b0becb" stroke-width="4"/>
+<text x="94" y="1234" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Planned: controller + trusted edge</text>
+<text x="94" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Authenticated remote telemetry and signed typed action requests</text>
+<text x="94" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Architecture target, not a shipped remote execution channel</text>
+<text x="70" y="1438" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Lower boxes describe deployment boundaries, not outbound data flow.</text>
+</svg>

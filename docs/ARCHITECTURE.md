@@ -5,6 +5,12 @@
 >
 > **New direction:** Arbiter is evolving from a single-host analyst into a controller + trusted edge architecture for authorized remote breach response. See [`BREACH_CONTAINMENT_ARCHITECTURE.md`](BREACH_CONTAINMENT_ARCHITECTURE.md).
 
+**[Start with the detailed, animated vertical walkthrough](ARCHITECTURE-WALKTHROUGH.md)**
+for the current implementation, evidence flow, review controls, optional L2 and
+deployment boundaries. A [still-diagram edition](architecture/STILL.md) is also
+available. The older positioning diagrams below are conceptual; the walkthrough
+distinguishes shipped local behavior from the planned controller/edge design.
+
 ![Arbiter architecture](architecture.svg)
 
 ## The problem it solves
