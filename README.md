@@ -15,13 +15,13 @@ account validation and production-scale delivery remain future validation work.
 
 **[Explore the detailed animated architecture walkthrough →](docs/ARCHITECTURE-WALKTHROUGH.md)**
 
-Scroll through four vertical flowcharts: intake, local triage, operator review
-and bounded response, then optional L2 and deployment boundaries. Each stage
-explains what happens, what is stored, which code owns it, and what cannot act
-without authorization. Implemented behavior is separated from the planned
-controller/edge design.
+Follow one connected flowchart from security signals to an explained decision.
+Labelled branches show when rules bypass AI, what the local model does, why an
+event is suppressed or escalated, and how the result reaches the operator.
+Blue follows collection and rules, purple marks AI, green means suppressed,
+and red means escalated. The detailed walkthrough links every stage to code.
 
-[![Animated vertical architecture preview: sources, normalization, durable queue, priority worker and correlation.](docs/architecture/01-intake.gif)](docs/ARCHITECTURE-WALKTHROUGH.md)
+[![Complete animated Arbiter architecture: sources converge into collectors, validated events and durable storage; correlation and scoped memory feed guardrails and a prefilter; explicit shortcuts bypass local AI; validated decisions become observations or alerts, persist to audit, and reach the operator with reasons and next steps.](docs/architecture/arbiter-flow.gif)](docs/ARCHITECTURE-WALKTHROUGH.md)
 
 [Read without animation](docs/architecture/STILL.md).
 
