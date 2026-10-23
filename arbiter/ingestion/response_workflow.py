@@ -31,7 +31,7 @@ class ResponseWorkflow:
             buffer.conn.execute("CREATE TABLE IF NOT EXISTS l1_response_seen (event_id TEXT PRIMARY KEY)")
             buffer.conn.execute("CREATE TABLE IF NOT EXISTS l1_response_settings (name TEXT PRIMARY KEY, value TEXT NOT NULL)")
             buffer.conn.execute("CREATE INDEX IF NOT EXISTS idx_l1_response_state ON l1_response_cases(json_extract(body,'$.state'))")
-            buffer.conn.execute("CREATE INDEX IF NOT EXISTS idx_l1_response_scan ON telemetry(priority DESC,id) WHERE state='done' AND decision='escalate'")
+            buffer.conn.execute("CREATE INDEX IF NOT EXISTS idx_l1_response_scan_cover ON telemetry(priority DESC,id,event_id) WHERE state='done' AND decision='escalate'")
             buffer.conn.execute("INSERT OR IGNORE INTO l1_response_settings VALUES ('stopped','false')")
         for case in self.cases(["executing"]):
             if case["state"] == "executing":
@@ -207,7 +207,7 @@ class ResponseWorkflow:
     def tick(self):
         with self.lock:
             with self.buffer.lock:
-                event_ids = [r[0] for r in self.buffer.conn.execute("SELECT event_id FROM telemetry WHERE state='done' AND decision='escalate' "
+                event_ids = [r[0] for r in self.buffer.conn.execute("SELECT event_id FROM telemetry INDEXED BY idx_l1_response_scan_cover WHERE state='done' AND decision='escalate' "
                     "AND NOT EXISTS (SELECT 1 FROM l1_response_seen s WHERE s.event_id=telemetry.event_id) ORDER BY priority DESC,id LIMIT 100")]
             # Seen identities, rather than an insertion cursor, preserve cases
             # completed out of order by the priority worker. Slow old events

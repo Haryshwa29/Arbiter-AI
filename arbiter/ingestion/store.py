@@ -133,8 +133,14 @@ class EventBuffer:
             # Urgent findings first; one in 100 claims preserves FIFO progress
             # without one slow inference blocking every small context batch.
             order = "due_at,id" if self._claims % 100 == 99 else "priority DESC,due_at,id"
-            row = self.conn.execute("SELECT * FROM telemetry WHERE state='pending' AND due_at<=? "
-                                    f"ORDER BY {order} LIMIT 1", (now(),)).fetchone()
+            # Select the identity through the ordering index before loading the
+            # large payload. SQLite otherwise favors due_at and sorts payloads
+            # for the whole ready backlog while holding the shared lock.
+            index = "idx_telemetry_due" if self._claims % 100 == 99 else "idx_telemetry_priority"
+            candidate = self.conn.execute(f"SELECT id FROM telemetry INDEXED BY {index} "
+                "WHERE state='pending' AND due_at<=? "
+                f"ORDER BY {order} LIMIT 1", (now(),)).fetchone()
+            row = self.conn.execute("SELECT * FROM telemetry WHERE id=?", (candidate[0],)).fetchone() if candidate else None
             if row:
                 self._claims += 1
                 self.conn.execute("UPDATE telemetry SET state='processing',attempts=attempts+1 WHERE id=?", (row["id"],))

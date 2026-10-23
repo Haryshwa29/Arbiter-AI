@@ -4,6 +4,14 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 23 alert explanations: audit entries and event details show the rule
+match, executable/parent/account, uncertainty and manual next steps before raw
+records. Historical telemetry gets a read-only explanation on retrieval.
+Collector script text is a clue, never an attribution bypass. Backlog selection
+now uses indexed identity lookups; L1 discovery uses a covering scan index so
+large payload reads/sorts do not monopolize the shared ingestion lock. Regression
+checks cover query plans, urgent/FIFO scheduling and future-event exclusion.
+
 October 21 L1 guided response: the dashboard now has recommended investigation
 steps (model-provided advice when available, labelled policy fallback otherwise),
 durable severity review deadlines, bounded deferral/rejection, per-incident
@@ -21,7 +29,7 @@ reasoning and a separate review budget. Code-validated Defender/Sysmon critical
 cases bypass inference queues while preserving policy deadlines and narrow
 executor authority; deeper review follows. Native Linux validation uses owned
 synthetic evidence and fixture model responses. Real-model accuracy and latency
-are not established. Changes remain on codex/l2-policy-response; nothing pushed.
+are not established. Changes are included with the guided alert explanation integration.
 
 October 20 optional L2 iteration: the terminal agent accepts `--l2-model` and
 `--l2-policy`. A separate durable scheduler supplies severity-based deadlines,
