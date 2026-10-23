@@ -45,6 +45,7 @@ from urllib.parse import parse_qs, urlparse
 
 from ..iam import IAM, SESSION_TTL, load_or_create_secret
 from ..memory import Memory
+from ..briefing import validate_briefing
 from ..store import AuditStore
 from .static import CSP, dashboard_resource
 from ..ingestion.schema import safe_json
@@ -505,6 +506,26 @@ def make_handler(ctx: Ctx):
                 return self._login(body)
 
             user = self._session_user()
+            if path in {"/api/briefing/preview", "/api/briefing/save", "/api/briefing/remove"}:
+                if not require_admin(user):
+                    return self._send_json(403, {"error": "administrator role required"})
+                try:
+                    if path.endswith("remove"):
+                        fact_id = body.get("id")
+                        if type(fact_id) is not int or fact_id < 1:
+                            raise ValueError("valid briefing id required")
+                        if not ctx.memory.remove_briefing(fact_id):
+                            return self._send_json(404, {"error": "briefing not found"})
+                        ctx.store.record_iam(user["username"], "briefing_removed", str(fact_id))
+                        return self._send_json(200, {"ok": True})
+                    briefing = validate_briefing(body)
+                    if path.endswith("preview"):
+                        return self._send_json(200, {"briefing": briefing})
+                    fact_id = ctx.memory.save_briefing(briefing, user["username"])
+                    ctx.store.record_iam(user["username"], "briefing_saved", json.dumps({"id": fact_id, **briefing}))
+                    return self._send_json(200, {"id": fact_id})
+                except (ValueError, TypeError):
+                    return self._send_json(400, {"error": "invalid briefing; supply an exact host, context, valid priority and future expiry"})
             if path == "/api/models/connect":
                 if not require_admin(user): return self._send_json(403, {"error": "administrator role required"})
                 if not ctx.ingestion: return self._send_json(400, {"error": "ingestion unavailable"})

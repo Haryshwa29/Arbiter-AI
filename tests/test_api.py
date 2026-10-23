@@ -110,6 +110,51 @@ class ApiTestCase(unittest.TestCase):
         return c, status, body
 
     # -- auth / session / csrf -------------------------------------------------
+    def test_briefing_requires_admin_auth_and_csrf(self):
+        payload = {"host": "lab-vm", "fact": "Development VM"}
+        self.assertEqual(Client(self.port).post("/api/briefing/save", payload)[0], 401)
+        client, _, _ = self._login()
+        self.assertEqual(client.post("/api/briefing/save", payload)[0], 403)
+        self.ctx.local_access = True
+        owner = Client(self.port)
+        owner.get("/api/me")
+        self.assertEqual(owner.post("/api/briefing/save", payload, csrf=False)[0], 403)
+
+    def test_briefing_preview_save_read_remove(self):
+        self.ctx.local_access = True
+        client = Client(self.port)
+        client.get("/api/me")
+        payload = {"host": "lab-vm", "fact": "Development VM; no customer data",
+                   "role": "Testing VM", "priority": "critical"}
+        status, preview = client.post("/api/briefing/preview", payload)
+        self.assertEqual(status, 200)
+        self.assertEqual(len(self.mem.list_facts()), 1)
+        status, result = client.post("/api/briefing/save", preview["briefing"])
+        self.assertEqual(status, 200)
+        self.assertEqual(self.mem.asset_criticality("lab-vm"), 2.0)
+        self.assertEqual(len(self.mem.facts_for("lab-vm", "sysmon")), 1)
+        self.assertEqual(len(self.mem.facts_for("other", "lab-vm")), 0)
+        status, estate = client.get("/api/estate")
+        self.assertEqual(status, 200)
+        self.assertEqual(estate["facts"][-1]["created_by"], "Local owner")
+        self.assertEqual(client.post("/api/briefing/remove", {"id": result["id"]})[0], 200)
+        self.assertEqual(self.mem.facts_for("lab-vm", "sysmon"), [])
+        self.assertEqual(self.mem.asset_criticality("lab-vm"), 2.0)
+        self.assertEqual(client.post("/api/briefing/remove", {"id": 1})[0], 404)
+
+    def test_invalid_briefings_do_not_mutate_memory(self):
+        self.ctx.local_access = True
+        client = Client(self.port)
+        client.get("/api/me")
+        for override in ({"host": "*"}, {"host": "10.0.0.0/24"}, {"fact": ""},
+                         {"priority": []}, {"expires_at": "2020-01-01T00:00:00Z"},
+                         {"fact": "x" * 2001}, {"host": ["lab-vm"]}):
+            with self.subTest(override=override):
+                status, _ = client.post("/api/briefing/save", {"host": "lab-vm", "fact": "VM", **override})
+                self.assertEqual(status, 400)
+        self.assertEqual(len(self.mem.list_facts()), 1)
+        self.assertFalse(self.mem.is_known_asset("lab-vm"))
+
     def test_unauthenticated_get_is_401(self):
         status, _ = Client(self.port).get("/api/me")
         self.assertEqual(status, 401)

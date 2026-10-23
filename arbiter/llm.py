@@ -112,6 +112,9 @@ class OllamaBackend(LLMBackend):
 
     def triage(self, event: Event, criticality: float, history_summary: str,
                facts: list[str]) -> LLMVerdict:
+        return parse_response(self.generate(build_prompt(event, criticality, history_summary, facts), SYSTEM_PROMPT))
+
+    def generate(self, prompt: str, system: str) -> str:
         # A local Ollama server can route cloud models or renamed remote aliases.
         # Verify metadata before constructing/sending any customer event prompt.
         if self.model.lower().endswith((":cloud", "-cloud")):
@@ -131,8 +134,8 @@ class OllamaBackend(LLMBackend):
             raise ValueError("model is not verified for local inference")
         payload = json.dumps({
             "model": self.model,
-            "system": SYSTEM_PROMPT,
-            "prompt": build_prompt(event, criticality, history_summary, facts),
+            "system": system,
+            "prompt": prompt,
             "stream": False,
             "format": "json",
             # Hybrid-reasoning models (e.g. Qwen3-class) otherwise dump the
@@ -149,7 +152,7 @@ class OllamaBackend(LLMBackend):
         )
         with self._opener.open(req, timeout=120) as resp:
             body = json.loads(resp.read())
-        return parse_response(body["response"])
+        return body["response"]
 
 
 class MockBackend(LLMBackend):
@@ -205,7 +208,19 @@ class MockBackend(LLMBackend):
         )
 
 
+class RulesOnlyBackend(LLMBackend):
+    """Explicit conservative policy when no inference service is configured."""
+    name = "rules-only"
+
+    def triage(self, event, criticality, history_summary, facts):
+        return LLMVerdict(Decision.ESCALATE, 1.0,
+                          "Review the event; no local model is configured.",
+                          "Rules-only policy: ambiguous activity requires operator review.")
+
+
 def get_backend(name: str, model: str = "llama3.1:8b") -> LLMBackend:
+    if name == "rules-only":
+        return RulesOnlyBackend()
     if name == "ollama":
         return OllamaBackend(model=model)
     if name == "mock":

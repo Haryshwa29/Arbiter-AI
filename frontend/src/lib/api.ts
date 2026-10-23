@@ -307,6 +307,29 @@ export interface EnvironmentFact {
   process: string;
   event_types: string[];
   window: string;
+  created_by?: string;
+  created_at?: string;
+  expires_at?: string;
+}
+
+export interface BriefingDraft {
+  host: string;
+  fact: string;
+  role: string;
+  priority: "unchanged" | "standard" | "important" | "critical";
+  expires_at: string;
+}
+
+export function previewBriefing(body: BriefingDraft): Promise<{ briefing: BriefingDraft }> {
+  return apiFetch("/api/briefing/preview", { method: "POST", body });
+}
+
+export function saveBriefing(body: BriefingDraft): Promise<{ id: number }> {
+  return apiFetch("/api/briefing/save", { method: "POST", body });
+}
+
+export function removeBriefing(id: number): Promise<{ ok: boolean }> {
+  return apiFetch("/api/briefing/remove", { method: "POST", body: { id } });
 }
 
 export async function getEstate(): Promise<{ assets: Asset[]; facts: EnvironmentFact[] }> {
@@ -344,6 +367,7 @@ export interface StreamRow {
 
 // -- common telemetry ingestion ------------------------------------------
 export interface Connector {
+  coverage?: string; limitations?: string[]; observed?: Record<string, number>;
   name: string; label: string; category: string; status: string;
   enabled: boolean; implemented: boolean; description: string;
   configuration: Record<string, unknown>;
@@ -374,6 +398,7 @@ export interface TelemetryRow {
   related: string[]; analysis: {
     decision: Decision; tier: Tier; score: number; rationale: string;
     backend?: string; model?: string;
+    brief?: {why: string; origin: Record<string, string>; uncertainty: string; guidance: {source: "model" | "policy"; steps: string[]; caution: string} | null} | null;
     guidance?: {source: "model" | "policy"; steps: string[]; caution: string} | null;
     evidence: string; kind: "alert" | "observation"; correlation?: unknown; incident_id?: string;
     responses?: {status: string; kind: string; target: string; reason: string}[];

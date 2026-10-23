@@ -16,7 +16,7 @@ export function RecommendedResponse({event, admin, demo, publicDemo, onUpdate, o
   const [protectedNetworks, setProtectedNetworks] = useState("");
   useEffect(() => {const timer = setInterval(() => setNow(Date.now() / 1000), 1000); return () => clearInterval(timer);}, []);
   const review = event.response_case;
-  const guidance = event.analysis?.guidance;
+  const guidance = event.analysis?.brief?.guidance ?? event.analysis?.guidance;
   const seconds = review?.deadline == null ? null : Math.max(0, Math.ceil(review.deadline - now));
   const countdown = seconds === null ? "No automatic deadline" : seconds ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")} remaining` : "Deadline passed";
   const closed = !!review && !["pending", "overdue"].includes(review.state);

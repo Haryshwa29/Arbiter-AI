@@ -8,7 +8,7 @@ from .models import available_models
 from pathlib import Path
 import threading
 
-from ..llm import OllamaBackend, get_backend
+from ..llm import LLMBackend, OllamaBackend, get_backend
 from ..triage import TriageEngine
 from .files import parse_upload, schedule
 from .normalization import normalize
@@ -35,7 +35,9 @@ class IngestionService:
         self.lock = threading.RLock()
         self.discovery_stop = threading.Event()
         self.discovery_thread = None
-        llm = OllamaBackend(model, ollama_url) if backend == "ollama" else get_backend(backend, model)
+        # Explicit dependency injection for the isolated website simulator;
+        # runtime/API backend names still resolve only to local or mock models.
+        llm = backend if isinstance(backend, LLMBackend) else OllamaBackend(model, ollama_url) if backend == "ollama" else get_backend(backend, model)
         self.pipeline = Pipeline(self.buffer, TriageEngine(memory, llm, os.devnull, shadow=True), audit)
 
     def connect_model(self, model):
@@ -104,7 +106,7 @@ class IngestionService:
                 row = next(r for r in self.buffer.configs() if r["name"] == name)
                 self._start(name, config, safe_json(row["checkpoint"]))
 
-    def status(self):
+    def status(self, include_metrics=True):
         rows = {r["name"]: r for r in self.buffer.configs()}
         connectors = []
         with self.lock:
@@ -119,13 +121,13 @@ class IngestionService:
                 connectors.append({"name": name, "label": spec.label, "category": spec.category,
                     "implemented": spec.implemented, "enabled": bool(row and row["enabled"]),
                     "description": spec.description, "configuration": safe_json(row["config"]) if row else spec.defaults,
-                    **health, **self.buffer.connector_stats(name)})
+                    **health, **(self.buffer.connector_stats(name) if include_metrics else {})})
         for name, label, category in (("api", "Authenticated API", "Other"), ("file", "File Upload", "Demo"), ("replay", "Event Replay", "Demo")):
             connectors.append({"name": name, "label": label, "category": category, "implemented": True,
                 "enabled": True, "status": "Enabled" if name == "api" else "Available", "errors": 0,
                 "error": "", "configuration": {}, "description": "Uses the common event buffer",
-                **self.buffer.connector_stats(name)})
-        metrics = self.buffer.metrics("live")
+                **(self.buffer.connector_stats(name) if include_metrics else {})})
+        metrics = self.buffer.metrics("live") if include_metrics else {}
         metrics["connector_errors"] = sum(c["errors"] for c in connectors)
         return {"device": socket.gethostname(), "backend": self.backend, "model": self.model,
                 "elevated": is_elevated(), "protection_enabled": False,

@@ -12,6 +12,7 @@ import sqlite3
 import threading
 from dataclasses import dataclass, replace
 from pathlib import Path
+from datetime import datetime, timezone
 
 from .facts import ScopedFact
 from .schema import Verdict
@@ -49,7 +50,8 @@ CREATE TABLE IF NOT EXISTS facts (
 """
 
 # Columns added after the first release; applied to pre-existing DBs.
-_FACT_SCOPE_COLUMNS = ("f_user", "f_path", "f_process", "f_events", "f_window")
+_FACT_SCOPE_COLUMNS = ("f_user", "f_path", "f_process", "f_events", "f_window",
+                       "created_by", "created_at", "expires_at")
 
 
 @dataclass
@@ -201,7 +203,9 @@ class Memory:
         with self._lock:
             rows = self.conn.execute(
                 "SELECT fact, scope, f_user, f_path, f_process, f_events, f_window "
-                "FROM facts WHERE scope IN (?,?,'*')", (host, source)
+                "FROM facts WHERE (scope=? OR (created_by='' AND scope IN (?,'*'))) AND "
+                "(expires_at='' OR expires_at>?)",
+                (host, source, datetime.now(timezone.utc).isoformat())
             ).fetchall()
         return [ScopedFact(text=r[0], host=r[1], user=r[2] or "",
                            path=r[3] or "", process=r[4] or "",
@@ -214,12 +218,42 @@ class Memory:
         with self._lock:
             rows = self.conn.execute(
                 "SELECT id, scope, fact, f_user, f_path, f_process, f_events, "
-                "f_window FROM facts ORDER BY id"
+                "f_window, created_by, created_at, expires_at FROM facts ORDER BY id"
             ).fetchall()
         return [{"id": i, "scope": s, "fact": f, "user": u, "path": p,
                  "process": pr, "event_types": [t for t in ev.split(",") if t],
-                 "window": w}
-                for i, s, f, u, p, pr, ev, w in rows]
+                 "window": w, "created_by": author, "created_at": created,
+                 "expires_at": expires}
+                for i, s, f, u, p, pr, ev, w, author, created, expires in rows]
+
+    def save_briefing(self, briefing: dict, actor: str) -> int:
+        """Atomically save reviewed context and optional explicit asset changes."""
+        host = briefing["host"]
+        with self._lock, self.conn:
+            current = self.conn.execute(
+                "SELECT criticality, role, confirmed FROM assets WHERE host=?", (host,)
+            ).fetchone()
+            priority = briefing["priority"]
+            if briefing["role"] or priority != "unchanged":
+                criticality = {"standard": 1.3, "important": 1.6, "critical": 2.0}.get(
+                    priority, current[0] if current else 1.3)
+                role = briefing["role"] or (current[1] if current else "")
+                self.conn.execute(
+                    "INSERT INTO assets(host,criticality,role,confirmed) VALUES(?,?,?,1) "
+                    "ON CONFLICT(host) DO UPDATE SET criticality=excluded.criticality, "
+                    "role=excluded.role, confirmed=1", (host, criticality, role))
+            cursor = self.conn.execute(
+                "INSERT INTO facts(scope,fact,created_by,created_at,expires_at) VALUES(?,?,?,?,?)",
+                (host, briefing["fact"], actor, datetime.now(timezone.utc).isoformat(),
+                 briefing["expires_at"]))
+            return cursor.lastrowid
+
+    def remove_briefing(self, fact_id: int) -> bool:
+        with self._lock, self.conn:
+            # Legacy/seed facts are managed separately; only operator briefings here.
+            return self.conn.execute(
+                "DELETE FROM facts WHERE id=? AND created_by!=''", (fact_id,)
+            ).rowcount == 1
 
     def close(self) -> None:
         with self._lock:

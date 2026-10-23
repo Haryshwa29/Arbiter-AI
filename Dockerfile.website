@@ -1,0 +1,17 @@
+FROM node:24-bookworm-slim AS website
+WORKDIR /build
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build:public
+
+FROM python:3.14-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY arbiter/ ./arbiter/
+COPY samples/ ./samples/
+COPY --from=website /build/dist/ ./public/
+RUN useradd --uid 10001 --create-home demo
+USER demo
+EXPOSE 8080
+CMD ["python", "-m", "arbiter.site_demo", "--root", "/app/public", "--host", "0.0.0.0", "--port", "8080"]

@@ -17,7 +17,7 @@ class DashboardTests(unittest.TestCase):
             (root / "index.html").write_bytes(b"dashboard")
             (root / "app.js").write_bytes(b"script")
             (root / "secret.db").write_bytes(b"private")
-            for route in ("/", "/login", "/audit", "/assets", "/sources", "/events", "/replay"):
+            for route in ("/", "/login", "/audit", "/assets", "/sources", "/events", "/replay", "/brief"):
                 self.assertEqual(dashboard_resource(route, root)[0], b"dashboard")
             self.assertEqual(dashboard_resource("/app.js", root)[0], b"script")
             for route in ("/../index.html", "/%2e%2e/index.html", "/secret.db",

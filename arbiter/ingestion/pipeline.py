@@ -76,6 +76,8 @@ class Pipeline:
                 analysis["model"] = model if analysis["backend"] in {"ollama", "ollama-cloud"} else ""
             if analysis["tier"] == "llm" and analysis["rationale"].startswith("LLM tier failed ("):
                 analysis["backend"] = "policy-fallback"
+            if backend == "rules-only" and analysis["tier"] == "llm":
+                analysis["backend"] = "rules-only-policy"
             analysis["kind"] = "alert" if analysis["decision"] == "escalate" else "observation"
             # Planning is pure. Neither simulated nor live ingestion executes commands.
             from ..respond import plan

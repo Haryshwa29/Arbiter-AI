@@ -4,6 +4,14 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+October 23 alert explanations: audit entries and event details show the rule
+match, executable/parent/account, uncertainty and manual next steps before raw
+records. Historical telemetry gets a read-only explanation on retrieval.
+Collector script text is a clue, never an attribution bypass. Backlog selection
+now uses indexed identity lookups; L1 discovery uses a covering scan index so
+large payload reads/sorts do not monopolize the shared ingestion lock. Regression
+checks cover query plans, urgent/FIFO scheduling and future-event exclusion.
+
 October 21 L1 guided response: the dashboard now has recommended investigation
 steps (model-provided advice when available, labelled policy fallback otherwise),
 durable severity review deadlines, bounded deferral/rejection, per-incident
@@ -13,6 +21,52 @@ expiry is overdue review only. Demo cases remain isolated, and playback is cappe
 at steady 2x with one in-flight event. No new runtime dependencies. Source/build
 validation does not establish real Windows enforcement or model quality; the
 installed app requires the new release and service restart. See docs/L1-RESPONSE.md.
+
+October 20 independent L2 engine: dedicated local inference transport, bounded
+evidence dossier, independent prefilter, grounded assertions and an analysis /
+challenge review flow. Larger inference requires metadata above 4B, with explicit
+reasoning and a separate review budget. Code-validated Defender/Sysmon critical
+cases bypass inference queues while preserving policy deadlines and narrow
+executor authority; deeper review follows. Native Linux validation uses owned
+synthetic evidence and fixture model responses. Real-model accuracy and latency
+are not established. Changes are included with the guided alert explanation integration.
+
+October 20 optional L2 iteration: the terminal agent accepts `--l2-model` and
+`--l2-policy`. A separate durable scheduler supplies severity-based deadlines,
+bounded acknowledgement/deferral, rejection, persistent emergency stop, local
+notices and verified revert. Per the owner's explicit authorization, narrowly
+enrolled deterministic correlations may trigger a five-minute peer block after
+an unanswered deadline and a valid L2 recommendation. The model itself still
+cannot execute commands or grant authority. Advice-only is the default; triage
+remains side-effect free. Larger-model quality and Windows native enforcement
+remain unverified. See docs/L2-RESPONSE.md for scope and deployment limits.
+
+October 19 containment iteration: `arbiter agent` runs a local terminal agent
+on Windows/Linux using shared ingestion and explicit rules-only or local Ollama
+analysis. Approved, scoped private/public peer IP blocks have management/service
+exclusions, native rule checks and five-minute OS-owned expiry. Linux OpenSSH
+file collection and an nftables adapter are implemented. `tools/build_agent.py`
+packages a stdlib-only zipapp without requiring the dashboard. Linux network
+namespace validation uses synthetic detection input and real packet filtering;
+it is not a live breach or THM result. A THM Windows VM has been launched and
+reached over a target-only VPN route. The deployed package detected and escalated
+three preliminary process/network findings. Further THM testing was stopped
+after reviewing its current Acceptable Use Policy sections 9.2–9.3, which
+restrict AI-agent access and AI-system evaluation/development using lab content.
+Written THM authorization is required before resuming. Administrator elevation
+was not approved in the VM; Windows enforcement remains unverified. Local snapshots detect
+sustained CPU use by a temporary executable with network activity. See
+docs/AGENT-LIVE-VALIDATION.md for coverage, commands and acceptance criteria.
+
+October 14 website demo: explicit owner-authorized cloud exception for the public
+simulator only. `arbiter.site_cloud.WebsiteCloudBackend` calls Ollama Cloud
+Nemotron using a server-only OLLAMA_API_KEY; it is never registered in the
+installed backend selector. Public serving defaults to cloud; missing credentials
+disable starting runs, and cloud failures are labelled policy escalations, never
+mock output. Uploaded sample/sanitized events require cloud consent. Live model,
+request status and per-verdict provenance are visible. Cloudflare container/Worker
+deployment files are prepared; no deployment or live credentialed request has
+been performed. See docs/PRODUCT-WEBSITE.md. Customer inference remains local-only.
 
 October 13 local access: this PC's owner requested a dashboard without sign-in.
 Explicit `serve --local-access` / installed `[server] local_access = true` opens

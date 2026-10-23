@@ -15,6 +15,9 @@ from .collectors.windows import CHANNELS, WindowsCollector
 from .collectors.wazuh import WazuhCollector
 from .collectors.defender import DefenderCollector
 from .collectors.security import SecurityCollector
+from .collectors.linux_auth import LinuxAuthCollector
+from .collectors.local_process import LocalProcessCollector
+from .collectors.attachments import AttachmentCollector
 
 
 @dataclass(frozen=True)
@@ -64,8 +67,9 @@ class Registry:
             if name == "osquery" and Path(result["path"]).name.lower() not in {"osqueryi", "osqueryi.exe"}:
                 raise ValueError("select the installed osqueryi executable")
         if "interval" in result:
-            if isinstance(result["interval"], bool) or not isinstance(result["interval"], (int, float)) or not 60 <= result["interval"] <= 86400:
-                raise ValueError("inventory interval must be 60–86400 seconds")
+            minimum = 5 if name == "attachments" else 60
+            if isinstance(result["interval"], bool) or not isinstance(result["interval"], (int, float)) or not minimum <= result["interval"] <= 86400:
+                raise ValueError(f"inventory interval must be {minimum}–86400 seconds")
         if "region" in result:
             if not isinstance(result["region"], str) or not re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-\d", result["region"]):
                 raise ValueError("valid AWS region required")
@@ -97,6 +101,13 @@ class Registry:
 def default_registry():
     registry = Registry()
     specs = [
+        ConnectorSpec("attachments", "Connected devices & network edges", "Endpoints", AttachmentCollector, "attachments", {"interval": 15},
+            description="Passive Windows/Linux USB, adapter, neighbor and removable-execution monitoring. Windows also enumerates present Bluetooth devices. No probes, phone-internal inspection or automatic blocking; short connections can be missed."),
+        ConnectorSpec("local_process", "Local process/network activity", "Endpoints", LocalProcessCollector, "local_process", {},
+            description="Read-only Windows/Linux snapshots. Sustained high CPU, temporary executable path and TCP activity produce review evidence; no automatic action."),
+        ConnectorSpec("linux_auth", "Linux SSH authentication", "Endpoints", LinuxAuthCollector, "linux_auth",
+            {"path": "/var/log/auth.log", "read_existing": False},
+            description="Read local OpenSSH authentication logs; starts at the end by default. Requires log read access."),
         ConnectorSpec("windows_security", "Windows protection status", "Endpoints", SecurityCollector, "windows_security",
             {"interval": 300}, description="Automatically observe Defender and firewall protection; disabled controls generate findings. Read-only."),
         ConnectorSpec("defender", "Microsoft Defender", "Endpoints", DefenderCollector, "defender",

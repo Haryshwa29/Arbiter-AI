@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { to: `${DASH_BASE}/replay`, label: "Demo & Replay" },
   { to: `${DASH_BASE}/audit`, label: "Verdicts & audit" },
   { to: `${DASH_BASE}/assets`, label: "Assets & facts" },
+  { to: `${DASH_BASE}/brief`, label: "Brief Arbiter" },
 ];
 export function AppShell() {
   const { user, logout, reachable } = useAuth();
@@ -39,11 +40,13 @@ export function AppShell() {
           running, then retry below. This clears on its own once a request gets through again.
         </div>
       )}
+
       <div className="flex min-h-0 flex-1 flex-col md:flex-row">
         <aside className="premium-sidebar flex w-full shrink-0 flex-col border-b border-neutral-200 bg-white px-3 py-3 md:w-56 md:border-b-0 md:border-r md:py-4 dark:border-neutral-800 dark:bg-neutral-900/40">
           <p className="mb-2 px-2 text-sm font-medium tracking-wide text-neutral-600 md:mb-6 dark:text-neutral-400">
             <span className="brand-mark">A</span> ARBITER <span className="brand-ai">AI</span>
           </p>
+
           <nav aria-label="Dashboard" className="flex gap-1 overflow-x-auto md:flex-1 md:flex-col md:gap-0.5">
             {NAV_ITEMS.map((item) => (
               <NavLink
@@ -76,6 +79,7 @@ export function AppShell() {
             </div>
           )}
         </aside>
+
         <main className="premium-main min-h-0 min-w-0 flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="workspace-bar"><span>PRIVATE INTELLIGENCE WORKSPACE</span><span>{reachable ? "Backend reachable" : "Connection interrupted"} · {user?.backend === "mock" ? "Test backend" : "Local workspace"}</span></div>
           <Outlet />

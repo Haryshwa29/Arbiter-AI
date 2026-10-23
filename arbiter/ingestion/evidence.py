@@ -46,6 +46,9 @@ def tool_finding(event):
         high = bool(event.metadata.get("protection_gaps"))
     elif event.source_type == "osquery":
         high = bool(event.metadata.get("security_findings"))
+    elif event.source_type == "attachments":
+        finding = event.metadata.get("attachment", {})
+        high = isinstance(finding, dict) and finding.get("review_required") is True and event.event_type in {"removable_process_exec", "local_peer_connection"}
     else:
         return None
     return {"source": event.source_type, "high_priority": high,
@@ -80,7 +83,7 @@ def process_context(event, legacy, engine, connector):
 
 
 def own_log_query(event, connector):
-    """Attest only Arbiter-owned, exact fixed wevtutil read commands."""
+    """Attest exact fixed log/attachment queries from this Arbiter process."""
     if connector != "sysmon" or event.source_type != "sysmon" or event.event_type != "process_exec":
         return False
     if event.hostname.casefold().split('.')[0] != socket.gethostname().casefold().split('.')[0]: return False
@@ -94,6 +97,10 @@ def own_log_query(event, connector):
     except ValueError:
         same_launch = False
     if not (same_parent or same_launch): return False
+    from .collectors.attachments import windows_command
+    attachment_command = windows_command()
+    if artifact(event.process_name) == artifact(attachment_command[0]) and event.command_line == subprocess.list2cmdline(attachment_command):
+        return True
     executable = os.environ.get("SystemRoot", r"C:\Windows").rstrip("\\/") + r"\System32\wevtutil.exe"
     if artifact(event.process_name) != artifact(executable): return False
     cursor = re.search(r"EventRecordID > ([0-9]+)", event.command_line)

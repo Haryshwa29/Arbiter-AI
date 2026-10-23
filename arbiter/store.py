@@ -21,6 +21,9 @@ CREATE INDEX IF NOT EXISTS idx_audit_ts ON audit(ts);
 CREATE INDEX IF NOT EXISTS idx_audit_decision ON audit(decision);
 CREATE INDEX IF NOT EXISTS idx_audit_host ON audit(host);
 CREATE INDEX IF NOT EXISTS idx_audit_event ON audit(event_id, kind);
+-- Keep dashboard aggregates off the large rationale/evidence/detail rows.
+CREATE INDEX IF NOT EXISTS idx_audit_summary ON audit(kind, ts, decision, tier);
+CREATE INDEX IF NOT EXISTS idx_audit_kind_id ON audit(kind, id);
 """
 
 

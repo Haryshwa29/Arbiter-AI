@@ -47,14 +47,27 @@ live results, event details and filtered history are shared with the PC demo.
 The website has a separate backend, `arbiter.site_demo`, serving `/public-demo/*`.
 It never connects to the installed service on port 8787. Each visitor gets an
 unguessable HttpOnly, SameSite=Strict scoped cookie and a separate manager with
-temporary SQLite files. It runs the **mock test reasoning backend**, explicitly
-labelled; it does not claim to demonstrate an attached local model. Responses
+temporary SQLite files. Public serving defaults to **live Ollama Cloud reasoning**
+using Nemotron 3 Nano. Deterministic screening and guardrails still decide clear
+cases; only ambiguous events call the model. Each AI verdict records its backend
+and model. There is no mock fallback: cloud failure escalates by safety policy,
+labelled separately from an AI decision. Test fixtures can explicitly inject mock. Responses
 are always simulated. No collection configuration, login, model selection or
 firewall route exists on this server. The real device dashboard stays protected.
 
 Limits: 8 visitor sessions, 300 requests per visitor per minute, 30-minute idle
 expiry, 20 uploaded files, 5 MiB combined text and 5,000 selected events. Files
 must be JSON, JSONL or CSV event data; arbitrary binaries/documents are rejected.
+Uploaded event records require explicit cloud-processing consent before starting.
+Event content and simulation context may be sent to Ollama Cloud. Only sample or
+sanitized data belongs here; installed monitoring remains local-only. Cloud runs
+are capped at 100 events, 32 KiB prompt context per request, 512 output tokens,
+one concurrent request, and 100 requests per hour across all visitors by default
+(`--ai-hourly-limit`). Counters/allowances are process-local and reset on restart;
+configure provider budgets and edge rate limits for a public deployment.
+The live status panel reports configuration, active requests, successful calls and
+failures for the service; it never treats key configuration as a successful probe.
+
 Uploaded event records are processed on the demo server and retained only in
 temporary session state until replacement, expiry or clean shutdown. The UI
 advises sample or sanitized data. Disk encryption and guaranteed crash cleanup
@@ -81,3 +94,66 @@ upload/path/format limits, cross-origin rejection and unknown operational routes
 Browser checks exercise datasets, upload validation, playback settings, pause,
 resume, stop, linked details and history on desktop and mobile with zero
 operational `/api` requests.
+
+
+## Live AI and Cloudflare deployment (October 14)
+
+Set `OLLAMA_API_KEY` in the server environment (never in browser/Vite settings).
+The CLI defaults to `--model nemotron-3-nano:30b`; cloud API names differ from
+Ollama CLI `:cloud` aliases. Verify available API model IDs and account access at
+https://ollama.com/api/tags and https://ollama.com/settings before launch.
+An absent key disables starting a public AI run with a clear 503; an invalid key,
+provider limit or malformed response produces an explicit policy escalation.
+No API key was supplied or live provider request verified during implementation.
+
+The root `Dockerfile.website`, `wrangler.jsonc` and
+`deploy/cloudflare/worker.js` prepare an all-Cloudflare deployment. This is not a
+Pages-only upload: the current Python/SQLite/threading runtime uses Cloudflare
+Containers, which requires Workers Paid. No paid resources were created.
+
+1. Install Docker and Cloudflare Wrangler 4.151.0 (the validated version) or later on the deployment
+   machine. Set `WRANGLER_SEND_METRICS=false` to disable CLI usage metrics.
+   These are build/deployment tools; no new Python, frontend or Worker
+   runtime package is required. The Worker uses native Durable Object APIs.
+2. Set `vars.PUBLIC_ORIGIN` in `wrangler.jsonc` to the exact HTTPS origin you will
+   serve, with no trailing slash. For workers.dev use the matching worker name
+   and account subdomain; for a custom domain configure the corresponding Worker
+   route in Cloudflare. The default placeholder deliberately rejects traffic.
+3. Authenticate with `npx wrangler login`. Save the key privately with
+   `npx wrangler secret put OLLAMA_API_KEY`; enter it at the private prompt.
+   Never put it in Wrangler vars, Docker build arguments, logs or git.
+4. Review the configuration and Cloudflare costs, then run `npx wrangler deploy`
+   from the repository root. The image builds the public frontend and includes
+   only source/sample inputs; monitoring data and local environment files are
+   excluded. It serves on port 8080 as an unprivileged user.
+5. Add Cloudflare edge request/rate limits, provider spending limits, and verify
+   an actual sample run before sharing the URL. Check one `ollama-cloud` verdict
+   with model/evidence/rationale, one deterministic verdict, and a provider failure.
+   Container startup can take a few seconds. Key changes require restarting the
+   running container so its startup environment refreshes.
+
+All requests use one named container so visitors retain their isolated sessions.
+Sessions and process-local quota are lost on restart or deployment. The container
+sleeps after 30 minutes of inactivity. No telemetry or payload logging is enabled.
+The Docker image builds successfully and its public-page, missing-key status and
+operational-route isolation smoke checks passed. Wrangler 4.151.0 deployment
+dry-run compiled the Worker and built its image successfully. No resources were
+created. Cloudflare live execution remains unverified. Local Wrangler container
+development is unsupported on native Windows; use WSL/Linux for the combined
+Worker/container integration check. The direct Docker smoke test works on this PC.
+
+References: https://docs.ollama.com/cloud,
+https://developers.cloudflare.com/containers/examples/env-vars-and-secrets/,
+https://developers.cloudflare.com/containers/platform/pricing/.
+
+UI tooling: Demo drawer, Demo & Replay, and EventPanel adapt existing components.
+21st.dev Magic and ui-ux pro max were unavailable in this session; neither was
+used. Public TypeScript/build and lint checks cover the changed frontend.
+
+Validation: full Python suite 301 passed, 12 skipped (11 subtests passed);
+seed/sample-run smoke passed; public frontend build and lint passed (two existing
+Fast Refresh warnings). Provider tests use controlled HTTP responses and cover
+authentication, malformed/failing responses, shared quota, redirect rejection,
+missing credentials, upload consent, visitor isolation, recorded model provenance
+and explicit policy escalation through the actual demo pipeline. Live Ollama
+access and deployed Cloudflare execution still require operator configuration.
