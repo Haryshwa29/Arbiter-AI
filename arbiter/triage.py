@@ -155,11 +155,15 @@ class TriageEngine:
             rationale = (f"[guardrail {d_hit.name} downgraded to LLM decision "
                          f"by standing fact: \"{d_fact}\"] {rationale}")
 
-        return Verdict(
+        verdict = Verdict(
             event_id=event.id, signature=event.signature,
             decision=decision, score=pre_score, tier=Tier.LLM,
             rationale=rationale, evidence=llm.evidence,
         )
+        # Advisory metadata is deliberately outside the stable Event/Verdict
+        # serialization contract and cannot grant execution authority.
+        verdict.recommended_steps = getattr(llm, "recommended_steps", [])
+        return verdict
 
     def _audit(self, event: Event, verdict: Verdict) -> None:
         entry = json.loads(verdict.to_json())

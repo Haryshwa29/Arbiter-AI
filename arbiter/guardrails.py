@@ -180,6 +180,11 @@ _LOLBIN_CTX = ("urlcache", "-urlcache", "http://", "https://", "download",
 
 
 def _lolbin(ev: Event) -> bool:
+    # Set only by pipeline-side exact command + native parent attestation.
+    # Other guardrails and correlated security findings still run normally.
+    if (ev.source == "sysmon" and ev.event_type == "process_exec"
+            and ev.fields.get("_collector_activity") is True):
+        return False
     m = _m(ev)
     if not _has(m, *_LOLBINS):
         return False
@@ -230,7 +235,7 @@ def _high_priority_tool_finding(event):
     finding = event.fields.get("_tool_finding")
     provenance = event.fields.get("_telemetry", {})
     return (isinstance(finding, dict) and isinstance(provenance, dict)
-            and event.source in {"defender", "wazuh", "suricata", "guardduty", "windows_security", "osquery"}
+            and event.source in {"defender", "wazuh", "suricata", "guardduty", "windows_security", "osquery", "attachments"}
             and finding.get("source") == event.source == provenance.get("source")
             and finding.get("type") == event.event_type
             and finding.get("high_priority") is True)

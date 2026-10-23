@@ -307,6 +307,29 @@ export interface EnvironmentFact {
   process: string;
   event_types: string[];
   window: string;
+  created_by?: string;
+  created_at?: string;
+  expires_at?: string;
+}
+
+export interface BriefingDraft {
+  host: string;
+  fact: string;
+  role: string;
+  priority: "unchanged" | "standard" | "important" | "critical";
+  expires_at: string;
+}
+
+export function previewBriefing(body: BriefingDraft): Promise<{ briefing: BriefingDraft }> {
+  return apiFetch("/api/briefing/preview", { method: "POST", body });
+}
+
+export function saveBriefing(body: BriefingDraft): Promise<{ id: number }> {
+  return apiFetch("/api/briefing/save", { method: "POST", body });
+}
+
+export function removeBriefing(id: number): Promise<{ ok: boolean }> {
+  return apiFetch("/api/briefing/remove", { method: "POST", body: { id } });
 }
 
 export async function getEstate(): Promise<{ assets: Asset[]; facts: EnvironmentFact[] }> {
@@ -344,6 +367,7 @@ export interface StreamRow {
 
 // -- common telemetry ingestion ------------------------------------------
 export interface Connector {
+  coverage?: string; limitations?: string[]; observed?: Record<string, number>;
   name: string; label: string; category: string; status: string;
   enabled: boolean; implemented: boolean; description: string;
   configuration: Record<string, unknown>;
@@ -364,16 +388,30 @@ export interface TelemetryEvent {
 }
 export interface ProtectionAction {id: string; status: string; target: string; expires_at: string; actor: string;}
 export interface TelemetryRow {
+  response_case?: ResponseCase | null;
+  response_stopped?: boolean;
+  response_schedule_available?: boolean;
+  response_workflow_error?: string;
   protection_proposal?: {kind: string; target: string; minutes: number; reason: string; status: string} | null;
   protection_actions?: ProtectionAction[];
   id: number; event_id: string; event: TelemetryEvent; state: string; error: string;
   related: string[]; analysis: {
     decision: Decision; tier: Tier; score: number; rationale: string;
     backend?: string; model?: string;
+    brief?: {why: string; origin: Record<string, string>; uncertainty: string; guidance: {source: "model" | "policy"; steps: string[]; caution: string} | null} | null;
+    guidance?: {source: "model" | "policy"; steps: string[]; caution: string} | null;
     evidence: string; kind: "alert" | "observation"; correlation?: unknown; incident_id?: string;
     responses?: {status: string; kind: string; target: string; reason: string}[];
   } | null;
 }
+export interface ResponseCase {
+  event_id: string; severity: string; deadline: number | null; state: string;
+  mode: string; note: string; deferred: boolean; simulation: boolean;
+  target?: string; expires_at?: number;
+}
+export const controlResponse = (event_id: string, command: string, demo: boolean, reason = "", protected_networks: string[] = []) =>
+  apiFetch(`${demo ? "/api/demo" : "/api"}/response/control`, {method: "POST", body: {event_id, command, reason, protected_networks}, timeoutMs: 45_000});
+export const getResponseStatus = () => apiFetch<{stopped: boolean; error: string; cases: ResponseCase[]}>("/api/response/status");
 export interface ImportSummary {
   filename: string; detected_format: string; number_of_events: number;
   valid_events: number; invalid_events: number; import_status: string;

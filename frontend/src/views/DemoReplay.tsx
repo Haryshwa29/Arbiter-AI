@@ -4,12 +4,11 @@ import { ApiError } from "../lib/api";
 import { publicDemoApi } from "../lib/publicDemo";
 import type { DemoStatus, ImportSummary, TelemetryRow } from "../lib/api";
 import { useOptionalAuth } from "../lib/auth";
+import { DemoAnalytics } from "../components/DemoAnalytics";
+import { SignalMap } from "../components/SignalMap";
 import { EventPanel } from "../components/EventPanel";
-
 import { eventStatus, eventProgress } from "../lib/eventStatus";
-
 const control = "rounded border border-neutral-600 bg-neutral-900 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-sky-500 disabled:opacity-40";
-
 function matchesHistory(row: TelemetryRow, filters: Record<string, string>) {
   const decision = row.state === "failed" ? "failed" : row.analysis?.decision ?? "pending";
   if (filters.decision && filters.decision !== decision) return false;
@@ -20,7 +19,6 @@ function matchesHistory(row: TelemetryRow, filters: Record<string, string>) {
   if (filters.response && filters.response !== response) return false;
   return !filters.search || JSON.stringify([row.event, row.analysis]).toLowerCase().includes(filters.search.toLowerCase());
 }
-
 function InferenceStatus({session}: {session: DemoStatus | null}) {
   return <section className="rounded-lg border border-purple-800 p-4" aria-label="Live AI service">
       <p className="font-medium">{session?.inference?.model === "nemotron-3-nano:30b" ? "Nemotron 3 Nano · 30B" : session?.inference?.model ?? "Nemotron"} · Ollama Cloud</p>
@@ -30,7 +28,6 @@ function InferenceStatus({session}: {session: DemoStatus | null}) {
       <p className="mt-2 text-xs text-neutral-400">Security rules run first. Ambiguous events receive asset context, scoped demo facts and verified session history before live AI analysis. Open an event to see its decision tier and evidence. This browser demo does not collect device activity or execute responses.</p>
     </section>;
 }
-
 export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
   const auth = useOptionalAuth();
   const user = publicDemo ? {role: "admin", backend: "mock"} : auth?.user;
@@ -41,7 +38,6 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
   const [cloudConsent, setCloudConsent] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [speed, setSpeed] = useState("1x");
-  const [traffic, setTraffic] = useState("steady");
   const [order, setOrder] = useState("mixed");
   const [seed, setSeed] = useState(0);
   const [session, setSession] = useState<DemoStatus | null>(null);
@@ -84,7 +80,7 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
       if (files.reduce((size, file) => size + file.size, 0) > 5 * 1024 * 1024) throw new Error("Combined upload limit is 5 MiB.");
       const uploads = await Promise.all(files.map(async file => ({filename: file.name, content: await file.text()})));
       if (validate) setPreview((await previewDemo({datasets: selected, uploads})).files);
-      else {setSession(await startDemo({datasets: selected, uploads, speed, order, seed, traffic, cloud_consent: cloudConsent})); setWorkspace(true);setHistory(false);setHistoryOffset(0);setHistoryFilters({});setDetail(null);setPreview(null);}
+      else {setSession(await startDemo({datasets: selected, uploads, speed, order, seed, traffic: "steady", cloud_consent: cloudConsent})); setWorkspace(true);setHistory(false);setHistoryOffset(0);setHistoryFilters({});setDetail(null);setPreview(null);}
     } catch (e) {setError(e instanceof Error ? e.message : "Could not start simulation.");}
     finally {setBusy(false);}
   }
@@ -102,7 +98,7 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
   const filteredHistory = historyEvents.filter(row => matchesHistory(row, historyFilters));
   function changeHistoryFilter(key: string, value: string) {setHistoryFilters({...historyFilters, [key]: value});setHistoryOffset(0);}
   const active = session && ["running", "paused"].includes(session.state);
-  return <div className="flex max-w-3xl flex-col gap-5">
+  return <div className="operations-view flex max-w-5xl flex-col gap-5">
     <header><h1 className="text-lg font-medium">Demo & Replay</h1><p className="mt-2 text-sm text-neutral-400">A separate simulation workspace. Demo records never enter real monitoring, its counts, or device responses.</p></header>
     {publicDemo && <InferenceStatus session={session} />}
     {error && <p role="alert" className="text-amber-300">{error}</p>}
@@ -115,12 +111,11 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
       {publicDemo && <label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" checked={cloudConsent} onChange={e => setCloudConsent(e.target.checked)} />I understand that selected sample or sanitized events are sent to Ollama Cloud.</label>}
       <p className="mt-2 text-xs text-neutral-400">{publicDemo ? "Cloud demo: at most 500 events per run; shared AI limits may stop large selections. " : ""}Choose your own JSON, JSONL or CSV event files. Up to 5 MiB combined. {publicDemo ? "500" : "5,000"} events per session. Arbitrary documents and executable files are not event datasets.</p>
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <label className="flex flex-col gap-2 text-sm">Delivery speed<select className={control} value={speed} onChange={e => setSpeed(e.target.value)}>{["1x", "2x", "5x", "10x"].map(value => <option key={value}>{value}</option>)}</select></label>
+        <label className="flex flex-col gap-2 text-sm">Playback<select className={control} value={speed} onChange={e => setSpeed(e.target.value)}>{["1x", "2x"].map(value => <option key={value}>{value}</option>)}</select></label>
         <label className="flex flex-col gap-2 text-sm">Event order<select className={control} value={order} onChange={e => setOrder(e.target.value)}><option value="mixed">Mix datasets, preserve each sequence</option><option value="random">Shuffle all events</option></select></label>
         <label className="flex flex-col gap-2 text-sm">Random seed<input className={control} type="number" min="0" max="4294967296" value={seed} onChange={e => setSeed(Number(e.target.value))}/></label>
       </div>
-      <label className="mt-4 flex flex-col gap-2 text-sm">Arrival pattern<select className={control} value={traffic} onChange={e => setTraffic(e.target.value)}><option value="steady">Steady arrivals</option><option value="bursts">Bursts and pauses</option><option value="delayed">Variable delays</option></select></label>
-      <p className="mt-3 text-xs text-neutral-400">1x sends one event every three seconds; faster speeds shorten that interval. Original timestamps stay available for analysis. The seed makes ordering repeatable.</p>
+      <p className="mt-3 text-xs text-neutral-400">Playback is capped at 2×. Arbiter waits for the current event to finish analysis before delivering another. 1× uses a three-second minimum interval; 2× uses 1.5 seconds. Original timestamps remain available for analysis.</p>
       <div className="mt-4 flex gap-3"><button className={control} disabled={busy || user?.role !== "admin"} onClick={() => void start(true)}>Validate selection</button><button className={control} disabled={busy || !!active || user?.role !== "admin" || (publicDemo && (!session?.inference?.configured || !cloudConsent))} onClick={() => void start(false)}>Start simulation</button>{session?.session_id && <button className={control} onClick={() => setWorkspace(true)}>Open simulation workspace</button>}</div>
     </section>
     {preview && <section aria-label="Dataset validation" className="rounded border border-neutral-700 p-4"><h2 className="mb-3">Selection preview · no events delivered</h2>{preview.map((file, i) => <div key={i} className="mb-2 text-sm">{file.filename}: {file.valid_events} valid · {file.invalid_events} invalid{file.errors.map((error, j) => <p key={j} className="text-xs text-amber-300">{error}</p>)}</div>)}</section>}
@@ -134,6 +129,8 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
         <p className="mt-2 text-sm text-amber-300">SIMULATION · Responses are simulated. Your PC is never modified by demo events.</p>
         <p className="mt-4 text-sm" role="status">{session?.state} · {session?.delivered ?? 0} / {session?.total ?? 0} delivered · {session?.completed ?? 0} processed</p>
         <p className="mt-2 text-sm text-neutral-300">{currentEvents.filter(e => e.analysis?.decision === "suppress").length} suppressed · {currentEvents.filter(e => e.analysis?.decision === "escalate").length} escalated for review · {currentEvents.filter(e => !e.analysis && e.state !== "failed").length} awaiting analysis · {currentEvents.filter(e => e.state === "failed").length} failed</p>
+        {<SignalMap key={session?.session_id} demo events={currentEvents.map(row => ({id: row.event_id, source: row.event.source_type, decision: row.analysis?.decision}))} onInspect={setDetail} />}
+        <DemoAnalytics events={currentEvents} delivered={session?.delivered ?? 0} completed={session?.completed ?? 0} />
         <progress className="mt-2 w-full" max={session?.total || 1} value={session?.delivered ?? 0}/>
         {user?.role === "admin" && <div className="my-4 flex gap-3"><button className={control} disabled={busy || session?.state !== "running"} onClick={() => void action("pause")}>Pause delivery</button><button className={control} disabled={busy || session?.state !== "paused"} onClick={() => void action("resume")}>Resume</button><button className={control} disabled={busy || !active} onClick={() => void action("stop")}>Stop delivery</button></div>}
         <p className="mb-4 text-xs text-neutral-400">Pause and Stop halt new arrivals; analysis already queued can finish. Session history lasts until a new simulation; hosted preview history is also cleared on page refresh.</p>
@@ -167,7 +164,6 @@ export function DemoReplay({publicDemo = false}: {publicDemo?: boolean}) {
           <button className={`${control} mt-3`} onClick={() => setDetail(row.event_id)}>Inspect original event & full details</button>
         </td></tr>}</Fragment>)}</tbody></table>{!(history ? filteredHistory.length : currentEvents.length) && <p className="p-6 text-sm text-neutral-400">{history ? "No simulation events match these filters." : "Waiting for the first event…"}</p>}</div>
         {history && <div className="mt-4 flex items-center gap-3"><button className={control} disabled={!historyOffset} onClick={() => setHistoryOffset(Math.max(0, historyOffset - 100))}>Newer</button><span className="text-xs">{filteredHistory.length ? `${historyOffset + 1}–${historyOffset + filteredHistory.length}` : "0 events"}</span><button className={control} disabled={historyTotal !== null ? historyOffset + 100 >= historyTotal : filteredHistory.length < 100} onClick={() => setHistoryOffset(historyOffset + 100)}>Older</button></div>}
-
       </section>
     </div>}
     {detail && <EventPanel id={detail} demo publicDemo={publicDemo} onClose={() => setDetail(null)}/>}

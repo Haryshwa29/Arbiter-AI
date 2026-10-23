@@ -83,6 +83,9 @@ export function DataSources() {
           <p className="mt-2 text-xs text-neutral-400">{c.events_received} events · {c.events_per_minute ?? 0}/min · {c.errors} errors</p>
           <p className="mt-1 text-xs text-neutral-500">Last event: {c.last_event_received ? new Date(c.last_event_received).toLocaleString() : "None"}</p>
           {c.error && <p className="mt-2 text-xs text-amber-300">{c.error}</p>}
+          {c.coverage && <p className="mt-2 text-sm leading-relaxed text-neutral-400">{c.coverage}</p>}
+          {c.observed && <p className="mt-2 text-sm text-neutral-300">Last snapshot: {Object.entries(c.observed).map(([kind, count]) => `${count} ${kind}`).join(" · ")}</p>}
+          {c.limitations?.map(note => <p key={note} className="mt-2 text-sm text-amber-300">{note}</p>)}
           {user?.role === "admin" && c.implemented && Object.keys(c.configuration).length > 0 && <button type="button" className="mt-3 text-sm text-sky-300 underline focus-visible:ring-2" onClick={() => select(c)}>Configure {c.label}</button>}
         </article>)}</div></section>)}
     </>}

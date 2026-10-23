@@ -4,10 +4,11 @@ import { eventStatus, eventProgress } from "../lib/eventStatus";
 import { useOptionalAuth } from "../lib/auth";
 import { publicDemoApi } from "../lib/publicDemo";
 import type { RecordRow, TelemetryRow } from "../lib/api";
+import { RecommendedResponse } from "./RecommendedResponse";
 
 export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id: string; onClose: () => void; demo?: boolean; publicDemo?: boolean}) {
   const auth = useOptionalAuth();
-  const user = publicDemo ? {role: "analyst", backend: "mock"} : auth?.user;
+  const user = publicDemo ? {role: "admin", backend: "mock"} : auth?.user;
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
   const [event, setEvent] = useState<TelemetryRow | null>(null);
@@ -53,7 +54,7 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
   return <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onMouseDown={e => {if (e.target === e.currentTarget) onClose();}}>
     <section role="dialog" aria-modal="true" aria-label="Event details" className="flex h-full w-full max-w-2xl flex-col gap-4 overflow-y-auto border-l border-neutral-700 bg-neutral-950 p-6 text-neutral-100" onKeyDown={e => {
       if (e.key === "Escape") onClose();
-      if (e.key === "Tab") {const nodes = e.currentTarget.querySelectorAll<HTMLElement>('button, a, summary, input, select, [tabindex="0"]'); const first = nodes[0], last = nodes[nodes.length - 1]; if (e.shiftKey && document.activeElement === first) {e.preventDefault(); last?.focus();} else if (!e.shiftKey && document.activeElement === last) {e.preventDefault(); first?.focus();}}
+      if (e.key === "Tab") {const nodes = [...e.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), a, summary, input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')].filter(node => node.getClientRects().length); const first = nodes[0], last = nodes[nodes.length - 1]; if (e.shiftKey && document.activeElement === first) {e.preventDefault(); last?.focus();} else if (!e.shiftKey && document.activeElement === last) {e.preventDefault(); first?.focus();}}
     }}>
       <div className="flex items-center justify-between gap-3"><h2 className="text-lg">{demo ? "Simulation event" : "Event details"}</h2><button ref={close} onClick={onClose} className="rounded border border-neutral-600 px-3 py-2">Close</button></div>
       <p className="break-all text-xs text-neutral-400">Event ID: {id}</p>
@@ -61,17 +62,22 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
         <h3>{event?.event.event_type ?? verdict?.signature} · {event?.event.hostname ?? verdict?.host}</h3>
         <p className="text-sm text-sky-300">{status}</p>{event && <p className="text-xs text-neutral-400">{eventProgress(event)}</p>}
         {event && <p className="text-xs text-neutral-400">Source: {event.event.source_type}<br/>Occurred: {event.event.timestamp ? new Date(event.event.timestamp).toLocaleString() : "Unknown (not supplied)"}<br/>Received: {new Date(event.event.received_at).toLocaleString()}</p>}
+        {event?.analysis?.brief && <section aria-label="Alert explanation" className="space-y-3 rounded border border-neutral-700 p-4 text-sm">
+          <h3 className="font-medium">Why this triggered</h3><p>{event.analysis.brief.why}</p>
+          <dl className="space-y-2">{Object.entries(event.analysis.brief.origin).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-400">{label}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
+          <h3 className="font-medium">What still needs checking</h3><p>{event.analysis.brief.uncertainty}</p>
+        </section>}
         <h3 className="font-medium">Analysis</h3><p className="text-sm">{analysis?.rationale ?? event?.error ?? "Waiting for analysis."}</p>
         {analysis && <><p className="text-xs text-neutral-400">{analysis.tier === "llm" ? reasoningBackend === "mock" ? "Test reasoning heuristic" : reasoningBackend === "policy-fallback" ? "AI unavailable · escalated by safety policy" : reasoningBackend === "ollama-cloud" ? `Live cloud AI reasoning (${event?.analysis?.model ?? "recorded model"})` : reasoningBackend === "ollama" ? `Local AI reasoning (${event?.analysis?.model ?? "recorded model"})` : "Reasoning backend was not recorded" : analysis.tier} · Score {analysis.score.toFixed(1)}</p><p className="text-sm">{analysis.evidence}</p></>}
-        <h3 className="font-medium">Response</h3>
+        {event && <RecommendedResponse key={event.event_id} event={event} admin={user?.role === "admin"} demo={demo} publicDemo={publicDemo} onUpdate={setEvent} onApprove={() => void act()} />}
+        <h3 className="font-medium">Response history</h3>
         <p className="text-sm text-neutral-400">{demo ? "Simulation only. No changes are made to your device." : event?.protection_actions?.some(a => a.status === "executed") ? "Approved firewall response recorded below." : "An alert is a detection decision. Review response status below."}</p>
         {actionError && <p role="alert" className="text-amber-300">{actionError}</p>}
-        {!demo && event?.protection_proposal && <div className="rounded border border-amber-800 p-3 text-sm"><p>Awaiting approval: block {event.protection_proposal.target} for {event.protection_proposal.minutes} minutes.</p><p className="mt-2 text-xs text-neutral-400">{event.protection_proposal.reason}</p>{user?.role === "admin" && <button disabled={busy || event.protection_actions?.some(a => ["executed", "pending"].includes(a.status))} className="mt-3 rounded border border-neutral-600 px-3 py-2 disabled:opacity-40" onClick={() => void act()}>Approve temporary block</button>}</div>}
-        {event?.protection_actions?.map(action => <div key={action.id} className="rounded border border-neutral-700 p-3 text-sm">{action.status} · {action.target}<p className="text-xs text-neutral-400">Approved by {action.actor} · Cleanup scheduled for {new Date(action.expires_at).toLocaleString()}{action.status === "expiry_due" ? " · Scheduled expiry is due; removal has not been verified by Arbiter." : ""}</p>{user?.role === "admin" && ["executed", "expiry_due", "failed", "pending"].includes(action.status) && <button disabled={busy} className="mt-2 rounded border border-neutral-600 px-3 py-2" onClick={() => void act(action.id)}>Undo block</button>}</div>)}
+        {event?.protection_actions?.map(action => <div key={action.id} className="rounded border border-neutral-700 p-3 text-sm">{action.status} · {action.target}<p className="text-xs text-neutral-400">Approved by {action.actor} · Cleanup scheduled for {new Date(action.expires_at).toLocaleString()}{action.status === "expiry_due" ? " · Scheduled expiry is due; removal has not been verified by Arbiter." : ""}</p>{user?.role === "admin" && ["executed", "expiry_due", "failed", "pending", "cleanup_failed"].includes(action.status) && <button disabled={busy} className="mt-2 rounded border border-neutral-600 px-3 py-2" onClick={() => void act(action.id)}>Undo block</button>}</div>)}
         {demo && event?.analysis && !event.analysis.responses?.length && <p className="text-sm text-neutral-400">No protective response selected for this event.</p>}
         {demo && event && !event.analysis && <p className="text-sm text-neutral-400">No simulated response recorded yet.</p>}
         {event?.analysis?.responses?.map((r, i) => <div key={i} className="rounded border border-neutral-700 p-3 text-sm">{r.status === "awaiting-approval" ? "Awaiting approval" : r.status === "approved-simulation" ? "Approved (simulation only)" : r.status === "reviewed" ? "Reviewed · action deferred" : r.status}: {r.kind} · {r.target}<br/>{r.reason}{publicDemo && <div className="mt-3 flex flex-wrap gap-2"><button disabled={busy || r.status !== "awaiting-approval"} className="rounded border border-amber-700 px-3 py-2 disabled:opacity-40" onClick={() => void reviewDemo("approved-simulation")}>Approve simulated action</button><button disabled={busy || r.status !== "awaiting-approval"} className="rounded border border-neutral-600 px-3 py-2 disabled:opacity-40" onClick={() => void reviewDemo("reviewed")}>Mark reviewed · defer action</button><p className="w-full text-xs text-neutral-400">Recommendation from the demo response policy; verify targets and impact. Approval records a simulation only. Nothing is executed.</p></div>}</div>)}
-        <details open><summary className="cursor-pointer">Event record</summary><pre className="mt-2 overflow-auto rounded bg-neutral-900 p-3 text-xs">{JSON.stringify(event ? {...event.event, raw_event: undefined} : JSON.parse(verdict?.detail ?? "{}"), null, 2)}</pre></details>
+        <details><summary className="cursor-pointer">Event record</summary><pre className="mt-2 overflow-auto rounded bg-neutral-900 p-3 text-xs">{JSON.stringify(event ? {...event.event, raw_event: undefined} : JSON.parse(verdict?.detail ?? "{}"), null, 2)}</pre></details>
         {event && <><details><summary className="cursor-pointer">Original payload</summary><pre className="mt-2 overflow-auto rounded bg-neutral-900 p-3 text-xs">{JSON.stringify(event.event.raw_event, null, 2)}</pre></details><p className="text-xs">Related events: {event.related.join(", ") || "None"}</p></>}
       </>}
     </section>

@@ -1,5 +1,6 @@
 """Local read-only discovery. No download, scanning or installation at runtime."""
 import os
+import platform
 from pathlib import Path
 
 from .collectors.windows import WindowsCollector, SYSMON_CHANNEL, channel_installed
@@ -8,8 +9,8 @@ from .collectors.defender import CHANNEL
 
 def discover_local():
     if os.name != "nt":
-        return {}
-    found = {"windows_security": {"interval": 300}}
+        return {"attachments": {"interval": 15}} if platform.system() == "Linux" else {}
+    found = {"windows_security": {"interval": 300}, "attachments": {"interval": 15}}
     probe = WindowsCollector({"adapter": "windows"})
     channels = []
     for name in ("System", "Application", "Security", SYSMON_CHANNEL, CHANNEL):

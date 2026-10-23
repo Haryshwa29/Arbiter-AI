@@ -1,0 +1,14 @@
+{
+  "name": "arbiter-website-demo",
+  "main": "deploy/cloudflare/worker.js",
+  "compatibility_date": "2026-10-14",
+  "observability": {"enabled": false},
+  "vars": {"PUBLIC_ORIGIN": "https://replace-with-your-website.example"},
+  "containers": [{
+    "class_name": "ArbiterDemo",
+    "scheduling_policy": "durable_object",
+    "images": {"base": {"dockerfile": "./Dockerfile.website"}}
+  }],
+  "durable_objects": {"bindings": [{"name": "DEMO", "class_name": "ArbiterDemo"}]},
+  "exports": {"ArbiterDemo": {"type": "durable-object", "storage": "sqlite"}}
+}

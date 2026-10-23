@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   acknowledge,
+  getEvent,
   getEstate,
   getRecords,
   parseDetail,
   labelSignature,
 } from "../lib/api";
-import type { Decision, RecordRow, Tier } from "../lib/api";
+import type { Decision, RecordRow, Tier, TelemetryRow } from "../lib/api";
 import { DECISION_STYLE, TIER_STYLE, formatTime } from "../lib/theme";
 import { EventPanel } from "../components/EventPanel";
 import { ErrorNotice } from "../components/ErrorNotice";
@@ -14,6 +15,7 @@ import { ErrorNotice } from "../components/ErrorNotice";
 const PAGE_SIZE = 25;
 
 export function Audit() {
+  const [briefs, setBriefs] = useState<Record<string, TelemetryRow["analysis"]>>({});
   const [eventId, setEventId] = useState<string | null>(null);
   const [rows, setRows] = useState<RecordRow[]>([]);
   const [hosts, setHosts] = useState<string[]>([]);
@@ -132,7 +134,7 @@ export function Audit() {
               >
                 <button
                   type="button"
-                  onClick={() => setExpanded(isOpen ? null : row.id)}
+                  onClick={() => {setExpanded(isOpen ? null : row.id); if (!isOpen && !briefs[row.event_id]) void getEvent(row.event_id).then(event => setBriefs(current => ({...current, [row.event_id]: event.analysis}))).catch(() => setBriefs(current => ({...current, [row.event_id]: null})));}}
                   className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left"
                 >
                   <div className="flex min-w-0 items-center gap-2">
@@ -152,6 +154,13 @@ export function Audit() {
                 {isOpen && (
                   <div className="border-t border-neutral-200 px-4 py-3 text-sm dark:border-neutral-800">
                     <button className="mb-3 text-sky-300 underline" onClick={() => setEventId(row.event_id)}>Inspect original event · {row.event_id}</button>
+                    {briefs[row.event_id]?.brief ? <section aria-label="Alert explanation" className="mb-4 space-y-3 rounded border border-neutral-700 p-3">
+                      <h3 className="font-medium">Why this triggered</h3><p>{briefs[row.event_id]?.brief?.why}</p>
+                      <dl className="space-y-2">{Object.entries(briefs[row.event_id]?.brief?.origin ?? {}).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-500">{label}</dt><dd className="max-h-28 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
+                      <h3 className="font-medium">What still needs checking</h3><p>{briefs[row.event_id]?.brief?.uncertainty}</p>
+                      <h3 className="font-medium">Recommended next steps</h3><p className="text-xs text-neutral-500">{briefs[row.event_id]?.brief?.guidance?.source === "model" ? "AI-suggested guidance" : "Policy-guided investigation"}</p>
+                      <ol className="list-decimal space-y-2 pl-5">{briefs[row.event_id]?.brief?.guidance?.steps.map((step, index) => <li key={index}>{step}</li>)}</ol><p className="text-xs text-neutral-500">{briefs[row.event_id]?.brief?.guidance?.caution}</p>
+                    </section> : row.decision === "escalate" && <p role="status" className="mb-3 text-neutral-500">{row.event_id in briefs ? "Detailed explanation unavailable. Inspect the original event, verify its origin and authorization, then acknowledge after review." : "Loading alert explanation and recommended steps…"}</p>}
                     <p className="text-xs text-neutral-500">Signature</p>
                     <p className="mb-2 break-all text-neutral-700 dark:text-neutral-300">{row.signature}</p>
 

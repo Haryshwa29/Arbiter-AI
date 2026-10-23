@@ -126,6 +126,26 @@ def main():
     sp = sub.add_parser("seed", help="seed demo assets and facts")
     sp.set_defaults(fn=cmd_seed)
 
+    from .readiness import cmd_readiness
+    cp = sub.add_parser("readiness", help="inspect local Windows/Linux containment prerequisites without changes")
+    cp.add_argument("--json", action="store_true", help="print a machine-readable readiness report")
+    cp.add_argument("--require-ready", action="store_true", help="exit 1 when CLI containment is unavailable")
+    cp.set_defaults(fn=cmd_readiness)
+
+    from .agent import cmd_agent
+    ap = sub.add_parser("agent", help="run the local Windows/Linux terminal agent")
+    ap.add_argument("--state-dir", required=True, help="dedicated writable agent state directory")
+    ap.add_argument("--backend", choices=["rules-only", "ollama"], default="rules-only")
+    ap.add_argument("--model", default="qwen3.5:4b")
+    ap.add_argument("--auth-log", help="Linux OpenSSH log path; otherwise detect auth.log or secure")
+    ap.add_argument("--enable-containment", action="store_true", help="allow exact approved five-minute IP blocks")
+    ap.add_argument("--allow-network", action="append", default=[], help="explicit permitted IP or CIDR; repeatable")
+    ap.add_argument("--protect-network", action="append", default=[], help="never-block management, DNS or essential service IP/CIDR; repeatable")
+    ap.add_argument("--l2-model", help="optional larger installed local Ollama model; no automatic download")
+    ap.add_argument("--l2-review-seconds", type=int, default=90, help="L2 reasoning/challenge budget, 10..180 seconds; critical fast path is independent")
+    ap.add_argument("--l2-policy", help="local JSON response policy; advice only unless automatic explicitly enabled")
+    ap.set_defaults(fn=cmd_agent)
+
     rp = sub.add_parser("run", help="triage a JSONL batch of events")
     rp.add_argument("events")
     rp.add_argument("--backend", choices=["mock", "ollama"], default="mock")

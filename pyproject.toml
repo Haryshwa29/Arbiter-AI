@@ -21,3 +21,6 @@ include = ["arbiter*"]
 
 [tool.setuptools.package-data]
 "arbiter.install" = ["*.ps1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

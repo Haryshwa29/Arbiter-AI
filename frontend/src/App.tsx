@@ -7,6 +7,7 @@ import { AppShell } from "./components/AppShell";
 import { Overview } from "./views/Overview";
 import { Audit } from "./views/Audit";
 import { Assets } from "./views/Assets";
+import { BriefArbiter } from "./views/BriefArbiter";
 import { DataSources } from "./views/DataSources";
 import { LiveEvents } from "./views/LiveEvents";
 import { DemoReplay } from "./views/DemoReplay";
@@ -87,6 +88,7 @@ function Dashboard() {
             <Route path="live" element={<LiveEvents />} />
             <Route path="audit" element={<Audit />} />
             <Route path="assets" element={<Assets />} />
+            <Route path="brief" element={<BriefArbiter />} />
             <Route path="sources" element={<DataSources />} />
             <Route path="events" element={<Navigate to={`${DASH_BASE}/live`} replace />} />
             <Route path="replay" element={<DemoReplay />} />

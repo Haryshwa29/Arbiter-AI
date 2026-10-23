@@ -64,7 +64,7 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
     # have no provenance marker and retain their original history policy.
     if routine_telemetry(event):
         return PrefilterResult(Decision.SUPPRESS, score,
-            "Arbiter-owned fixed read-only log query: exact command and parent matched; no new detection or correlation signal" if event.fields.get("_collector_activity") is True else
+            "Arbiter-owned fixed read-only query: exact command and parent matched; no new detection or correlation signal" if event.fields.get("_collector_activity") is True else
             "Routine telemetry observation: no detection or correlation signal; retained in Live Events")
 
     if score >= ESCALATE_AT:
@@ -105,6 +105,11 @@ def routine_telemetry(event: Event) -> bool:
         return False
     source = provenance.get("source")
     kind = event.event_type
+    if source == "attachments" and kind in {
+        "attachment_devices_present", "attachment_interfaces_present", "attachment_neighbors_present",
+        "attachment_devices_removed", "attachment_interfaces_removed", "attachment_neighbors_removed",
+    }:
+        return True
     if source == "sysmon" and kind == "process_exec" and event.fields.get("_collector_activity") is True:
         return True
     if source == "windows_security" and kind == "security_posture" and event.severity == 0:

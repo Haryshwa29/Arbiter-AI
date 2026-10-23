@@ -56,18 +56,32 @@ class DemoSessionTests(unittest.TestCase):
                 live.stop(); memory.close(); audit.close()
 
     def test_random_order_is_repeatable_and_speed_has_a_real_interval(self):
-        self.manager.start([self.events], "5x", "random", 42)
+        self.manager.start([self.events], "2x", "random", 42)
         first = [e.event_id for e in self.manager.session.events]
-        self.assertEqual(self.manager.session.interval, .6)
+        self.assertEqual(self.manager.session.interval, 1.5)
         self.manager.control("stop")
-        self.manager.start([self.events], "5x", "random", 42)
+        self.manager.start([self.events], "2x", "random", 42)
         self.assertEqual(first, [e.event_id for e in self.manager.session.events])
 
     def test_rejects_invalid_settings_and_concurrent_start(self):
         with self.assertRaises(ValueError): self.manager.start([self.events], "instant")
+        for speed in ("5x", "10x"):
+            with self.assertRaises(ValueError): self.manager.start([self.events], speed)
+        with self.assertRaises(ValueError): self.manager.start([self.events], traffic="bursts")
         with self.assertRaises(ValueError): self.manager.start([self.events], seed=-1)
         self.manager.start([self.events])
         with self.assertRaises(ValueError): self.manager.start([self.events])
+
+    def test_slow_analysis_prevents_delivery_backlog_even_at_2x(self):
+        self.manager.start([self.events], "2x")
+        session = self.manager.session
+        session.service.pipeline.stop()
+        self.assertTrue(session.tick())
+        self.assertFalse(session.tick())
+        self.assertEqual(session.sent, 1)
+        session.service.pipeline.process_one()
+        self.assertTrue(session.tick())
+        self.assertEqual(session.sent, 2)
 
     def test_history_preserves_live_identity_and_pending_to_final_decision(self):
         self.manager.start([self.events])

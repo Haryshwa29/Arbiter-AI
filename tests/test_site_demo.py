@@ -38,12 +38,69 @@ def request(client, base, route, body=None, headers=None):
     return result.status, json.loads(result.read())
 
 
+def test_public_cloud_requires_key_and_upload_consent(website, monkeypatch):
+    from arbiter.site_cloud import WebsiteCloudBackend
+    base, pool = website
+    monkeypatch.delenv("OLLAMA_API_KEY", raising=False)
+    pool.backend = WebsiteCloudBackend()
+    client = visitor()
+    status, data = request(client, base, "/public-demo/status")
+    assert status == 200 and data["inference"]["configured"] is False
+    status, data = request(client, base, "/public-demo/start", {"datasets": ["events.jsonl"]})
+    assert status == 503 and "OLLAMA_API_KEY" in data["error"]
+    monkeypatch.setenv("OLLAMA_API_KEY", "test-only")
+    pool.backend = WebsiteCloudBackend()
+    payload = {"uploads": [{"filename": "events.jsonl", "content": '{"source":"test","host":"h1","event_type":"anomaly","message":"example"}'}]}
+    status, data = request(client, base, "/public-demo/start", payload)
+    assert status == 400 and "Confirm" in data["error"]
+
+
+@pytest.mark.parametrize("provider_failure", [False, True])
+def test_cloud_pipeline_records_model_or_explicit_policy_fallback(website, monkeypatch, provider_failure):
+    import io
+    import time
+    from unittest.mock import Mock
+    from arbiter.site_cloud import WebsiteCloudBackend
+    base, pool = website
+    monkeypatch.setenv("OLLAMA_API_KEY", "test-only")
+    cloud = WebsiteCloudBackend()
+    cloud._opener = Mock()
+    if provider_failure:
+        cloud._opener.open.side_effect = OSError("provider unavailable")
+    else:
+        answer = {"decision": "suppress", "confidence": .95, "rationale": "Scheduled backup matches scoped context", "evidence": "Backup window"}
+        cloud._opener.open.side_effect = lambda *a, **k: io.BytesIO(json.dumps({"message": {"content": json.dumps(answer)}}).encode())
+    pool.backend = cloud
+    client = visitor()
+    request(client, base, "/public-demo/status")
+    assert request(client, base, "/public-demo/start", {"datasets": ["events.jsonl"]})[0] == 200
+    manager = next(iter(pool.entries.values()))["manager"]
+    manager.control("pause")
+    manager.control("resume")
+    manager.session.tick()
+    manager.control("pause")
+    deadline = time.monotonic() + 5
+    row = None
+    while time.monotonic() < deadline:
+        rows = request(client, base, "/public-demo/status")[1]["events"]
+        row = rows[0] if rows else None
+        if row and row.get("analysis"):
+            break
+        time.sleep(.05)
+    assert row and row["analysis"]
+    analysis = row["analysis"]
+    assert analysis["backend"] == ("policy-fallback" if provider_failure else "ollama-cloud")
+    assert analysis["model"] == cloud.model
+    assert analysis["decision"] == ("escalate" if provider_failure else "suppress")
+    assert all(not action["executed"] for action in analysis["responses"])
+
+
 def test_visitors_have_isolated_events_and_no_operational_access(website):
     base, pool = website
     first, second = visitor(), visitor()
     for client in (first, second):
         assert request(client, base, "/public-demo/status")[0] == 200
-    payload = {"datasets": ["events.jsonl"], "speed": "10x", "order": "random", "seed": 8, "traffic": "bursts"}
+    payload = {"datasets": ["events.jsonl"], "speed": "2x", "order": "random", "seed": 8, "traffic": "steady"}
     assert request(first, base, "/public-demo/preview", payload)[1]["files"][0]["valid_events"] > 0
     assert request(first, base, "/public-demo/start", payload)[0] == 200
     manager = next(entry["manager"] for entry in pool.entries.values() if entry["manager"].session)

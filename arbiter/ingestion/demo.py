@@ -35,7 +35,10 @@ class DemoSession:
         self.audit = AuditStore(root / "audit.db")
         self.service = IngestionService(root / "events.db", self.memory, self.audit, backend, model, ollama_url)
         self.service.pipeline.simulation = True
+        from .response_workflow import ResponseWorkflow
+        self.responses = ResponseWorkflow(self.service.buffer, self.audit, simulation=True)
         self.service.start()
+        self.responses.start()
         self.events, self.interval = events, interval
         self.traffic, self.rng = traffic, random.Random(seed)
         self.sent = 0
@@ -49,6 +52,10 @@ class DemoSession:
     def tick(self):
         with self.lock:
             if self.state != "running" or self.sent == len(self.events):
+                return False
+            # Replay demonstrates decisions, not queue saturation. Never put a
+            # second event behind an in-flight model call, even at 2x.
+            if self.service.buffer.metrics()["queue_depth"]:
                 return False
             original = self.events[self.sent]
             event = replace(original, event_id=uuid.uuid4().hex, received_at=now(),
@@ -71,7 +78,7 @@ class DemoSession:
                         continue
                     if time.monotonic() >= next_event:
                         self.tick()
-                        delay = self.interval if self.traffic == "steady" else self.interval * (4 if self.sent % 5 == 0 else .25) if self.traffic == "bursts" else self.interval * self.rng.uniform(.5, 3)
+                        delay = self.interval
                         next_event = time.monotonic() + max(.1, delay)
             except Exception:
                 with self.lock:
@@ -97,6 +104,7 @@ class DemoSession:
     def close(self):
         self.shutdown.set()
         self.thread.join(2)
+        self.responses.close()
         self.service.stop()
         self.memory.close()
         self.audit.close()
@@ -110,8 +118,8 @@ class DemoManager:
         self.lock = threading.RLock()
 
     def start(self, groups, speed="1x", order="mixed", seed=0, traffic="steady"):
-        speeds = {"1x": 1, "2x": 2, "5x": 5, "10x": 10}
-        if speed not in speeds or order not in {"mixed", "random"} or traffic not in {"steady", "bursts", "delayed"}:
+        speeds = {"1x": 1, "2x": 2}
+        if speed not in speeds or order not in {"mixed", "random"} or traffic != "steady":
             raise ValueError("invalid playback settings")
         if not isinstance(seed, int) or isinstance(seed, bool) or not 0 <= seed <= 2**32:
             raise ValueError("invalid random seed")
@@ -165,7 +173,12 @@ class DemoManager:
 
     def detail(self, event_id):
         with self.lock:
-            return self.session.service.buffer.detail(event_id) if self.session else None
+            return self.session.responses.enrich(self.session.service.buffer.detail(event_id)) if self.session else None
+
+    def response_control(self, event_id, command, actor, reason=""):
+        with self.lock:
+            if not self.session: raise ValueError("no simulation session")
+            return self.session.responses.control(event_id, command, actor, reason)
 
     def close(self):
         with self.lock:

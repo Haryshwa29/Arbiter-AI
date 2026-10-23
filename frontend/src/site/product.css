@@ -247,3 +247,14 @@
 @keyframes section-arrival{from{opacity:.55;translate:0 12px}to{opacity:1;translate:0 0}}
 @media(max-width:600px){.brand-name,.brand-name .brand-ai{font-size:20px}.product-brand{gap:6px}.product-mark{width:28px;height:34px}.product-mark .arbiter-mark{width:28px;height:34px}}
 @media(prefers-reduced-motion:reduce){.section-arrived{animation:none}.site-ambience{transform:none}}
+/* Public simulation shares the local workspace's palette and bundled map. */
+.public-demo.premium-dashboard {width:min(1400px,100%);padding:24px;background:#0b1018;color:#e7e9ee;}
+.public-demo.premium-dashboard > .premium-main {padding:18px 0;background-size:cover,max(1100px,110vw) auto,cover;}
+.public-demo.premium-dashboard [aria-label="Simulation workspace"] {max-width:1280px;background-image:linear-gradient(#090d1355,#090d1370),url('/world-wireframe.svg');background-size:cover,cover;background-position:center;background-color:#0b1018;}
+.public-demo.premium-dashboard .public-demo-header {border-color:#b5c5d325;}
+.public-demo.premium-dashboard .public-demo-header button {border-color:#b8a27370;border-radius:8px;color:#e7cf9d;}
+.demo-analytics {display:flex;flex-direction:column;gap:20px;margin:20px 0;}
+.public-demo.premium-dashboard progress {accent-color:#d5ba7d;}
+.public-demo.premium-dashboard table {background:#0a111be6;}
+.public-demo.premium-dashboard thead {background:#182333;}
+@media(max-width:600px){.public-demo.premium-dashboard {padding:16px;}.public-demo.premium-dashboard [aria-label="Simulation workspace"] {padding:16px;}}

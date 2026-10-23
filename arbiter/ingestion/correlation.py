@@ -6,6 +6,10 @@ from .schema import SecurityEvent
 
 def correlate(event: SecurityEvent, previous: list[SecurityEvent]) -> list[dict]:
     matches = []
+    if (event.source_type == "local_process" and event.event_type == "process_network_risk"
+            and event.metadata.get("consecutive_high_samples", 0) >= 2):
+        matches.append({"rule": "sustained_cpu_temporary_network", "events": [event.event_id],
+                        "severity": 8, "reason": "Repeated local CPU samples, a temporary executable path and same-process TCP activity; not proof of malware"})
     def identity_match(previous):
         if previous.user_id and event.user_id and "S-1-0-0" not in {previous.user_id, event.user_id}:
             return previous.user_id == event.user_id

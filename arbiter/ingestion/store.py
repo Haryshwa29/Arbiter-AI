@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS telemetry (
  connector TEXT NOT NULL, cloud_account TEXT NOT NULL, payload TEXT NOT NULL, state TEXT NOT NULL DEFAULT 'pending',
  due_at TEXT NOT NULL, analysis TEXT, related TEXT NOT NULL DEFAULT '[]',
  latency_ms REAL, error TEXT NOT NULL DEFAULT '', attempts INTEGER NOT NULL DEFAULT 0,
- decision TEXT, tier TEXT, priority REAL
+ decision TEXT, tier TEXT, priority REAL, analysis_backend TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_telemetry_due ON telemetry(state, due_at, id);
 CREATE INDEX IF NOT EXISTS idx_telemetry_received ON telemetry(received_at);
@@ -70,13 +70,18 @@ class EventBuffer:
             self.conn.execute("PRAGMA journal_mode=WAL")
             self.conn.executescript(SCHEMA)
             columns = {r[1] for r in self.conn.execute("PRAGMA table_info(telemetry)")}
-            for name in ("decision", "tier", "priority"):
+            for name in ("decision", "tier", "priority", "analysis_backend"):
                 if name not in columns:
                     self.conn.execute(f"ALTER TABLE telemetry ADD COLUMN {name} {'REAL' if name == 'priority' else 'TEXT'}")
+            self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_missing_decision ON telemetry(id) WHERE state='done' AND decision IS NULL")
             self.conn.execute("UPDATE telemetry SET decision=json_extract(analysis,'$.decision'), "
-                              "tier=json_extract(analysis,'$.tier') WHERE state='done' AND analysis IS NOT NULL AND decision IS NULL")
+                              "tier=json_extract(analysis,'$.tier') WHERE state='done' AND decision IS NULL AND analysis IS NOT NULL")
             self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_metrics ON telemetry(connector,state,decision,tier,latency_ms)")
-            self.conn.execute("UPDATE telemetry SET priority=severity WHERE priority IS NULL")
+            if "priority" not in columns:
+                self.conn.execute("UPDATE telemetry SET priority=severity WHERE priority IS NULL")
+            if "analysis_backend" not in columns:
+                self.conn.execute("UPDATE telemetry SET analysis_backend=COALESCE(json_extract(analysis,'$.backend'),'') WHERE state='done' AND tier='llm'")
+            self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_dashboard ON telemetry(connector,state,decision,tier,latency_ms,analysis_backend)")
             self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_priority ON telemetry(state,priority DESC,due_at,id)")
             policy = self.conn.execute("SELECT value FROM ingestion_settings WHERE name='queue_priority_policy'").fetchone()
             if not policy or policy[0] != '4':
@@ -137,9 +142,10 @@ class EventBuffer:
         return None
 
     def finish(self, row_id, analysis, related, latency_ms):
+        analysis = {**analysis, "completed_at": analysis.get("completed_at") or now()}
         with self.lock, self.conn:
-            self.conn.execute("UPDATE telemetry SET state='done',analysis=?,related=?,latency_ms=?,error='',decision=?,tier=? WHERE id=?",
-                              (json.dumps(analysis), json.dumps(related), latency_ms, analysis.get("decision"), analysis.get("tier"), row_id))
+            self.conn.execute("UPDATE telemetry SET state='done',analysis=?,related=?,latency_ms=?,error='',decision=?,tier=?,analysis_backend=? WHERE id=?",
+                              (json.dumps(analysis), json.dumps(related), latency_ms, analysis.get("decision"), analysis.get("tier"), analysis.get("backend", ""), row_id))
 
     def fail(self, row_id):
         with self.lock, self.conn:
@@ -175,6 +181,9 @@ class EventBuffer:
         row["event"] = safe_json(row.pop("payload"))
         row["analysis"] = safe_json(row["analysis"]) if row["analysis"] else None
         row["related"] = safe_json(row["related"])
+        if row["analysis"]:
+            from .recommendations import alert_brief
+            row["analysis"]["brief"] = alert_brief(row["event"], row["analysis"])
         return row
 
     def detail(self, event_id):
@@ -204,13 +213,13 @@ class EventBuffer:
         condition = "connector NOT IN ('file','replay','demo')" if scope == "live" else "1=1"
         with self.lock:
             r = self.conn.execute("SELECT COUNT(*) events_ingested, SUM(state IN ('pending','processing')) queue_depth, "
-                "SUM(state='failed') processing_failures, AVG(latency_ms) processing_latency_ms FROM telemetry WHERE " + condition).fetchone()
+                "SUM(state='failed') processing_failures, AVG(latency_ms) processing_latency_ms FROM telemetry INDEXED BY idx_telemetry_dashboard WHERE " + condition).fetchone()
             result = dict(r)
             counts = self.conn.execute("SELECT SUM(decision='escalate') alerts_created, "
                 "SUM(decision='suppress') events_filtered, "
-                "SUM(tier='llm') events_escalated_to_ai, "
-                "SUM(tier!='llm') events_handled_deterministically "
-                "FROM telemetry WHERE state='done' AND " + condition).fetchone()
+                "SUM(tier='llm' AND COALESCE(analysis_backend,'')!='rules-only-policy') events_escalated_to_ai, "
+                "SUM(tier!='llm' OR analysis_backend='rules-only-policy') events_handled_deterministically "
+                "FROM telemetry INDEXED BY idx_telemetry_dashboard WHERE state='done' AND " + condition).fetchone()
             extras = {r[0]: r[1] for r in self.conn.execute("SELECT * FROM ingestion_metrics")}
         result.update(dict(counts))
         result.update(extras)
@@ -324,7 +333,7 @@ class EventBuffer:
     def prune(self):
         cutoff = (datetime.now(timezone.utc) - timedelta(days=self.retention_days)).isoformat()
         with self.lock, self.conn:
-            self.conn.execute("DELETE FROM telemetry WHERE received_at<? AND state IN ('done','failed')", (cutoff,))
+            self.conn.execute("DELETE FROM telemetry INDEXED BY idx_telemetry_received WHERE received_at<? AND state IN ('done','failed')", (cutoff,))
             self.conn.execute("DELETE FROM incidents WHERE updated_at<?", (cutoff,))
 
     def close(self):
