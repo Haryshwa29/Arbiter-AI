@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1490" viewBox="0 0 1000 1490" role="img" aria-labelledby="title desc">
+<title id="title">From a signal to a durable event</title><desc id="desc">Customer network / collection does not invoke the model. Read the accompanying architecture walkthrough for a complete text equivalent.</desc>
+<rect width="1000" height="1490" fill="#101820"/>
+<text x="70" y="60" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="600">01 / INTAKE</text>
+<text x="70" y="119" fill="#edf2f5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="37" font-weight="600">From a signal to a durable event</text>
+<text x="70" y="161" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Customer network / collection does not invoke the model</text>
+<polyline points="500.0,352 500.0,379.0 500.0,379.0 500.0,406" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,397 L500.0,406 L506.0,397" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,548 500.0,575.0 500.0,575.0 500.0,602" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,593 L500.0,602 L506.0,593" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,744 500.0,771.0 500.0,771.0 500.0,798" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,789 L500.0,798 L506.0,789" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,940 500.0,967.0 500.0,967.0 500.0,994" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,985 L500.0,994 L506.0,985" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,1136 500.0,1163.0 500.0,1163.0 500.0,1190" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,1181 L500.0,1190 L506.0,1181" fill="none" stroke="#536575" stroke-width="3"/>
+<rect x="70" y="210" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,230 V332" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Security tools + host observations</text>
+<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Windows / Sysmon / Defender / osquery</text>
+<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Network logs, attachments, optional AWS readers</text>
+<rect x="70" y="406" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,426 V528" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="450" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Collectors + adapters</text>
+<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Read approved sources; preserve raw evidence</text>
+<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Maintain source checkpoints and explicit source configuration</text>
+<rect x="70" y="602" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,622 V724" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="646" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">SecurityEvent v1.0</text>
+<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Validate identity, UTC time, severity and field bounds</text>
+<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Reject invalid input; payload limit: 256 KiB</text>
+<rect x="70" y="798" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,818 V920" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="842" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Durable SQLite queue</text>
+<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">WAL + deduplication by event identity + restart recovery</text>
+<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">10,000 pending/processing records; retry on queue pressure</text>
+<rect x="70" y="994" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1014 V1116" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="1038" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">One analysis worker</text>
+<text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Priority first; one in 100 claims preserves FIFO progress</text>
+<text x="94" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Select indexed event ID before loading the full payload</text>
+<rect x="70" y="1190" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1210 V1312" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="1234" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Correlation + context + Event adapter</text>
+<text x="94" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Link recent related signals and observed asset context</text>
+<text x="94" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Adapt to the stable, dependency-free Event brain contract</text>
+<text x="70" y="1438" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Next: deterministic checks decide whether local AI is needed.</text>
+</svg>
