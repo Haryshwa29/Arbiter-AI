@@ -1,1 +1,5 @@
 * text=auto eol=lf
+
+# Frozen evaluation evidence is byte-hashed. Preserve its recorded bytes.
+/evals/2026-11-17-ait-ads/** -text whitespace=cr-at-eol
+/evals/2026-11-17-ait-ads-hardening/** -text whitespace=cr-at-eol

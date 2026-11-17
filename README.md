@@ -11,6 +11,15 @@ syslog and optional AWS CloudTrail/GuardDuty collectors are implemented. Azure,
 GCP, Zeek and additional AWS transports are explicitly Coming Soon. Real AWS
 account validation and production-scale delivery remain future validation work.
 
+## Public-data evaluation
+
+The [AIT-ADS pilot and hardening report](docs/PUBLIC-DATA-EVAL-2026-11-17.md)
+documents the local `qwen3.5:4b` run, its missed directory-scan annotations,
+the deciding tiers, source-policy changes, and a same-alert retest plus a
+disjoint-alert sample. It includes measured percentages, every prediction,
+dataset attribution and the remaining work. These are stratified alert-level
+results on simulated attacks; production detection rates remain unverified.
+
 ## Follow the architecture
 
 **[Explore the detailed animated architecture walkthrough →](docs/ARCHITECTURE-WALKTHROUGH.md)**

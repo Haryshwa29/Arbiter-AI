@@ -32,6 +32,9 @@ def tool_finding(event):
     elif event.source_type == "wazuh":
         level = event.metadata.get("wazuh_level", 0)
         high = isinstance(level, int) and not isinstance(level, bool) and level >= 12
+        from .wazuh_evidence import observations
+        observed = observations(event.raw_event, event.tags) if isinstance(event.raw_event, dict) else {}
+        high = high or observed.get("suricata", {}).get("priority") == 1
     elif event.source_type == "suricata":
         raw = event.raw_event if isinstance(event.raw_event, dict) else {}
         alert = raw.get("alert", {})
@@ -51,10 +54,13 @@ def tool_finding(event):
         high = isinstance(finding, dict) and finding.get("review_required") is True and event.event_type in {"removable_process_exec", "local_peer_connection"}
     else:
         return None
-    return {"source": event.source_type, "high_priority": high,
+    finding = {"source": event.source_type, "high_priority": high,
             "type": event.event_type, "rule_id": event.rule_id,
             "name": event.rule_name, "source_severity": event.severity,
             "reported_action": event.action}
+    if event.source_type == "wazuh":
+        finding["observations"] = observed
+    return finding
 
 
 def process_context(event, legacy, engine, connector):

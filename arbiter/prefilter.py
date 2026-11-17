@@ -18,6 +18,7 @@ from dataclasses import dataclass
 
 from .memory import Memory
 from .schema import Decision, Event
+from .tool_policy import routine_source_reason
 
 # Tunable thresholds — the cheap/ambiguous boundary is an open question
 # (CONCEPT.md); start conservative, let shadow-mode data move them.
@@ -62,10 +63,10 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
     # Normalized telemetry includes passive context that is not an alert.
     # Guardrails run BEFORE this prefilter in TriageEngine. Legacy demo events
     # have no provenance marker and retain their original history policy.
-    if routine_telemetry(event):
+    if routine_telemetry(event) and (not routine_source_reason(event) or (history.overruled == 0 and broad_overrule == 0)):
         return PrefilterResult(Decision.SUPPRESS, score,
             "Arbiter-owned fixed read-only query: exact command and parent matched; no new detection or correlation signal" if event.fields.get("_collector_activity") is True else
-            "Routine telemetry observation: no detection or correlation signal; retained in Live Events")
+            routine_source_reason(event) or "Routine telemetry observation: no detection or correlation signal; retained in Live Events")
 
     if score >= ESCALATE_AT:
         return PrefilterResult(
@@ -105,6 +106,8 @@ def routine_telemetry(event: Event) -> bool:
         return False
     source = provenance.get("source")
     kind = event.event_type
+    if source == "wazuh" and routine_source_reason(event):
+        return True
     if source == "attachments" and kind in {
         "attachment_devices_present", "attachment_interfaces_present", "attachment_neighbors_present",
         "attachment_devices_removed", "attachment_interfaces_removed", "attachment_neighbors_removed",

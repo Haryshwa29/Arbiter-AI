@@ -1,0 +1,383 @@
+{
+  "dataset": "AIT Alert Data Set (AIT-ADS)",
+  "doi": "10.5281/zenodo.8263181",
+  "dataset_url": "https://zenodo.org/records/8263181/files/ait_ads.zip?download=1",
+  "dataset_sha256": "9f0595c4ebe56ac9223763881f55369dd4f249a8108064e4ae108eb3309aeeb9",
+  "dataset_md5": "43db6b1f0996e0024befd617706c50e9",
+  "labels_url": "https://raw.githubusercontent.com/ait-aecid/alert-data-set/ce927ddaeaa674f6909e1de676fa7dc293e393bd/alerts_csv/alerts_csv.zip",
+  "labels_revision": "ce927ddaeaa674f6909e1de676fa7dc293e393bd",
+  "labels_sha256": "2bf1a81527a3fe15d92079a7834c9d77c5305546e15569657d2097d6294825c3",
+  "sample_sha256": "aec4c56dc009e35531cb088ee8a0b09cba0d1c19a392ec11d35c4d8530764949",
+  "seed": 20261117,
+  "sampling": "bottom-k SHA256 within each scenario/event_label stratum",
+  "excluded_sample_sha256": null,
+  "excluded_sample_rows": 0,
+  "attack_per_category": 2,
+  "negative_per_scenario": 16,
+  "sample_size": 214,
+  "alignment": {
+    "fox": {
+      "matched_supported_alerts": 462523,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 10581,
+      "sampled": 28
+    },
+    "harrison": {
+      "matched_supported_alerts": 583754,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 10194,
+      "sampled": 28
+    },
+    "russellmitchell": {
+      "matched_supported_alerts": 41488,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 4056,
+      "sampled": 26
+    },
+    "santos": {
+      "matched_supported_alerts": 126513,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 4266,
+      "sampled": 30
+    },
+    "shaw": {
+      "matched_supported_alerts": 68539,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 2243,
+      "sampled": 24
+    },
+    "wardbeck": {
+      "matched_supported_alerts": 88204,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 3053,
+      "sampled": 26
+    },
+    "wheeler": {
+      "matched_supported_alerts": 603939,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 12222,
+      "sampled": 26
+    },
+    "wilson": {
+      "matched_supported_alerts": 625303,
+      "excluded_average_alerts": 0,
+      "excluded_aminer": 8943,
+      "sampled": 26
+    }
+  },
+  "strata": [
+    {
+      "scenario": "fox",
+      "label": "-",
+      "population": 51881,
+      "sampled": 16
+    },
+    {
+      "scenario": "fox",
+      "label": "attacker_change_user",
+      "population": 3,
+      "sampled": 2
+    },
+    {
+      "scenario": "fox",
+      "label": "dirb",
+      "population": 405855,
+      "sampled": 2
+    },
+    {
+      "scenario": "fox",
+      "label": "escalated_sudo_command",
+      "population": 7,
+      "sampled": 2
+    },
+    {
+      "scenario": "fox",
+      "label": "online_cracking",
+      "population": 2,
+      "sampled": 2
+    },
+    {
+      "scenario": "fox",
+      "label": "service_scan",
+      "population": 38,
+      "sampled": 2
+    },
+    {
+      "scenario": "fox",
+      "label": "wpscan",
+      "population": 4737,
+      "sampled": 2
+    },
+    {
+      "scenario": "harrison",
+      "label": "-",
+      "population": 121142,
+      "sampled": 16
+    },
+    {
+      "scenario": "harrison",
+      "label": "attacker_change_user",
+      "population": 3,
+      "sampled": 2
+    },
+    {
+      "scenario": "harrison",
+      "label": "dirb",
+      "population": 410575,
+      "sampled": 2
+    },
+    {
+      "scenario": "harrison",
+      "label": "dnsteal",
+      "population": 47183,
+      "sampled": 2
+    },
+    {
+      "scenario": "harrison",
+      "label": "escalated_sudo_command",
+      "population": 10,
+      "sampled": 2
+    },
+    {
+      "scenario": "harrison",
+      "label": "service_scan",
+      "population": 26,
+      "sampled": 2
+    },
+    {
+      "scenario": "harrison",
+      "label": "wpscan",
+      "population": 4815,
+      "sampled": 2
+    },
+    {
+      "scenario": "russellmitchell",
+      "label": "-",
+      "population": 33805,
+      "sampled": 16
+    },
+    {
+      "scenario": "russellmitchell",
+      "label": "attacker_change_user",
+      "population": 2,
+      "sampled": 2
+    },
+    {
+      "scenario": "russellmitchell",
+      "label": "dirb",
+      "population": 4459,
+      "sampled": 2
+    },
+    {
+      "scenario": "russellmitchell",
+      "label": "escalated_sudo_command",
+      "population": 4,
+      "sampled": 2
+    },
+    {
+      "scenario": "russellmitchell",
+      "label": "service_scan",
+      "population": 50,
+      "sampled": 2
+    },
+    {
+      "scenario": "russellmitchell",
+      "label": "wpscan",
+      "population": 3168,
+      "sampled": 2
+    },
+    {
+      "scenario": "santos",
+      "label": "-",
+      "population": 93040,
+      "sampled": 16
+    },
+    {
+      "scenario": "santos",
+      "label": "attacker_change_user",
+      "population": 3,
+      "sampled": 2
+    },
+    {
+      "scenario": "santos",
+      "label": "dirb",
+      "population": 4459,
+      "sampled": 2
+    },
+    {
+      "scenario": "santos",
+      "label": "dnsteal",
+      "population": 25707,
+      "sampled": 2
+    },
+    {
+      "scenario": "santos",
+      "label": "escalated_sudo_command",
+      "population": 7,
+      "sampled": 2
+    },
+    {
+      "scenario": "santos",
+      "label": "online_cracking",
+      "population": 4,
+      "sampled": 2
+    },
+    {
+      "scenario": "santos",
+      "label": "service_scan",
+      "population": 29,
+      "sampled": 2
+    },
+    {
+      "scenario": "santos",
+      "label": "wpscan",
+      "population": 3264,
+      "sampled": 2
+    },
+    {
+      "scenario": "shaw",
+      "label": "-",
+      "population": 63341,
+      "sampled": 16
+    },
+    {
+      "scenario": "shaw",
+      "label": "attacker_change_user",
+      "population": 3,
+      "sampled": 2
+    },
+    {
+      "scenario": "shaw",
+      "label": "dirb",
+      "population": 4459,
+      "sampled": 2
+    },
+    {
+      "scenario": "shaw",
+      "label": "escalated_sudo_command",
+      "population": 7,
+      "sampled": 2
+    },
+    {
+      "scenario": "shaw",
+      "label": "wpscan",
+      "population": 729,
+      "sampled": 2
+    },
+    {
+      "scenario": "wardbeck",
+      "label": "-",
+      "population": 82965,
+      "sampled": 16
+    },
+    {
+      "scenario": "wardbeck",
+      "label": "attacker_change_user",
+      "population": 3,
+      "sampled": 2
+    },
+    {
+      "scenario": "wardbeck",
+      "label": "dirb",
+      "population": 4459,
+      "sampled": 2
+    },
+    {
+      "scenario": "wardbeck",
+      "label": "escalated_sudo_command",
+      "population": 7,
+      "sampled": 2
+    },
+    {
+      "scenario": "wardbeck",
+      "label": "service_scan",
+      "population": 23,
+      "sampled": 2
+    },
+    {
+      "scenario": "wardbeck",
+      "label": "wpscan",
+      "population": 747,
+      "sampled": 2
+    },
+    {
+      "scenario": "wheeler",
+      "label": "-",
+      "population": 184608,
+      "sampled": 16
+    },
+    {
+      "scenario": "wheeler",
+      "label": "attacker_change_user",
+      "population": 2,
+      "sampled": 2
+    },
+    {
+      "scenario": "wheeler",
+      "label": "dirb",
+      "population": 412642,
+      "sampled": 2
+    },
+    {
+      "scenario": "wheeler",
+      "label": "escalated_sudo_command",
+      "population": 7,
+      "sampled": 2
+    },
+    {
+      "scenario": "wheeler",
+      "label": "service_scan",
+      "population": 42,
+      "sampled": 2
+    },
+    {
+      "scenario": "wheeler",
+      "label": "wpscan",
+      "population": 6638,
+      "sampled": 2
+    },
+    {
+      "scenario": "wilson",
+      "label": "-",
+      "population": 198345,
+      "sampled": 16
+    },
+    {
+      "scenario": "wilson",
+      "label": "attacker_change_user",
+      "population": 3,
+      "sampled": 2
+    },
+    {
+      "scenario": "wilson",
+      "label": "dirb",
+      "population": 423708,
+      "sampled": 2
+    },
+    {
+      "scenario": "wilson",
+      "label": "escalated_sudo_command",
+      "population": 7,
+      "sampled": 2
+    },
+    {
+      "scenario": "wilson",
+      "label": "service_scan",
+      "population": 50,
+      "sampled": 2
+    },
+    {
+      "scenario": "wilson",
+      "label": "wpscan",
+      "population": 3190,
+      "sampled": 2
+    }
+  ],
+  "protocol": "cold-start independent alerts; no facts, labels, feedback or prior verdict history; default asset criticality; shadow mode; Wazuh adapter and TriageEngine; no temporal correlation, collector or response evaluation",
+  "format_adaptations": [
+    "Elastic @timestamp copied to native timestamp",
+    "IPv4:port in srcip/dstip split into separate IP and port fields when present"
+  ],
+  "label_caveat": "event_label '-' means no attack annotation in the publisher's mapping, not independently certified benign; event labels rather than time windows are used",
+  "frozen_at_utc": "2026-11-17T23:14:37.333073+00:00"
+}

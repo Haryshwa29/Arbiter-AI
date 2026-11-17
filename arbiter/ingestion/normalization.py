@@ -174,16 +174,25 @@ def wazuh(data: dict, source="wazuh") -> SecurityEvent:
     manager = data.get("manager", {})
     if not isinstance(manager, dict):
         raise ValueError("invalid Wazuh manager")
+    from .wazuh_evidence import observations
+    observed = observations(data, groups)
+    embedded = observed.get("suricata", {})
+    mail = observed.get("mail_auth", {})
+    severity = level * 10 / 15
+    if embedded:
+        kind, category = "network_alert", "network"
+        severity = max(severity, {1: 8, 2: 5, 3: 3}[embedded["priority"]])
     return SecurityEvent(source_type=source, source_vendor="Wazuh", source_product="Wazuh",
         hostname=str(agent.get("name") or manager.get("name") or "wazuh-manager"),
         device_id=str(agent.get("id", "")), event_type=kind, event_category=category,
-        timestamp=str(data["timestamp"]), severity=level * 10 / 15,
+        timestamp=str(data["timestamp"]), severity=severity,
         event_id=identity(source, (manager.get("name", ""), agent.get("id", ""),
             data.get("id"), data["timestamp"], json.dumps(data, sort_keys=True))),
-        message=message, username=str(detail.get("dstuser", detail.get("srcuser", ""))),
-        src_ip=str(detail.get("srcip", "")), dst_ip=str(detail.get("dstip", "")),
-        src_port=detail.get("srcport"), dst_port=detail.get("dstport"),
-        protocol=str(detail.get("protocol", "")), file_path=str(fim.get("path", "")),
+        message=message, username=str(detail.get("dstuser", detail.get("srcuser", mail.get("username", "")))),
+        src_ip=str(detail.get("srcip", detail.get("src_ip", mail.get("src_ip", "")))),
+        dst_ip=str(detail.get("dstip", detail.get("dest_ip", mail.get("dst_ip", "")))),
+        src_port=detail.get("srcport", detail.get("src_port")), dst_port=detail.get("dstport", detail.get("dest_port")),
+        protocol=str(detail.get("proto", detail.get("protocol", ""))), file_path=str(fim.get("path", "")),
         file_hash=str(fim.get("sha256_after", "")), action=str(fim.get("event", "")),
         rule_id=str(rule["id"]), rule_name=description, tags=groups,
         raw_event=data, metadata={"normalized_by": source, "wazuh_level": level,

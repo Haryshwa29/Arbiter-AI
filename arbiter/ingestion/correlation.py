@@ -2,10 +2,40 @@
 from __future__ import annotations
 
 from .schema import SecurityEvent
+from datetime import datetime
+
+
+def _web_path_enumeration(event, previous):
+    from .wazuh_evidence import observations
+    def web(item):
+        if item.source_type != "wazuh" or item.metadata.get("normalized_by") != "wazuh":
+            return {}
+        return observations(item.raw_event, item.tags).get("web", {}) if isinstance(item.raw_event, dict) else {}
+    current = web(event)
+    if not current or not event.src_ip:
+        return None
+    matches = [event]
+    for item in previous[:300]:
+        if item.event_id == event.event_id or item.hostname != event.hostname or item.src_ip != event.src_ip:
+            continue
+        if event.device_id and item.device_id and event.device_id != item.device_id:
+            continue
+        gap = (datetime.fromisoformat(event.timestamp) - datetime.fromisoformat(item.timestamp)).total_seconds()
+        if 0 <= gap <= 300 and web(item):
+            matches.append(item)
+    # Repeated retries against one missing page are not directory enumeration.
+    paths = {web(item).get("path", "").split("?", 1)[0] for item in matches}
+    if len(paths) >= 10:
+        return {"rule": "web_path_enumeration", "events": list(dict.fromkeys(p.event_id for p in matches))[:20],
+            "severity": 7, "reason": "At least ten distinct paths returned HTTP client errors from the same peer and host within five minutes; review possible enumeration, not proof of compromise"}
+    return None
 
 
 def correlate(event: SecurityEvent, previous: list[SecurityEvent]) -> list[dict]:
     matches = []
+    web_scan = _web_path_enumeration(event, previous)
+    if web_scan:
+        matches.append(web_scan)
     if (event.source_type == "local_process" and event.event_type == "process_network_risk"
             and event.metadata.get("consecutive_high_samples", 0) >= 2):
         matches.append({"rule": "sustained_cpu_temporary_network", "events": [event.event_id],

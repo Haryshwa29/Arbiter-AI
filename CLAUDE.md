@@ -4,6 +4,21 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 17 public-data hardening: local `qwen3.5:4b` on AIT-ADS exposed
+14 directory-enumeration annotations suppressed by the LLM, not the prefilter.
+Native Wazuh web attack/recon classification now carries a deterministic review
+floor. Bounded source observations preserve wrapped Suricata priority/endpoints
+and distinguish PAM/sudo transitions from narrowly scoped same-address TLS mail
+login observations. FreshClam update-start observations have a separate narrow
+prefilter; neither observation certifies safety. Ten distinct client-error paths
+within five minutes can correlate by host, peer and agent. No new dependencies
+or actuation authority. See `docs/PUBLIC-DATA-EVAL-2026-11-17.md` for the original
+pilot, same-raw-alert regression run, disjoint-alert evaluation, percentages,
+tier attribution and limitations. Improvements on inspected cases are regression
+results, not independent production accuracy. Correlation is fixture-tested;
+these public-data runs evaluate independent cold-start alerts. Customer/portable
+installs still require an updated build and restart.
+
 October 23 evidence presentation: alert details and expanded audit entries lead
 with the source event description, separate from the decision rationale. Priority
 scores are not diagnoses. Flood/connection alerts explain the reported service
