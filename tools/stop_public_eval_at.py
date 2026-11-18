@@ -156,6 +156,9 @@ def main():
     args=p.parse_args();out=args.out.resolve()
     if os.name!='nt' or args.target<1: p.error('Requires Windows and a positive completed-record target')
     if args.export.exists() or args.export.with_suffix('.zip').exists(): p.error('Use a new export destination')
+    # The evaluator's sleep request ends when stopped; keep the export awake too.
+    if not ctypes.windll.kernel32.SetThreadExecutionState(0x80000001):
+        raise OSError('Could not keep the checkpoint export awake')
     worker_info=json.loads((out/'worker.json').read_text(encoding='utf-8-sig'))
     worker=Worker(int(worker_info['Pid']),out)
     db=sqlite3.connect(out/'results.db',timeout=1)
@@ -192,6 +195,7 @@ def main():
         print(json.dumps({'status':'export-ready',**result}),flush=True)
     finally:
         db.close();worker.close()
+        ctypes.windll.kernel32.SetThreadExecutionState(0x80000000)
 
 
 if __name__=='__main__':main()
