@@ -97,6 +97,8 @@ def prepare(run,work,publication,cache):
             raise ValueError('Checkpoint manifest path/hash mismatch')
         shutil.copy2(package/name,work/name)
     hardware={}
+    manual_review=(run/'manual-review.md').read_text(encoding='utf-8') if (run/'manual-review.md').exists() else ''
+    if manual_review: (work/'manual-review.md').write_text(manual_review,encoding='utf-8')
     if (run/'hardware-observed.json').exists():
         hardware=json.loads((run/'hardware-observed.json').read_text(encoding='utf-8-sig'))
         (work/'hardware-observed.json').write_text(json.dumps(hardware,indent=2)+'\n',encoding='utf-8')
@@ -141,6 +143,7 @@ def prepare(run,work,publication,cache):
         'final_actor_counts':dict(actors),'examples':examples,'attack_labels_quieted_ids':misses,
         'l2_rules':summary['l2_rules'],'retained_unannotated_sources':dict(noisy_sources.most_common()),
         'hardware':hardware,'reference_checked_date':'2026-11-18','corporate_references':REFERENCES,
+        'qualitative_review_file':'manual-review.md' if manual_review else None,
         'workload_references':[{**ref,'average_arrivals_per_minute':ref['daily_alerts']/1440} for ref in WORKLOAD_REFERENCES],
         'performance_estimates':{'unchanged_routing_ideal_stage_overlap_gain_percent':overlap_gain,
             'corrected_routing_scenarios':projections,'measured':False},
@@ -202,6 +205,7 @@ def prepare(run,work,publication,cache):
         lines.append(f"| {layer_names.get(actor,actor)} | {counts['unannotated_suppress']:,} | {counts['unannotated_escalate']:,} | {counts['attack_suppress']:,} | {counts['attack_escalate']:,} |")
     lines+=['','Examples below identify actual scored records, not a separately scored explanation-quality study.','']
     for actor,e in examples.items():lines.append(f"- {layer_names.get(actor,actor)}, record {e['record']} ({e['id']}), {e['decision']}: {e['reason']}")
+    if manual_review: lines+=['',manual_review.strip()]
     lines+=['','## Per-record latency: what was actually timed','',
         'Mean means average time. Median is the middle record. The 95th percentile is the time within which 95% of records on that measured path finished. These are classification times, not proof that a protective action occurred.','',
         '| Measured path | Records | Mean | Median | 95th percentile |','|---|---:|---:|---:|---:|']
@@ -210,7 +214,7 @@ def prepare(run,work,publication,cache):
     if 'gemma_record_total' in latency:
         mean=latency['gemma_record_total']['mean_s']
         lines+=['',f"**L2 is the expensive path:** if every incoming record required the same average complete Gemma path seen here ({mean:.2f}s), a sequential worker would classify roughly {60/mean:.2f} records/minute before additional queue/journal overhead. This is a mix-based estimate, not another measured run or a maximum hardware limit. The overall replay rate must not be advertised as the rate for two full model reviews on every record."]
-    lines+=['',f"Local hardware snapshot: {hardware.get('cpu','see bundle')}; {hardware.get('ram_bytes',0)/1024**3:.1f} GiB RAM; GPU/model-memory/driver report: {hardware.get('gpu','see bundle')}. Models: Qwen3.5:4b (L1), Gemma4:12b (L2), with exact installed digests and requested options in run.json. This is not matched hardware against an enterprise cluster."]
+    lines+=['',f"Local hardware snapshot: {hardware.get('cpu','see bundle')}; {hardware.get('ram_bytes',0)/1024**3:.1f} GiB RAM; GPU, total VRAM in MiB, driver: {hardware.get('gpu','see bundle')}. Models: Qwen3.5:4b (L1), Gemma4:12b (L2), with exact installed digests and requested options in run.json. This is not matched hardware against an enterprise cluster."]
     lines+=['',f"Observed checkpoint wall-clock rate: **{n*60/elapsed:.2f} saved records/minute** over {elapsed/3600:.2f} hours from the first journalled attempt to the confirmed stop. The earlier rough 50/minute estimate is not substituted for the final measured rate.",'',
         'This is one sequential replay worker. On a Gemma case, the next record waits for both its assessment and challenge. The normal source agent has separate L1/L2 queues/workers, but that concurrent mode was not measured here. Timings exclude live collector/network delay and pre-processing queue residence; they are not ingestion-to-containment times. This historical replay executes no response actions. Other desktop/development activity shared the machine.','',
         '## Reported corporate workload: daily intake converted to minutes','',
@@ -236,7 +240,7 @@ def prepare(run,work,publication,cache):
     lines+=['','These are planning scenarios, not tested outcomes or guaranteed bounds. Each assumes this checkpoint\'s mean L1 cost, fraction of eligible L1 escalations and mean Gemma review time remain unchanged; every unsuppressed eligible escalation reaches Gemma. The first column is an assumption, not a suppression target. The serial scenario adds average stage costs; the ideal overlap scenario uses the slower stage. Shared-GPU contention, reloads, longer context, extra enrichment, bursts and storage can make real throughput worse than either estimate. Overlapping different records does not by itself shorten one Gemma assessment/challenge. Do not force unsafe suppressions to reach a desired percentage. No estimated accuracy gain is claimed before a separate attack-containing evaluation.','',
         '## Next steps','',
         'Use a separate frozen, balanced attack/routine comparison or a complete attack-containing timeline; preserve scoring labels outside prompts. Test the actual concurrent agent with persistent scoped context, case grouping and realistic arrival bursts. Compare identical isolated records and quality requirements on both systems if a true one-to-one commercial benchmark is required. Improve independently supported ordinary explanations, inspect unsupported suppressions, and test live queue delay before publishing response-time claims.','',
-        'The original data and completed decisions were not rewritten or selectively retried. A last unfinished attempt can be interrupted by the requested stop and is not scored as a completed result. The dataset and source hashes identify the exact run; the ZIP manifest protects the downloadable bytes.','']
+        f"The original data and completed decisions were not rewritten or selectively retried. Interrupted attempts at the requested stop: {summary['stop'].get('interrupted_attempts_at_stop',0)}; these are not scored as completed results. All {n:,} completed decisions are preserved, including any small overshoot of the {summary['stop']['target']:,}-record target. The dataset and source hashes identify the exact run; the ZIP manifest protects the downloadable bytes.",'']
     report='\n'.join(lines)
     (publication/'README.md').write_text(report,encoding='utf-8')
     (work/'REPORT.md').write_text(report,encoding='utf-8')
