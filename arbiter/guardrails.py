@@ -40,7 +40,7 @@ class GuardrailHit:
     reason: str
 
 
-def final_guardrail_check(event, decision, exempt_name=None):
+def final_guardrail_check(event, decision, exempt_name=None, security_context=None):
     """One suppression veto shared by L1, the L2 prefilter and Gemma."""
     if decision not in {'escalate','suppress'}:
         raise ValueError('invalid final decision')
@@ -50,7 +50,7 @@ def final_guardrail_check(event, decision, exempt_name=None):
     if hit and hit.name!=exempt_name:
         return hit
     from .l2_guardrails import review_floor
-    return review_floor(event)
+    return review_floor(event,security_context)
 
 
 def _m(ev: Event) -> str:

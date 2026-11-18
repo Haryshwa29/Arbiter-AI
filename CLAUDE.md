@@ -4,6 +4,21 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 18 separate L2 context upgrade: native Wazuh/Suricata extraction now
+preserves bounded explicit CVE/MITRE IDs, scanner package/version/status and
+conversation details. L2 adds at most eight same-host/account/peer native login
+events within five minutes, plus relevant offline reference cards (seven
+ATT&CK families; CISA KEV 2026.11.17, 1,782 factual entries). Knowledge is not
+incident evidence or a product/version applicability verdict. Later KEV listings
+are excluded from positive as-of-event claims. No runtime network lookup or new
+dependency. Shared final/L2 guards cover repeated failures, active source-reported
+vulnerabilities and protocol anomalies not explained by conversation metadata.
+The real synthetic development probe exposed two unsupported Gemma suppressions
+accepted by its own critic; the protocol-context veto blocks them. No new public
+accuracy claim. JSON knowledge is packaged and included in evaluation identity
+checks. This branch/worktree is separate: the ongoing full replay and installed
+dashboard remain unchanged. See docs/L2-CONTEXT.md and its development evidence.
+
 November 18 full-data replay tooling: `tools/full_public_eval.py` streams all
 2,600,263 supported AIT-ADS records through the unchanged Qwen L1/Gemma L2 route,
 with independent empty history per record. It uses an isolated SQLite journal,

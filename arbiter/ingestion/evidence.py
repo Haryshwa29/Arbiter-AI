@@ -60,6 +60,9 @@ def tool_finding(event):
             "reported_action": event.action}
     if event.source_type == "wazuh":
         finding["observations"] = observed
+    elif event.source_type == "suricata":
+        from .wazuh_evidence import security_details
+        finding["observations"] = security_details({'data':raw})
     return finding
 
 

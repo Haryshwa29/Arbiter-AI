@@ -20,6 +20,7 @@ build-backend = "setuptools.build_meta"
 include = ["arbiter*"]
 
 [tool.setuptools.package-data]
+"arbiter" = ["data/*.json"]
 "arbiter.install" = ["*.ps1"]
 
 [tool.pytest.ini_options]

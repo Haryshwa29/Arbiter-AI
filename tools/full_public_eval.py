@@ -209,7 +209,7 @@ def main():
         selected = [models[name] for name in ('qwen3.5:4b','gemma4:12b')]
         if any(m.get('remote_host') or m.get('remote_model') for m in selected):
             raise ValueError('Both models must be local')
-        files = sorted((ROOT/'arbiter').rglob('*.py'))+[Path(__file__),ROOT/'tools/public_dataset_eval.py']
+        files = sorted(p for p in (ROOT/'arbiter').rglob('*') if p.suffix in {'.py','.json'})+[Path(__file__),ROOT/'tools/public_dataset_eval.py']
         code = {p.relative_to(ROOT).as_posix():hashlib.sha256(p.read_bytes().replace(b'\r\n',b'\n')).hexdigest() for p in files}
         dataset = {k:provenance[k] for k in ('dataset','doi','dataset_url','dataset_sha256',
             'dataset_md5','labels_url','labels_revision','labels_sha256','label_caveat')}

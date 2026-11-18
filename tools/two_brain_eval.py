@@ -68,7 +68,7 @@ def main():
         if any(final_guardrail_check(Event(**s['event']),r['decision']) for s,r in zip(sample,prior_rows)):
             parser.error('a frozen L1 decision fails the current final gate; run L1 fresh')
     code={p.relative_to(ROOT).as_posix():{'raw':digest(p),'canonical_lf':hashlib.sha256(p.read_bytes().replace(b'\r\n',b'\n')).hexdigest()}
-          for p in sorted((ROOT/'arbiter').rglob('*.py'))}
+          for p in sorted((ROOT/'arbiter').rglob('*')) if p.suffix in {'.py','.json'}}
     meta={'sample_sha256':digest(args.sample),'sample_size':len(sample),'sample_source':args.sample.relative_to(ROOT).as_posix(),
         'dataset':'AIT-ADS v1, DOI 10.5281/zenodo.8263181','primary':models[args.primary],'secondary':models[args.secondary],
         'secondary_verified_details':details,'git_parent':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),

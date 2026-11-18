@@ -1,11 +1,13 @@
 """Independent L2 routing: protect risk, use exact human feedback, or ask Gemma."""
 import re
 from .guardrails import final_guardrail_check
-from .tool_policy import verified_finding, source_observations
+from .tool_policy import verified_finding
+from .l2_context import context_for, protocol_anomaly
 
 
-def prefilter(event, memory=None, first_review=None):
-    hit=final_guardrail_check(event,'suppress')
+def prefilter(event, memory=None, first_review=None, security_context=None):
+    security_context=security_context if security_context is not None else context_for(event)
+    hit=final_guardrail_check(event,'suppress',security_context=security_context)
     if hit:
         return {'route':'escalate','reason':hit.reason,'rule':hit.code}
     context=event.fields.get('_context_signature','')
@@ -18,10 +20,10 @@ def prefilter(event, memory=None, first_review=None):
             return {'route':'suppress','reason':'At least five human-overruled false alarms match this exact process hash, command, user, parent and environment context; no known risk veto.',
                     'rule':'L2_EXACT_HUMAN_FEEDBACK'}
     if verified_finding(event,'wazuh') and not event.fields.get('correlation'):
-        signature=source_observations(event,'wazuh').get('suricata',{}).get('signature','')
-        protocol=signature.startswith('SURICATA ') or bool(re.search(r'\bSURICATA (?:TLS|HTTP|TCP|SSH|DNS|SMTP) ',event.message))
+        protocol=protocol_anomaly(event)
         authentication=event.event_type in {'auth_success','auth_failure'} or 'pam_unix(' in event.message
-        if protocol or authentication:
+        if ((protocol and not security_context['has_conversation_context'])
+                or (authentication and not security_context['has_related_auth_context'])):
             return {'route':'escalate','reason':'This isolated protocol/login observation lacks independent flow or login context needed to justify quieting it; retain the warning without repeating the same evidence through Gemma.',
                     'rule':'L2_CONTEXT_REQUIRED'}
     return {'route':'model','reason':'No independent rule settles this alert; obtain an independent L2 assessment.','rule':None}

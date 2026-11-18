@@ -67,6 +67,12 @@ and independent executor gates. Its defaults were not relaxed for public data.
 
 ## Local inference settings
 
+The separate [L2 security-context upgrade](L2-CONTEXT.md) preserves native CVE,
+technique and conversation details and adds bounded matching login history and
+an offline CISA reference. Its guards keep unknown applicability and unexplained
+protocol anomalies visible. This upgrade is not applied to the already-running
+full public replay.
+
 The selected L2 route requests an 8,192-token context, at most 1,536 generated
 tokens per call, temperature 0.1 and internal thinking off. Assessment and challenge
 remain required, and their explicit explanations are saved. The overall review

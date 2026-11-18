@@ -116,8 +116,11 @@ class L2Workflow:
 
     def evidence_row(self, row):
         buffer = self.agent.service.buffer
+        sources=('windows','sysmon','defender','linux_auth','local_process')
+        if getattr(self.brain,'final_review',False) is True: sources+=('wazuh',)
+        placeholders=','.join('?' for _ in sources)
         with buffer.lock:
-            ids = [r[0] for r in buffer.conn.execute("SELECT event_id FROM telemetry WHERE host=? AND state='done' AND connector IN ('windows','sysmon','defender','linux_auth','local_process') AND timestamp<=? ORDER BY timestamp DESC,id DESC LIMIT 64", (row['event']['hostname'],row['event']['timestamp']))]
+            ids = [r[0] for r in buffer.conn.execute(f"SELECT event_id FROM telemetry WHERE host=? AND state='done' AND connector IN ({placeholders}) AND timestamp<=? ORDER BY timestamp DESC,id DESC LIMIT 64", (row['event']['hostname'],*sources,row['event']['timestamp']))]
         prepared = {**row, '_l2_related':[buffer.detail(event_id) for event_id in ids if event_id != row['event_id']]}
         from .l2_evidence import dossier, assess
         prepared['_l2_assessment'] = assess(dossier(prepared,prepared['_l2_related']), self.agent.protection.proposal(prepared))
