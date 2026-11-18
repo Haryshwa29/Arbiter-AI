@@ -4,6 +4,19 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 18 full-data replay tooling: `tools/full_public_eval.py` streams all
+2,600,263 supported AIT-ADS records through the unchanged Qwen L1/Gemma L2 route,
+with independent empty history per record. It uses an isolated SQLite journal,
+atomic result/counter checkpoints, recorded interrupted attempts, per-stage
+errors, exact input/model/source identity checks and an exclusive worker lock.
+It stops on three consecutive model failures. `tools/Start-FullPublicEval.ps1`
+starts a hidden resumable worker; STATUS.txt explains partial progress. Windows
+system sleep is temporarily prevented while the worker runs. This adds no
+runtime dependency, collection or device-action authority and does not upgrade
+the installed dashboard. Full input alignment verified 1,771,136 attack-labelled
+and 829,127 unannotated records; 55,558 unsupported AMiner records stay excluded.
+See `docs/FULL-PUBLIC-RUN.md`. A started run is not a completed full-data result.
+
 November 17 independent L2 correction: the earlier final-review route did not
 wire the requested separate L2 noise pre-filter and complete shared final exit.
 `l2_prefilter.py` now resolves known risk and exact human-corrected process

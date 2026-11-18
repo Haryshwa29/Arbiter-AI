@@ -82,6 +82,10 @@ new final-review evaluation.
 
 ## Run the public-data evaluation
 
+For all 2,600,263 supported records with resumable overnight processing, see
+[the full public-data run guide](FULL-PUBLIC-RUN.md). The commands below are
+the smaller comparison workflow.
+
 ```text
 python tools/two_brain_eval.py --sample evals/2026-11-17-l2-evidence-gated/sample.jsonl --out evals/your-qwen-gemma-run
 python tools/report_l2_independent_eval.py evals/your-qwen-gemma-run

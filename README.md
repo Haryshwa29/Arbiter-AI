@@ -13,6 +13,9 @@ account validation and production-scale delivery remain future validation work.
 
 ## Public-data evaluation
 
+To process every supported public record with both local models, see
+[the resumable full-dataset run guide](docs/FULL-PUBLIC-RUN.md).
+
 The [corrected L2 evaluation and policy retest](docs/L2-INDEPENDENT-REVIEW.md)
 explain the separate L2 pre-filter, independent Gemma judgment and shared final
 guardrail. The final retest clears 2 of 85 warnings without attack annotations;
