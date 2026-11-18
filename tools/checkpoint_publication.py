@@ -18,7 +18,18 @@ from tools.stop_public_eval_at import csv_text
 from tools.two_brain_eval import timing
 
 QUOTE='raising alerts which look suspicious without proper context is better than suppressing them and getting true negative'
+WORKLOAD_REFERENCES=[
+    {'title':'Prophet Security 2025 survey, all organizations','daily_alerts':960,
+     'url':'https://www.prophetsecurity.ai/blog/6-key-takeaways-from-the-ai-in-soc-survey-report'},
+    {'title':'Prophet Security 2025 survey, enterprises with 20,000+ employees','daily_alerts':3181,
+     'url':'https://www.prophetsecurity.ai/blog/6-key-takeaways-from-the-ai-in-soc-survey-report'},
+    {'title':'Vectra AI 2023 survey of 2,000 SecOps analysts','daily_alerts':4484,
+     'url':'https://www.vectra.ai/about/news/research-reveals-significant-disconnect-between-security-operations-teams-and-the-effectiveness-of-threat-detection-tools-in-preventing-cyber-attacks'}]
 REFERENCES=[
+    {'title':'Published automated per-alert triage claim',
+     'url':'https://d3security.com/siem-triage-automation/',
+     'metric':'Under 2 minutes for up to 95% of alerts, advertised with L2+ investigation depth.',
+     'scope':'Vendor claim including cross-stack enrichment/investigation, not our isolated-record classification test; no matched inputs or independently reproduced quality/latency.'},
     {'title':'Enterprise ingestion processing documentation','url':'https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-ingestion-time',
      'metric':'Under 10 seconds after the collection endpoint to query availability; upload buffering and source delays can add time.',
      'scope':'Log availability, not per-alert AI classification or containment.'},
@@ -120,6 +131,7 @@ def prepare(run,work,publication,cache):
         'final_actor_counts':dict(actors),'examples':examples,'attack_labels_quieted_ids':misses,
         'l2_rules':summary['l2_rules'],'retained_unannotated_sources':dict(noisy_sources.most_common()),
         'hardware':hardware,'reference_checked_date':'2026-11-18','corporate_references':REFERENCES,
+        'workload_references':[{**ref,'average_arrivals_per_minute':ref['daily_alerts']/1440} for ref in WORKLOAD_REFERENCES],
         'comparison_result':'No matched commercial single-alert benchmark was run; no superiority or speedup factor is established.'}
     final=summary['final'];c=summary['layers'];attacks=final['attack_labels_flagged']+final['attack_labels_quieted']
     negative=final['unannotated_flagged']+final['unannotated_quieted']
@@ -175,11 +187,18 @@ def prepare(run,work,publication,cache):
     lines+=['',f"Local hardware snapshot: {hardware.get('cpu','see bundle')}; {hardware.get('ram_bytes',0)/1024**3:.1f} GiB RAM; GPU/model-memory/driver report: {hardware.get('gpu','see bundle')}. Models: Qwen3.5:4b (L1), Gemma4:12b (L2), with exact installed digests and requested options in run.json. This is not matched hardware against an enterprise cluster."]
     lines+=['',f"Observed checkpoint wall-clock rate: **{n*60/elapsed:.2f} saved records/minute** over {elapsed/3600:.2f} hours from the first journalled attempt to the confirmed stop. The earlier rough 50/minute estimate is not substituted for the final measured rate.",'',
         'This is one sequential replay worker. On a Gemma case, the next record waits for both its assessment and challenge. The normal source agent has separate L1/L2 queues/workers, but that concurrent mode was not measured here. Timings exclude live collector/network delay and pre-processing queue residence; they are not ingestion-to-containment times. This historical replay executes no response actions. Other desktop/development activity shared the machine.','',
-        '## Corporate reference points: context, not a matched speed benchmark','',
-        'No commercial system was run on these same records, hardware, context, quality targets and forced one-record workflow. A claim that enterprise products would be slower one-by-one is therefore untested. The proposed 1–3 alerts/minute figure has not been established as a universal automated corporate standard and is not used to claim superiority.','',
+        '## Reported corporate workload: daily intake converted to minutes','',
+        'The supplied 1-3 alerts/minute comparison comes from daily incoming volume divided by 1,440 minutes. That arithmetic describes average demand over a full day. It does not measure maximum processing capacity or how long one investigation takes. These are different surveys and years, not a universal ideal.','',
+        '| Survey and population | Reported incoming alerts/day | Average incoming alerts/minute |','|---|---:|---:|']
+    for ref in WORKLOAD_REFERENCES:
+        lines.append(f"| [{ref['title']}]({ref['url']}) | {ref['daily_alerts']:,} | {ref['daily_alerts']/1440:.2f} |")
+    lines+=['',f"Arbiter saved **{n*60/elapsed:.2f} records/minute** on this replay. That exceeds these reported average arrival rates for the tested mix, suggesting processing headroom if arrivals and case costs were similar. This is an inference about workload scale, not a demonstrated deployment capacity: real bursts, heavier attack cases, persistent context, device actions and shared queues were not tested.",'',
+        'The 4,484/day figure is also repeated in the supplied D3 article; the primary attribution above is Vectra\'s 2023 survey. The 28-tool figure belongs to Prophet\'s large-enterprise survey and is not attached to the older survey. The supplied 960-11,000/day range is not represented here as a verified original SANS result because its original survey table was not established.','',
+        '## Corporate latency reference points: context, not a matched speed benchmark','',
+        'No commercial system was run on these same records, hardware, context, quality targets and forced one-record workflow. A claim that enterprise products would be slower one-by-one is therefore untested. The verified daily-intake conversions above are not used as a per-alert latency baseline.','',
         '| Published reference | Number and unit | Why it is not our same measurement |','|---|---|---|']
     for ref in REFERENCES:lines.append(f"| [{ref['title']}]({ref['url']}) | {ref['metric']} | {ref['scope']} |")
-    lines+=['','References checked November 18, 2026. A one-minute query schedule is not a one-alert-per-minute throughput ceiling. The reported two-alerts/minute workload is not a processing limit; the 200/minute automation claim also prevents treating 1-3/minute as a universal corporate capacity. Vendor claims are attributed, not independently reproduced here. A distributed batch can process many incidents together; its interval cannot be divided or multiplied into an invented isolated-alert latency. Fast local classification is a measured property of this replay, not proof of faster corporate investigation, ingestion, correlation, or response.','',
+    lines+=['','References checked November 18, 2026. A one-minute query schedule is not a one-alert-per-minute throughput ceiling. The reported two-alerts/minute workload is not a processing limit; the 200/minute automation claim also prevents treating 1-3/minute as a universal corporate capacity. An under-two-minute claim is an upper bound, not an exact measured latency from which to invent a speedup factor. Vendor claims are attributed, not independently reproduced here. A distributed batch can process many incidents together; its interval cannot be divided or multiplied into an invented isolated-alert latency. Fast local classification is a measured property of this replay, not proof of faster corporate investigation, ingestion, correlation, or response.','',
         '## Next steps','',
         'Use a separate frozen, balanced attack/routine comparison or a complete attack-containing timeline; preserve scoring labels outside prompts. Test the actual concurrent agent with persistent scoped context, case grouping and realistic arrival bursts. Compare identical isolated records and quality requirements on both systems if a true one-to-one commercial benchmark is required. Improve independently supported ordinary explanations, inspect unsupported suppressions, and test live queue delay before publishing response-time claims.','',
         'The original data and completed decisions were not rewritten or selectively retried. A last unfinished attempt can be interrupted by the requested stop and is not scored as a completed result. The dataset and source hashes identify the exact run; the ZIP manifest protects the downloadable bytes.','']
