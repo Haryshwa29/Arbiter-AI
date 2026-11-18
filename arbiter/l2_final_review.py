@@ -110,6 +110,7 @@ class FinalReviewL2Brain(AdvisoryL2Brain):
     assessment_format = REVIEW_FORMAT
     critic_format = CRITIC_FORMAT
     memory = None
+    routing_only = False  # Legacy sequential comparison runners keep their frozen routing protocol.
 
     def review(self,row,proposal=None):
         event=SecurityEvent(**row['event']).to_event()
@@ -119,14 +120,24 @@ class FinalReviewL2Brain(AdvisoryL2Brain):
             related=row.get('_l2_related',()))
 
     def review_event(self, event, first_review, replay=False, related=()):
+        prepared=self.prepare_review(event,first_review,replay,related)
+        return self.finish_review(prepared,self.review_prepared(prepared))
+
+    def prepare_review(self, event, first_review, replay=False, related=()):
         if not eligible(first_review):
             raise ValueError('Gemma receives only successful first-model escalations')
         if first_review['model'] == self.backend.model:
             raise ValueError('final reviewer must be a distinct local model')
         security_context=context_for(event,related)
-        assessment=prefilter(event,self.memory,first_review,security_context)
+        assessment=prefilter(event,self.memory,first_review,security_context,routing_only=self.routing_only)
+        return dict(event=event,first_review=first_review,replay=replay,
+                    security_context=security_context,assessment=assessment)
+
+    def review_prepared(self, prepared):
+        event, first_review = prepared['event'], prepared['first_review']
+        assessment, security_context = prepared['assessment'], prepared['security_context']
         if assessment['route']=='model':
-            data = super().review_event(event, first_review, replay, security_context=security_context)
+            data = super().review_event(event, first_review, prepared['replay'], security_context=security_context)
             data['backend']='ollama'
         else:
             data={'decision':assessment['route'],'decision_reason':assessment['reason'],
@@ -134,6 +145,11 @@ class FinalReviewL2Brain(AdvisoryL2Brain):
                 'outlook':'routine_looking' if assessment['route']=='suppress' else 'suspicious',
                 'review_status':'prefilter','backend':'deterministic','model':'',
                 'guardrail':{},'action':'human_review','target':None,'action_authority':False}
+        return data
+
+    def finish_review(self, prepared, data):
+        event, replay = prepared['event'], prepared['replay']
+        assessment, security_context = prepared['assessment'], prepared['security_context']
         proposed = data.get('decision')
         reason = data.get('decision_reason')
         if proposed not in {'escalate', 'suppress'}:

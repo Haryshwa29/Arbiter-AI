@@ -119,8 +119,9 @@ class L2Workflow:
         sources=('windows','sysmon','defender','linux_auth','local_process')
         if getattr(self.brain,'final_review',False) is True: sources+=('wazuh',)
         placeholders=','.join('?' for _ in sources)
+        state = "(state='done' OR (state='processing' AND analysis IS NOT NULL))" if getattr(self.brain,'final_review',False) is True else "state='done'"
         with buffer.lock:
-            ids = [r[0] for r in buffer.conn.execute(f"SELECT event_id FROM telemetry WHERE host=? AND state='done' AND connector IN ({placeholders}) AND timestamp<=? ORDER BY timestamp DESC,id DESC LIMIT 64", (row['event']['hostname'],*sources,row['event']['timestamp']))]
+            ids = [r[0] for r in buffer.conn.execute(f"SELECT event_id FROM telemetry WHERE host=? AND {state} AND connector IN ({placeholders}) AND timestamp<=? ORDER BY timestamp DESC,id DESC LIMIT 64", (row['event']['hostname'],*sources,row['event']['timestamp']))]
         prepared = {**row, '_l2_related':[buffer.detail(event_id) for event_id in ids if event_id != row['event_id']]}
         from .l2_evidence import dossier, assess
         prepared['_l2_assessment'] = assess(dossier(prepared,prepared['_l2_related']), self.agent.protection.proposal(prepared))
@@ -242,6 +243,15 @@ class L2Workflow:
                 buffer.conn.executemany('INSERT OR IGNORE INTO l2_seen VALUES (?)', [(event_id,) for event_id in unseen])
 
     def start(self):
+        if getattr(self.brain,'final_review',False) is True:
+            from .ingestion.review_pipeline import ReviewPipeline
+            previous = self.agent.service.pipeline
+            previous.stop()
+            pipeline = ReviewPipeline(previous.buffer, previous.engine, previous.audit, self)
+            pipeline.simulation = previous.simulation
+            self.agent.service.pipeline = pipeline
+            pipeline.start()
+            return
         def reviewer():
             while not self.stop.is_set():
                 try: _,key,row,proposal = self.jobs.get(timeout=.5)
@@ -266,6 +276,8 @@ class L2Workflow:
 
     def close(self):
         self.stop.set()
+        pipeline = self.agent.service.pipeline
+        if getattr(pipeline,'workflow',None) is self: pipeline.stop()
         # Reviewer never writes SQLite; the scheduler must finish any native
         # operation before Agent closes its database connections.
         if self.threads: self.threads[1].join()

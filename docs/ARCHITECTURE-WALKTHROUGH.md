@@ -10,8 +10,10 @@ route through the software; they are not live traffic or measured speed.
 **Qwen3.5:4b is L1, the first reviewer. Gemma4:12b is L2, the final reviewer of
 alerts Qwen escalates. Both can be replaced with compatible local models.**
 Gemma never receives the incoming stream directly. Separate L2 guardrails and a
-pre-filter settle clear cases or avoid a repeat model review when needed context
-is missing. Gemma reads original facts without Qwen's opinion text and can keep
+pre-filter settle supported routine cases; unresolved cases in the five-worker
+terminal preset reach Gemma even when context is missing. The earlier sequential
+replay instead retained those context-poor cases without Gemma, a routing
+limitation recorded separately. Gemma reads original facts without Qwen's opinion text and can keep
 or suppress an alert with a written reason. Pending, uncertain or failed reviews keep the
 warning visible. Neither model can authorize a device change in this preset.
 
@@ -22,6 +24,11 @@ needed to view this document on GitHub.
 
 For the public-data results, read [what failed, what improved and what we plan
 to test next](FINDINGS-IN-PLAIN-ENGLISH.md).
+
+The final-review terminal preset also has a [five-worker pipeline diagram](FIVE-WORKER-PIPELINE.md):
+gateway → L1 → L2 prefilter → L2 → final guardrail, with bypasses for cases
+that do not need Gemma. These workers overlap different records. The ongoing
+26,000-record replay remains sequential and does not measure this upgrade.
 
 ## The complete flow: intake and triage together
 
@@ -46,7 +53,7 @@ observation; **red** asks a person to review. Both outcomes keep a written recor
 | 08 — Check the AI answer | Check its format, confidence and consistency with the safety rules. | An AI failure or a recommendation that is too uncertain goes to human review. These checks do not guarantee a correct judgment. |
 | 09 — Save the decision | Keep the reason, evidence, history and which rule or model decided. | A person can inspect the decision and correct it later. |
 | 10 — Explain the next step | Show what happened, where it came from, what is unknown and what to check. | Advice helps a person investigate; it does not authorize changes to a computer. |
-| 11 — Apply separate L2 rules | Check only Qwen's escalations for known risk, exact human-corrected context and missing investigation context. | Resolve supported cases without inference; retain unresolved protocol/login warnings without paying for a repeat opinion. |
+| 11 — Apply separate L2 rules | Check only Qwen's escalations for independently supported routine context. | Quiet a supported routine case; pass unresolved warnings to Gemma. Known-risk vetoes still protect the final exit. |
 | 12 — Ask Gemma4:12b when useful | Read original facts independently, then challenge the proposed decision. | A model suppression needs a written reason, checked facts, confidence of at least 0.9 and an accepted challenge. |
 | 13 — Apply shared final guardrails | The same suppression veto protects L1 and L2 exits, including shortcuts. | A known risk overrides quieting. Preserve which layer proposed and decided; no device action rights. |
 
@@ -113,7 +120,8 @@ checkpoints. Its pending/processing capacity defaults to 10,000 records. Queue
 pressure is visible: supported checkpointed collectors retry and HTTP ingestion
 can return 429. UDP syslog can lose packets; it has no reliable retry guarantee.
 
-One analysis worker claims events. Urgency normally wins; one in 100 claims uses
+One gateway claims events in the five-worker terminal preset; the ordinary mode
+keeps one combined analysis worker. Urgency normally wins; one in 100 claims uses
 FIFO ordering so older work can progress. Indexed ID selection loads only the
 chosen event's large payload. This reduces time spent holding the shared database
 lock; it does **not** make the queue unlimited or eliminate inference backlogs.

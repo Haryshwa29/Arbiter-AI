@@ -1,4 +1,4 @@
-"""Durable bounded SQLite buffer and event read model, single worker per DB."""
+"""Durable bounded SQLite buffer; one claim owner and locked database access."""
 from __future__ import annotations
 
 import json
@@ -197,11 +197,12 @@ class EventBuffer:
             row = self.conn.execute("SELECT * FROM telemetry WHERE event_id=?", (event_id,)).fetchone()
             return self._decode(dict(row)) if row else None
 
-    def recent(self, event, window=300, limit=300, scope=None, sources=None):
+    def recent(self, event, window=300, limit=300, scope=None, sources=None, review_pending=False):
         cutoff = (datetime.fromisoformat(event.timestamp) - timedelta(seconds=window)).isoformat()
         with self.lock:
             source_clause = " AND source IN (" + ",".join("?" for _ in sources) + ")" if sources else ""
-            rows = self.conn.execute("SELECT payload,connector FROM telemetry WHERE state='done' AND timestamp>=? AND timestamp<=? "
+            state = "(state='done' OR (state='processing' AND analysis IS NOT NULL))" if review_pending else "state='done'"
+            rows = self.conn.execute("SELECT payload,connector FROM telemetry WHERE " + state + " AND timestamp>=? AND timestamp<=? "
                 "AND event_id!=? AND (host=? OR (src_ip!='' AND (src_ip=? OR dst_ip=?)) OR "
                 "(cloud_account!='' AND cloud_account=?))" + source_clause + " ORDER BY timestamp DESC,id DESC LIMIT ?",
                 (cutoff, event.timestamp, event.event_id, event.hostname, event.src_ip,

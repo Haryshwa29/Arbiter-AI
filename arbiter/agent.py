@@ -190,12 +190,13 @@ class Agent:
 
     def close(self):
         # No rollback claim on exit: OS-owned expiry remains responsible for TTL.
+        # Workers must release SQLite before ownership or database handles close.
+        if self.l2: self.l2.close()
+        if self.service: self.service.stop()
         try:
-            if self.l2: self.l2.close()
-            if self.service: self.service.stop()
+            if self.audit: self.audit.close()
         finally:
             try:
-                if self.audit: self.audit.close()
                 if self.memory: self.memory.close()
             finally:
                 self.owner.close()
