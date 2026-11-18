@@ -38,6 +38,14 @@ Small companies / startups with moderate-to-heavy data flow, no dedicated securi
 
 The fatal failure mode is suppressing a real breach — one missed true positive and the customer turns Arbiter off forever. Asymmetric error costs are baked into scoring. Therefore:
 
+**Insufficient context must not be treated as a reason to quiet a suspicious
+alert.** Retain it for review unless the evidence supports an ordinary explanation
+and the suppression checks pass. A missed real attack is a **false negative**;
+correctly quieting a harmless record is a **true negative** and is desirable.
+This principle guides the prompts, context-required routes, known-risk vetoes,
+final guardrails and error handling. It is not a claim that LLM judgments cannot
+fail, and it does not excuse false positives in published evaluation results.
+
 - **Shadow mode first**: Arbiter scores alongside the human for weeks before it earns the right to suppress anything.
 - Every suppression carries a written rationale + audit trail.
 - **Open-core**: the agent/collector and the pattern-extraction code are open source (auditable — "verify yourself that nothing leaves"). The scoring engine, curation, and reporting are proprietary. GitHub is also the distribution channel for this buyer.
