@@ -78,6 +78,27 @@ One night may process only part of the dataset. Model-heavy records can take
 seconds or longer each; there is no promised overnight completion time. No extra
 runtime dependency or cloud inference service is introduced.
 
+## Stop at a requested checkpoint and export
+
+The separate stop controller can watch an already running Windows worker without
+changing the evaluated source:
+
+```text
+python tools/stop_public_eval_at.py --out output/public-eval/ait-ads-full-2026-11-18 --target 26000 --export output/public-eval/ait-ads-stop-26000
+```
+
+It verifies the worker's script/output identity and holds its original process
+handle. After the committed count first reaches or crosses the target, it takes
+the SQLite writer lock and stops that worker. A currently unfinished attempt may
+be interrupted; completed records remain intact. Polling can permit a small
+overshoot, which the stop receipt reports exactly.
+
+The export includes a readable summary, CSV, complete per-record JSONL, SQLite
+snapshot, input/model/source provenance and file checksums in a tested ZIP.
+Spreadsheet formula-like text is escaped in CSV; JSONL and SQLite preserve the
+original values. A first-record prefix is not a representative full-dataset
+test, and attack recall is undefined if that prefix contains no attack labels.
+
 Dataset: [AIT-ADS v1, DOI 10.5281/zenodo.8263181](https://zenodo.org/records/8263181),
 Max Landauer, Florian Skopik and Markus Wurzenberger, AIT Austrian Institute of
 Technology, CC BY 4.0. Publisher-requested citations: *Introducing a New Alert
