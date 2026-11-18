@@ -27,6 +27,9 @@ def review_floor(event):
         return GuardrailHit('L2_MULTIPLE_DNS_QUESTIONS','l2_multiple_dns_questions',
             'multiple DNS questions require contextual review; do not quiet an incompletely represented query set')
     query=observed.get('dns_query','')
+    if 'dns query' in event.message.casefold() and not query:
+        return GuardrailHit('L2_DNS_CONTEXT_MISSING','l2_dns_context_missing',
+            'the alert does not include the DNS question; absence of attack proof cannot justify quieting an unexamined query')
     if (isinstance(query,str) and len(query)>=120
             and any(len(part)>=48 for part in query.split('.'))
             and (re.search(r'\.(?:xlsx?|docx?|csv|pdf|zip|txt|db)(?:\.|-)',query,re.I)

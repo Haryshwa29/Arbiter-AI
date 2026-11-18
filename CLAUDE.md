@@ -17,10 +17,17 @@ source attack classes and conflicting/incompletely represented evidence.
 the existing narrow L1 standing-fact exception. The terminal stores both stages;
 no new runtime dependency or actuation rights. A fresh 192-record public sample
 excludes all 416 earlier selected raw records; results are separately frozen in
-`evals/2026-11-17-l2-independent`. See `docs/L2-INDEPENDENT-REVIEW.md`.
+`evals/2026-11-17-l2-independent`. Its 13 model suppressions included 11 without
+an actual DNS question: agreement with missing attack labels did not justify
+those decisions. The shared final/L2 evidence rule now retains missing-question
+DNS alerts. A follow-up reuses those frozen L1 outputs and reruns L2, archived in
+`evals/2026-11-17-l2-evidence-gated`: 92/94 L2 inputs retain without Gemma;
+2 model reviews quiet 2 warnings; final TP64/FN0/FP83/TN45. This is a seen-record
+policy retest, not a fresh complete evaluation; no attack annotation reached
+Gemma. See `docs/L2-INDEPENDENT-REVIEW.md` for the limits.
 Windows denial responses now consume bounded rejected POST bodies before close;
 this prevents connection resets without relaxing auth/CSRF. Source validation:
-514 tests passed, 2 skipped, 25 subtests; the mock CLI sample passed. Installed
+515 tests passed, 2 skipped, 25 subtests; the mock CLI sample passed. Installed
 dashboard/portable builds have not been upgraded. Older results below remain
 historical, not measurements of the corrected route.
 

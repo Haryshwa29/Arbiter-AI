@@ -128,3 +128,12 @@ def test_l2_source_attack_class_is_not_treated_as_an_ordinary_protocol_problem()
     e=root_close();e.message='Source finding'
     e.fields['_tool_finding']['observations']={'suricata':{'category':'Web Application Attack'}}
     assert prefilter(e)['rule']=='L2_SOURCE_ATTACK_CLASS'
+
+
+def test_dns_question_is_required_before_either_model_can_quiet_a_dns_alert():
+    e=root_close();e.message='ET INFO Observed DNS Query to .biz TLD'
+    assert final_guardrail_check(e,'suppress').code=='L2_DNS_CONTEXT_MISSING'
+    b=FinalReviewL2Brain('gemma4:12b');b.backend.generate=Mock()
+    result=b.review_event(e,first(),True)
+    assert result['decision']=='escalate' and result['prefilter']['rule']=='L2_DNS_CONTEXT_MISSING'
+    b.backend.generate.assert_not_called()

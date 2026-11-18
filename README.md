@@ -13,8 +13,11 @@ account validation and production-scale delivery remain future validation work.
 
 ## Public-data evaluation
 
-The [corrected independent L2 evaluation](docs/L2-INDEPENDENT-REVIEW.md) measures
-the separate L2 pre-filter, independent Gemma judgment and shared final guardrail.
+The [corrected L2 evaluation and policy retest](docs/L2-INDEPENDENT-REVIEW.md)
+explain the separate L2 pre-filter, independent Gemma judgment and shared final
+guardrail. The final retest clears 2 of 85 warnings without attack annotations;
+92 of 94 L2 cases retain without a model call. It reuses saved L1 decisions and
+does not establish Gemma's attack-detection ability.
 The [earlier Qwen L1 / Gemma L2 evaluation](docs/TWO-BRAIN-PUBLIC-EVAL.md) tests the
 two-brain workflow: Qwen3.5:4b escalates unclear alerts; Gemma4:12b receives only
 those escalations and keeps or suppresses them with a written reason. The

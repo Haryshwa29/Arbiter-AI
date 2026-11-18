@@ -20,6 +20,7 @@ from arbiter.llm import OllamaBackend, SYSTEM_PROMPT
 from arbiter.memory import Memory
 from arbiter.schema import Event
 from arbiter.triage import TriageEngine
+from arbiter.guardrails import final_guardrail_check
 from tools.public_dataset_eval import digest, metrics, ollama_json, save
 
 
@@ -41,6 +42,7 @@ def main():
     parser.add_argument('--secondary',default='gemma4:12b')
     parser.add_argument('--review-seconds',type=int,default=180)
     parser.add_argument('--resume',action='store_true')
+    parser.add_argument('--reuse-primary',type=Path,help='Reuse frozen L1 outputs only after input/model and current final-gate parity checks')
     args=parser.parse_args()
     if args.primary==args.secondary:parser.error('the two brains must use distinct models')
     args.sample=args.sample.resolve()
@@ -54,6 +56,17 @@ def main():
     if args.primary not in models or args.secondary not in models:parser.error('both local models must be installed')
     if any(models[m].get('remote_host') or models[m].get('remote_model') for m in (args.primary,args.secondary)):
         parser.error('remote model aliases are forbidden')
+    reused=None
+    if args.reuse_primary:
+        reused=args.reuse_primary.resolve()
+        previous=json.loads((reused/'run.json').read_text())
+        prior_rows=read_rows(reused/'primary.jsonl')
+        if (previous['sample_sha256']!=digest(args.sample)
+                or previous['primary']['digest']!=models[args.primary]['digest']
+                or [(r['sample_id'],r['label']) for r in prior_rows]!=[(s['sample_id'],s['label']) for s in sample]):
+            parser.error('frozen L1 input/model identity mismatch')
+        if any(final_guardrail_check(Event(**s['event']),r['decision']) for s,r in zip(sample,prior_rows)):
+            parser.error('a frozen L1 decision fails the current final gate; run L1 fresh')
     code={p.relative_to(ROOT).as_posix():{'raw':digest(p),'canonical_lf':hashlib.sha256(p.read_bytes().replace(b'\r\n',b'\n')).hexdigest()}
           for p in sorted((ROOT/'arbiter').rglob('*.py'))}
     meta={'sample_sha256':digest(args.sample),'sample_size':len(sample),'sample_source':args.sample.relative_to(ROOT).as_posix(),
@@ -62,7 +75,8 @@ def main():
         'code_sha256':code,'runner_sha256':digest(__file__),'python':platform.python_version(),
         'protocol':{'mode':'historical classification replay; Gemma may confirm or suppress successful Qwen escalations; no device actions',
             'route':'successful L1 escalations enter independent L2 prefilter; known risk or insufficient isolated protocol/auth context retains without Gemma; exact human feedback may quiet; other cases go to Gemma',
-            'first_stage':'fresh independent memory per alert; unchanged Qwen prompt',
+            'first_stage':'reused frozen Qwen outputs, current final-gate parity checked; no Qwen calls' if reused else 'fresh independent memory per alert; unchanged Qwen prompt',
+            'primary_reused_from':reused.relative_to(ROOT).as_posix() if reused else None,
             'second_stage':'L2 prefilter, independent Gemma assessment without L1 prose when needed, separate challenge, and shared final guardrail used by L1 and L2',
             'staging':'all Qwen decisions first, then all eligible Gemma reviews; not a live queue-delay measurement',
             'review_budget_s':args.review_seconds,'gemma_options':{'think':False,'num_ctx':8192,'num_predict':1536,'temperature':.1},
@@ -80,6 +94,9 @@ def main():
     else:
         save(meta_path,meta)
         (out/'sample.jsonl').write_bytes(args.sample.read_bytes())
+        if reused:
+            (out/'primary.jsonl').write_bytes((reused/'primary.jsonl').read_bytes())
+            (out/'primary-audit.jsonl').write_bytes((reused/'primary-audit.jsonl').read_bytes())
     primary=read_rows(out/'primary.jsonl')
     if [r['sample_id'] for r in primary] != [r['sample_id'] for r in sample[:len(primary)]]:
         raise ValueError('primary checkpoint does not match frozen sample')

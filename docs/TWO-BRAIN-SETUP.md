@@ -38,7 +38,8 @@ Qwen verdict. A pending or failed review keeps the warning visible.
 2. Qwen reviews unclear events. Only its successful local-model escalations go
    to Gemma. A failed Qwen call remains flagged by policy and bypasses L2.
 3. An independent **L2 pre-filter and safety check** runs first. It retains known
-   risky evidence without inference. It also retains isolated protocol/login
+   risky evidence and DNS alerts missing the actual question without inference.
+   It also retains isolated protocol/login
    warnings that lack the context needed to settle them, avoiding a paid repeat
    of the same evidence. Exact, human-corrected process history can resolve a
    routine case: at least five explicit corrections, no unresolved risk, and the
@@ -82,15 +83,22 @@ new final-review evaluation.
 ## Run the public-data evaluation
 
 ```text
-python tools/two_brain_eval.py --out evals/your-qwen-gemma-run
-python tools/report_two_brain_eval.py evals/your-qwen-gemma-run
+python tools/two_brain_eval.py --sample evals/2026-11-17-l2-evidence-gated/sample.jsonl --out evals/your-qwen-gemma-run
+python tools/report_l2_independent_eval.py evals/your-qwen-gemma-run
 ```
 
-The default input is the same frozen 202-record AIT-ADS sample used in the prior
-comparison. Qwen runs fresh with independent memory for each record, then every
+The command above uses the corrected route's frozen 192-record AIT-ADS sample.
+Without --sample, the runner defaults to the older 202-record comparison sample.
+Qwen runs fresh with independent memory for each record, then every
 eligible Qwen escalation is reviewed by Gemma. All first decisions, L2 outcomes,
 errors, final classifications and durations are saved. Completed failures are
 counted, not retried until they pass.
+
+The latest published follow-up reused saved L1 decisions and ran L2 again after
+adding the missing-DNS-question guardrail. It cleared 2 of 85 warnings without
+attack annotations; 92 of 94 L2 cases retained without Gemma. No attack-annotated
+record reached Gemma. This is a modest policy retest, not a new detection-rate
+claim. See [the full results and limits](L2-INDEPENDENT-REVIEW.md).
 
 The evaluation is staged: all Qwen decisions first, then L2 reviews. It does not
 start live collection or a response actuator. Historical timestamps stay
