@@ -4,6 +4,14 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 17 documentation follow-up: the public findings now start with
+`docs/FINDINGS-IN-PLAIN-ENGLISH.md`. The detailed evaluation and frozen evidence
+remain available separately. The architecture diagrams name Qwen3.5 as the
+evaluated local model, show that a compatible local model can replace it, and
+explain each stage in everyday language. Ollama is documented as the current
+runner, not the model itself; another serving system needs a compatible adapter.
+Only documentation and diagram renderers changed in this follow-up.
+
 November 17 public-data hardening: local `qwen3.5:4b` on AIT-ADS exposed
 14 directory-enumeration annotations suppressed by the LLM, not the prefilter.
 Native Wazuh web attack/recon classification now carries a deterministic review

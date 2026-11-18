@@ -32,7 +32,7 @@ flowchart TD
         C["collector<br/><small>normalizes to the Event schema</small>"]
         P["tier 1 · prefilter (cheap)<br/><small>severity × criticality × history</small>"]
         M["memory (SQLite)<br/><small>assets · history · facts · feedback</small>"]
-        LLM["tier 2 · local LLM (qwen)<br/><small>ambiguous cases only, on your hardware</small>"]
+        LLM["Qwen3.5 · replaceable local AI<br/><small>another compatible local model can take this role</small>"]
         V["verdict<br/><small>escalate + evidence · suppress + rationale</small>"]
         D["dashboard<br/><small>analyst sees, acts, resolves</small>"]
         R["response actuator<br/><small>surgical · TTL · reversible</small>"]
@@ -54,7 +54,12 @@ flowchart TD
 
 The guardrail layer wraps the model on both sides — `Event → guardrails → LLM → guardrails → Decision`. See "Guardrails" below for why.
 
-The cost-control idea: a cheap rule-based **prefilter** handles the large majority of events (an LLM call per alert is far too expensive at log volume), and the **local LLM** only sees the ambiguous minority. The model runs on the customer's own hardware via Ollama (open weights), which is what makes "nothing leaves the network" true rather than marketing.
+The quick sorting rules handle clear cases, while **Qwen3.5** reviews cases that
+need an AI opinion. Another compatible local model can replace it. **Ollama is
+the current local runner, not the model itself.** A different serving system
+needs a compatible backend adapter. Keeping customer inference local is a
+separate requirement; changing the model does not remove the safety checks.
+The share of events that need AI depends on the workload and must be measured.
 
 ## Remote deployment model
 
@@ -152,7 +157,7 @@ The operator model is unchanged from ADR-001: two signed-in roles, **analyst** (
 | Event/Verdict contract (the collector boundary) | `arbiter/schema.py` |
 | Per-company memory: assets, history, facts | `arbiter/memory.py` |
 | Tier 1 — cheap prefilter | `arbiter/prefilter.py` |
-| Tier 2 — local LLM (Ollama / mock) | `arbiter/llm.py` |
+| Local AI — Qwen3.5 or a compatible replacement; current runner: Ollama | `arbiter/llm.py` |
 | Non-suppressible security guardrails | `arbiter/guardrails.py` |
 | Adversarial evaluation suite + gate | `samples/adversarial_suite.jsonl`, `arbiter/eval.py` |
 | Orchestrator, shadow mode, audit trail | `arbiter/triage.py` |

@@ -1,31 +1,64 @@
 # Arbiter AI: follow an event through the system
 
-**A vertical, animated architecture walkthrough of the implemented product.**
+**A picture of what happens at each stage, with plain-English explanations.**
 
-Read from top to bottom: collect a signal, preserve its evidence, decide whether
-it needs attention, explain the decision, and authorize a bounded response only
-when policy allows it. The animation shows architectural flow, not live traffic,
-measured latency, or an attack simulation. All labels remain visible.
+Read from top to bottom: gather security reports, keep the evidence, decide what
+needs attention, and explain the next step to a person. Separate approval and
+safety checks control any supported device action. The moving dots show the
+route through the software; they are not live traffic or measured speed.
+
+**Qwen3.5 is the local AI model shown here and used in our public-data test. It
+is replaceable with another compatible local AI model.** The model gives an
+opinion; it does not control the safety rules or authorize device changes.
 
 **Prefer no motion? [Read the identical still-diagram edition](architecture/STILL.md).**
 The explanations below also provide a complete text equivalent. The GIF and SVG
 assets live in this repository; no external diagram service or runtime script is
 needed to view this document on GitHub.
 
-Jump to [intake](#1-intake-preserve-the-evidence),
-[triage](#2-triage-decide-with-evidence),
-[review and response](#3-review-explain-before-asking-for-action), or
-[system boundaries](#4-boundaries-keep-reasoning-and-authority-separate).
+For the public-data results, read [what failed, what improved and what we plan
+to test next](FINDINGS-IN-PLAIN-ENGLISH.md).
 
 ## The complete flow: intake and triage together
 
 ![One connected animated flowchart from security signals through collection, normalization, queue, context, guardrails and prefilter to optional local reasoning, validated verdicts, audit storage and an operator-facing explanation. Labelled shortcut branches show direct suppression and escalation without AI.](architecture/arbiter-flow.gif)
 
-Read downward along the center for an ambiguous event. Follow the labelled side
-arrows when rules can decide sooner. **Blue** is intake and deterministic work;
-**gold** marks a decision; **purple** is local AI; **green** is suppression;
-**red** is escalation. Both outcomes remain auditable. The diagram contains
-intake and triage in one image; the sections below explain its numbered stages.
+Read downward along the center when an event is unclear. Follow the side arrows
+when the rules can decide sooner. **Blue** gathers and organizes information;
+**gold** marks a question; **purple** is the local AI; **green** keeps a quiet
+observation; **red** asks a person to review. Both outcomes keep a written record.
+
+## What each numbered stage means
+
+| Stage | What is happening | Why it matters |
+|---|---|---|
+| 01 — Read security reports | Read logs and alerts from sources you enabled. | Arbiter starts with recorded observations, not a story invented by AI. |
+| 02 — Organize and check | Put computer, user, time and network details in a common format. | Important information should survive the handoff; broken records are rejected. |
+| 03 — Save a waiting line | Save events while they wait to be examined. | A restart can recover waiting work, and overload is visible. The line has a limit. |
+| 04 — Connect clues | Look at nearby events, the computer's role, previous decisions and approved facts. | One event can be misleading. A fact about a different account or action should not excuse it. |
+| 05 — Apply safety rules | Ask whether a recorded risky signal requires review. | The AI cannot simply dismiss a protected finding. A warning does not prove a breach succeeded. |
+| 06 — Use quick sorting rules | Decide clear cases without asking the AI. | Routine observations can stay quiet; clearly risky events can be flagged promptly. |
+| 07 — Ask Qwen3.5 | Have the local model read an unclear alert and explain its recommendation. | This is the replaceable model stage. Another compatible local model needs its own evaluation. |
+| 08 — Check the AI answer | Check its format, confidence and consistency with the safety rules. | An AI failure or a recommendation that is too uncertain goes to human review. These checks do not guarantee a correct judgment. |
+| 09 — Save the decision | Keep the reason, evidence, history and which rule or model decided. | A person can inspect the decision and correct it later. |
+| 10 — Explain the next step | Show what happened, where it came from, what is unknown and what to check. | Advice helps a person investigate; it does not authorize changes to a computer. |
+
+## Qwen3.5, replacement models, and Ollama
+
+**Qwen3.5 is the model that reads and reasons about the alert. Ollama is the
+software currently used to run that model locally. They are different parts.**
+The diagram names the model, rather than presenting its runner as the AI itself.
+
+You can replace Qwen3.5 with another compatible local language model. It must
+accept the evidence and return the decision format Arbiter expects. A different
+model-serving system can be connected through a compatible backend adapter;
+that is separate from selecting a different model. The current implementation
+does not make every model or server work automatically. Each replacement needs
+quality, speed and hardware testing. Customer inference stays local, and the
+same safety and approval checks remain in place.
+
+The following sections keep the implementation details for readers who want to
+check the diagram against the code.
 
 ## 1. Intake: preserve the evidence
 
@@ -114,7 +147,7 @@ is stored context and reviewed history; Arbiter does not fine-tune model weights
 
 ### Validate the answer rather than trusting fluent prose
 
-Local Ollama returns a proposed decision, confidence, rationale, evidence and
+Qwen3.5, or another compatible local model, returns a proposed decision, confidence, rationale, evidence and
 optional bounded investigation steps. The parser validates the decision and
 finite confidence. The engine rechecks guardrails. Suppression confidence below
 0.7 becomes an escalation; model failure also escalates by policy.
@@ -237,7 +270,7 @@ workflow, not an automatically enabled second dashboard model.
 
 | Boundary | Implemented behavior |
 |---|---|
-| Customer inference | Local Ollama; cloud model aliases rejected. No external inference calls. |
+| Customer inference | Qwen3.5 or another compatible local model. The current runner is Ollama; cloud model aliases are rejected. No external inference calls. |
 | Optional AWS acquisition | Explicit source integration; contacts configured AWS APIs to retrieve telemetry. This is different from cloud inference. |
 | Local Demo & Replay | Isolated state and simulated responses; no native actuator. |
 | Public site simulator | Separately authorized cloud-AI exception with consent for uploaded samples; server-only credentials and simulated response controls. |

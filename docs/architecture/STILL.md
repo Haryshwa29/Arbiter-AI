@@ -4,6 +4,10 @@ These static diagrams contain the same labels as the
 [animated walkthrough](../ARCHITECTURE-WALKTHROUGH.md). No motion is required to
 understand the system. Follow the linked explanations for the full text equivalent.
 
+Each box now explains its job in everyday language. **Qwen3.5 is the model
+shown; another compatible local AI model can replace it.** Ollama is the current
+local runner, not the name of the model. See the [model and runner explanation](../ARCHITECTURE-WALKTHROUGH.md#qwen35-replacement-models-and-ollama).
+
 ## 1–2. Complete intake and triage flow
 
 ![One continuous flowchart from sources through validation, queue, context, guardrails, prefilter and optional local reasoning to observations or alerts, audit and operator explanation.](arbiter-flow.svg)

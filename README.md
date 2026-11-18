@@ -13,20 +13,20 @@ account validation and production-scale delivery remain future validation work.
 
 ## Public-data evaluation
 
-The [AIT-ADS pilot and hardening report](docs/PUBLIC-DATA-EVAL-2026-11-17.md)
-documents the local `qwen3.5:4b` run, its missed directory-scan annotations,
-the deciding tiers, source-policy changes, and a same-alert retest plus a
-disjoint-alert sample. It includes measured percentages, every prediction,
-dataset attribution and the remaining work. These are stratified alert-level
+Start with [the findings in plain English](docs/FINDINGS-IN-PLAIN-ENGLISH.md):
+what public attack data we used, where Qwen3.5 made the wrong call, what we
+improved, and what we plan to test next. The [technical report and evidence](docs/PUBLIC-DATA-EVAL-2026-11-17.md)
+provide every measured percentage and decision. These are sample-specific
 results on simulated attacks; production detection rates remain unverified.
 
 ## Follow the architecture
 
 **[Explore the detailed animated architecture walkthrough →](docs/ARCHITECTURE-WALKTHROUGH.md)**
 
-Follow one connected flowchart from security signals to an explained decision.
-Labelled branches show when rules bypass AI, what the local model does, why an
-event is suppressed or escalated, and how the result reaches the operator.
+Follow one connected flowchart with everyday explanations at each stage.
+It names **Qwen3.5** as the current local AI model and shows that another
+compatible local model can replace it. Labelled branches explain when rules
+can decide without AI and when a person needs to review an alert.
 Blue follows collection and rules, purple marks AI, green means suppressed,
 and red means escalated. The detailed walkthrough links every stage to code.
 

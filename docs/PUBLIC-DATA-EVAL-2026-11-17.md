@@ -1,5 +1,9 @@
 # AIT-ADS evaluation: Qwen3.5 triage failures and deterministic hardening
 
+**Start with [the findings in plain English](FINDINGS-IN-PLAIN-ENGLISH.md)**
+for the dataset, failures, improvements and planned next tests. This page keeps
+the detailed measurements and methods for readers who want to check the evidence.
+
 Measured on 17 November 2026. These are one-pass, stratified **alert-label** comparisons on simulated public attacks. They are not production breach-detection or verified operational false-positive rates.
 
 ## Model and public dataset

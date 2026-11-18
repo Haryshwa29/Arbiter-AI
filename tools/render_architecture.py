@@ -18,39 +18,39 @@ W = 1000
 
 # Every diagram is a top-to-bottom directed graph. Text is always visible.
 CHAPTERS = [
-    ("01-intake", "01 / INTAKE", "From a signal to a durable event", "Customer network / collection does not invoke the model", [
-        [("sensors", "Security tools + host observations", ["Windows / Sysmon / Defender / osquery", "Network logs, attachments, optional AWS readers"], BLUE)],
-        [("collect", "Collectors + adapters", ["Read approved sources; preserve raw evidence", "Maintain source checkpoints and explicit source configuration"], BLUE)],
-        [("schema", "SecurityEvent v1.0", ["Validate identity, UTC time, severity and field bounds", "Reject invalid input; payload limit: 256 KiB"], BLUE)],
-        [("queue", "Durable SQLite queue", ["WAL + deduplication by event identity + restart recovery", "10,000 pending/processing records; retry on queue pressure"], BLUE)],
-        [("worker", "One analysis worker", ["Priority first; one in 100 claims preserves FIFO progress", "Select indexed event ID before loading the full payload"], BLUE)],
-        [("context", "Correlation + context + Event adapter", ["Link recent related signals and observed asset context", "Adapt to the stable, dependency-free Event brain contract"], BLUE)],
+    ("01-intake", "01 / GATHER THE EVIDENCE", "Read, organize and keep the clues", "Collection gathers information; it does not ask AI to change a device", [
+        [("sensors", "Security tools report what they saw", ["Windows, Sysmon, Defender, osquery, Wazuh and Suricata", "Optional sources work only when enabled and permitted"], BLUE)],
+        [("collect", "Read the sources you enabled", ["Keep the original reports so a person can inspect them", "Remember where reading stopped so collection can resume"], BLUE)],
+        [("schema", "Put the evidence in a common format", ["Check computer, user, time, process and network details", "Reject broken or oversized records; keep the originals"], BLUE)],
+        [("queue", "Save a waiting line of events", ["Avoid duplicate records and recover waiting work after a restart", "The line has a limit; report when new work exceeds capacity"], BLUE)],
+        [("worker", "Choose the next event to examine", ["Urgent events usually go first; older events also get a turn", "One worker reads the selected event and prepares it for review"], BLUE)],
+        [("context", "Connect related clues", ["Look at nearby events, the computer's role and past decisions", "Pass useful evidence to the rules and, when needed, the AI"], BLUE)],
     ], [("sensors", "collect"), ("collect", "schema"), ("schema", "queue"), ("queue", "worker"), ("worker", "context")], "Next: deterministic checks decide whether local AI is needed."),
-    ("02-triage", "02 / TRIAGE", "Rules first. Local AI when needed.", "A detection decision never grants permission to execute a response", [
-        [("event", "Normalized Event + scoped memory", ["Asset criticality, signature history, curated environment facts", "Facts are scope-checked against this event"], BLUE)],
-        [("rails", "Pre-model security guardrails", ["Recognized dangerous signals normally escalate directly", "A narrow standing-fact exception routes to AI review, never auto-suppression"], AMBER)],
-        [("filter", "Deterministic prefilter", ["Source/severity, asset criticality and verdict history", "Decide strong signals cheaply; send ambiguity to local AI"], BLUE)],
-        [("local", "Local Ollama reasoning", ["Only ambiguous cases or an explicitly downgraded guardrail", "Evidence + rationale + bounded manual investigation advice"], PURPLE)],
-        [("validate", "Validate the model answer", ["Recheck guardrails; validate output and suppression confidence", "Failure or low-confidence suppression becomes an escalation"], AMBER)],
-        [("quiet", "Suppress", ["Written rationale", "Retain an observation"], GREEN), ("alert", "Escalate", ["Evidence + reason", "Requires review"], RED)],
-        [("persist", "Persist the verdict", ["Memory history + JSONL trail + queryable SQLite audit", "Record decision tier and model provenance where available"], BLUE)],
-    ], [("event", "rails"), ("rails", "filter"), ("filter", "local"), ("local", "validate"), ("validate", "quiet"), ("validate", "alert"), ("quiet", "persist"), ("alert", "persist")], "Shortcut paths: guardrail -> Escalate; decisive prefilter -> either verdict."),
-    ("03-review-response", "03 / REVIEW + RESPONSE", "Explain the alert. Bound the action.", "An alert, an acknowledgement and a device action are different states", [
-        [("read", "Same-origin API + live SSE", ["Operational reads require a session; writes require CSRF", "Admin checks protect privileged controls; local owner is loopback-only"], BLUE)],
-        [("explain", "Operator-facing alert explanation", ["Why it triggered / executable / parent / account / command", "Uncertainty + next steps; model advice is labelled separately"], RED)],
-        [("review", "Record a review", ["Acknowledgement marks reviewed; it does not mark benign", "Feedback changes scoped memory/history, not model weights"], BLUE)],
-        [("deadline", "Independent L1 response workflow", ["Critical 60s / high 5m / medium 30m / low: no deadline", "Default expiry: overdue review only; no device change"], AMBER)],
-        [("gate", "Explicit approval + fresh evidence + scope", ["Eligible correlation and exact peer; protect management networks", "Per-incident timed action needs separate authorization"], AMBER)],
-        [("execute", "Typed native firewall operation", ["Supported peer block only; five-minute OS-owned expiry", "Check native rule state; no model-generated shell execution"], RED)],
-        [("undo", "Verify / audit / expire / undo", ["Persist action and review state; verify removal when possible", "Undo removes a rule; it cannot restore interrupted sessions"], GREEN)],
+    ("02-triage", "02 / DECIDE WHAT NEEDS ATTENTION", "Rules first. Qwen3.5 when needed.", "The AI can recommend a decision; it cannot authorize changes to a device", [
+        [("event", "Start with the event and relevant history", ["Check how important the computer is and what happened before", "Use approved facts only when they fit this exact event"], BLUE)],
+        [("rails", "Safety rules: must someone review this?", ["Known risky signals normally create an alert without asking AI", "An exact approved fact can allow AI review, never dismissal by itself"], AMBER)],
+        [("filter", "Quick rules: is the answer already clear?", ["Keep clearly routine records quietly; flag clearly risky ones", "Ask the AI when the rules do not have enough support to decide"], BLUE)],
+        [("local", "Qwen3.5: a replaceable local AI model", ["Read unclear alerts and explain a recommendation", "Another compatible local model can replace Qwen3.5"], PURPLE)],
+        [("validate", "Check the AI's recommendation", ["Safety rules still apply; a fluent explanation is not proof", "If the AI fails or is too unsure, ask a person to review"], AMBER)],
+        [("quiet", "Keep an observation", ["Write why it was quieted", "Keep the record"], GREEN), ("alert", "Flag for review", ["Show the evidence and reason", "Ask a person to investigate"], RED)],
+        [("persist", "Save the decision and its reason", ["Keep the evidence, history and rule or model that decided", "Make the result available for a person to check later"], BLUE)],
+    ], [("event", "rails"), ("rails", "filter"), ("filter", "local"), ("local", "validate"), ("validate", "quiet"), ("validate", "alert"), ("quiet", "persist"), ("alert", "persist")], "Side arrows show where safety rules or quick rules can decide without AI."),
+    ("03-review-response", "03 / EXPLAIN AND REVIEW", "Show the person what to check", "Seeing an alert or marking it reviewed does not change the computer", [
+        [("read", "Control who can see and change things", ["The dashboard reads through the protected application interface", "Sensitive controls need the right permission; local access stays local"], BLUE)],
+        [("explain", "Explain the alert in everyday language", ["Say what triggered, where it came from and what remains unknown", "Show manual checks; label AI suggestions as advice"], RED)],
+        [("review", "Record what the person decided", ["Marking an alert reviewed does not prove it harmless", "Corrections update matching history; they do not retrain Qwen3.5"], BLUE)],
+        [("deadline", "Track when a review is due", ["More urgent cases get shorter review windows", "An overdue case normally stays overdue; it does not change a device"], AMBER)],
+        [("gate", "Check approval, fresh evidence and the target", ["A supported response needs permission and a precise target", "Protect essential connections; reject stale or unsupported requests"], AMBER)],
+        [("execute", "Apply only the supported temporary action", ["Where enabled, block one approved peer for five minutes", "Use fixed operations; never run commands invented by the AI"], RED)],
+        [("undo", "Check the action, expiry and removal", ["Record what happened and check that a rule was removed", "Undo cannot restore a connection that was already interrupted"], GREEN)],
     ], [("read", "explain"), ("explain", "review"), ("review", "deadline"), ("deadline", "gate"), ("gate", "execute"), ("execute", "undo")], "The action path is conditional. Most reviews need no native operation."),
-    ("04-boundaries", "04 / BOUNDARIES", "Separate reasoning from authority", "Optional L2 is an agent feature; the public simulator is a separate system", [
-        [("l1", "L1 escalation in the terminal agent", ["Same local telemetry; independent L2 is explicitly enabled", "Default: advice only; no automatic model download"], BLUE)],
-        [("dossier", "Independent bounded L2 dossier", ["Rebuild trusted evidence; assign fact IDs; limit to 64 records", "Reject stale, cross-host, replayed or unsupported action evidence"], BLUE)],
-        [("l2", "Separate local investigation + challenge", ["Distinct local model; metadata must report more than 4B parameters", "Structured assessment, gaps, alternatives, recovery and critique"], PURPLE)],
-        [("policy", "L2 policy + typed executor gate", ["Model recommends human review or an exact supported peer block", "Automatic eligibility requires explicit local policy and scope"], AMBER)],
-        [("customer", "Customer installation", ["Local inference + local state", "No runtime CDN or analytics"], GREEN), ("demo", "Public simulator", ["Consented cloud AI exception", "No native device actuator"], BLUE)],
-        [("future", "Planned: controller + trusted edge", ["Authenticated remote telemetry and signed typed action requests", "Architecture target, not a shipped remote execution channel"], MUTED)],
+    ("04-boundaries", "04 / KEEP RESPONSIBILITIES SEPARATE", "An AI opinion is not permission", "The optional second opinion and public demonstration have separate limits", [
+        [("l1", "First review: Qwen3.5 or a replacement", ["The terminal agent can ask for a separate second opinion", "That extra review must be enabled; no automatic model download"], BLUE)],
+        [("dossier", "Rebuild a small set of trustworthy evidence", ["Use up to 64 relevant records and identify the supporting facts", "Reject old, replayed, unrelated or unsupported action evidence"], BLUE)],
+        [("l2", "A separate local model gives a second opinion", ["Use a distinct, larger model when this optional feature is enabled", "Challenge the first assessment; explain evidence gaps and alternatives"], PURPLE)],
+        [("policy", "Keep permission checks outside the AI", ["A recommendation still needs the policy and target checks", "Advice alone cannot authorize a change to a computer"], AMBER)],
+        [("customer", "Customer installation", ["AI and records stay local", "No tracking or remote assets"], GREEN), ("demo", "Public demonstration", ["Separate consented cloud demo", "Cannot change your device"], BLUE)],
+        [("future", "Planned: coordinate protected devices", ["A future controller would send authenticated, restricted requests", "This remote design is planned; it is not a shipped protection claim"], MUTED)],
     ], [("l1", "dossier"), ("dossier", "l2"), ("l2", "policy")], "Lower boxes describe deployment boundaries, not outbound data flow."),
 ]
 

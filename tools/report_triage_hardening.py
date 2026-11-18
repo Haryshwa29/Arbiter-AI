@@ -148,7 +148,8 @@ def main():
         lines.append(f"| {name} | `{x['manifest']['sample_sha256']}` |")
     lines += ["", "Primary supporting sources: [AIT-ADS](https://zenodo.org/records/8263181); [publishers' event-label archive](https://github.com/ait-aecid/alert-data-set/tree/ce927ddaeaa674f6909e1de676fa7dc293e393bd/alerts_csv); [Wazuh ClamAV rule semantics](https://documentation.wazuh.com/current/user-manual/capabilities/malware-detection/clam-av-logs-collection.html). Existing and new tests use isolated fixtures and databases; live customer installs were not upgraded.", ""]
     report = "\n".join(lines)
-    (ROOT/"docs/PUBLIC-DATA-EVAL-2026-11-17.md").write_text(report,encoding="utf-8")
+    doc_report = report.replace("\n\n", "\n\n**Start with [the findings in plain English](FINDINGS-IN-PLAIN-ENGLISH.md)** for the dataset, failures, improvements and planned next tests. This page keeps the detailed measurements and methods.\n\n", 1)
+    (ROOT/"docs/PUBLIC-DATA-EVAL-2026-11-17.md").write_text(doc_report,encoding="utf-8")
     (AFTER/"README.md").write_text(report.replace("(../evals/", "(../"),encoding="utf-8")
     for name,directory in (("Same-alert retest",AFTER/"retest"),("Disjoint-alert holdout",AFTER/"holdout")):
         with (directory/"results.csv").open("w",newline="",encoding="utf-8") as f:

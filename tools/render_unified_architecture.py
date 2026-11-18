@@ -14,7 +14,7 @@ base = Image.new('RGB', (W, H), '#0d1420')
 d = ImageDraw.Draw(base)
 svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="title desc">',
        '<title id="title">Arbiter AI: one event, from evidence to explained decision</title>',
-       '<desc id="desc">A connected vertical flowchart of collection, validation, queueing, context, guardrails, prefilter, optional local reasoning, verdicts, audit and operator review. Direct rule decisions bypass the model. No model output authorizes a device action.</desc>',
+       '<desc id="desc">Follow an event through reading reports, organizing evidence, saving a waiting line, connecting clues, safety rules, quick sorting, optional Qwen3.5 review, answer checks, saved decisions and human review. Qwen3.5 can be replaced with another compatible local AI model. The model cannot authorize a device action.</desc>',
        f'<rect width="{W}" height="{H}" fill="#0d1420"/>']
 
 
@@ -76,13 +76,13 @@ def decision(y,n,title,line):
 
 text(52,35,'ARBITER AI / SYSTEM ARCHITECTURE',21,BLUE,True)
 text(52,78,'From raw evidence to a clear next step',39,INK,True)
-text(52,135,'Follow the arrows. Rules take shortcuts. Local AI handles ambiguity.',24,MUTED)
+text(52,135,'Rules handle clear cases. Qwen3.5 reviews the unclear ones.',24,MUTED)
 
 for x,title,lines,color,fill in [
-    (50,'HOST SIGNALS',['Windows / Sysmon','Defender / osquery'],BLUE,'#162840'),
-    (310,'NETWORK + DEVICES',['Suricata / syslog','USB / local processes'],BLUE,'#162840'),
-    (570,'OPTIONAL SOURCES',['AWS readers / API','Configured permissions'],BLUE,'#162840'),
-    (830,'DEMO / REPLAY',['Isolated simulation','No native actuator'],PURPLE,'#29203d'),
+    (50,'COMPUTER REPORTS',['Windows / Sysmon','Defender / osquery'],BLUE,'#162840'),
+    (310,'NETWORK + DEVICES',['Wazuh / Suricata','Syslog / devices'],BLUE,'#162840'),
+    (570,'OPTIONAL INPUTS',['Enabled AWS readers','Approved sources only'],BLUE,'#162840'),
+    (830,'PRACTICE / REPLAY',['Separate test records','No device changes'],PURPLE,'#29203d'),
 ]:
     rect((x,205,240,112),fill,color)
     text(x+15,218,title,18,color,True,max_width=210)
@@ -90,46 +90,46 @@ for x,title,lines,color,fill in [
 
 # Source paths converge; demo uses an isolated instance of the same pipeline.
 for x in (170,430,690,950): edge([(x,317),(x,341),(560,341),(560,425)],BLUE)
-band(355,'1','COLLECT + PRESERVE','Turn source-specific records into recoverable evidence.',BLUE,'#192c46')
-node(435,'01','Read configured sources',['Collectors retain source checkpoints and original records.','Collection does not call the model or execute a response.'])
+band(355,'1','COLLECT + KEEP EVIDENCE','Gather reports without letting the AI change a device.',BLUE,'#192c46')
+node(435,'01','Read security reports',['Read logs and alerts from the sources you enable.','Keep originals so a person can check what happened.'])
 edge([(560,585),(560,635)])
-node(635,'02','Validate + normalize',['SecurityEvent v1.0: host, time, account, process, network.','Reject invalid fields; retain raw payload; 256 KiB limit.'])
+node(635,'02','Organize and check',['Put computer, user, time and network details in one format.','Reject broken records; keep the original evidence.'])
 edge([(560,785),(560,835)])
-node(835,'03','Queue durably in SQLite',['Deduplicate event IDs; recover interrupted work on restart.','10,000 pending/processing cap; expose pressure and retries.'])
+node(835,'03','Save events in a waiting line',['Save waiting events so a restart does not lose the queue.','Limit the queue; show when incoming work exceeds capacity.'])
 edge([(560,985),(560,1055)])
-band(1000,'2','ADD CONTEXT + DECIDE','One priority worker; every 100th claim preserves FIFO progress.',BLUE,'#192c46')
-node(1080,'04','Connect the evidence',['Correlate related records; add asset criticality and history.','Scope-check curated facts; adapt to the stable Event contract.'])
+band(1000,'2','CONNECT CLUES + DECIDE','Review urgent events first; let older waiting events progress too.',BLUE,'#192c46')
+node(1080,'04','Connect the clues',['Link nearby events; check the computer\'s role and history.','Use approved facts only when they fit this exact event.'])
 edge([(560,1230),(560,1280)])
-decision(1280,'05','Guardrail hit?','Dangerous behavior / trusted tool finding')
-edge([(560,1440),(560,1540)],BLUE,'No blocking rule',570,1460)
-decision(1540,'06','Clear rule decision?','Severity + criticality + reviewed history')
-edge([(560,1700),(560,1820)],PURPLE,'Unclear: ask local AI',574,1740)
-node(1820,'07','Reason locally with Ollama',['Use event context and scoped facts; propose a verdict.','Return rationale, evidence and bounded investigation advice.'],PURPLE,'#241c35')
+decision(1280,'05','Must someone review?','Safety rules check for known risky signals')
+edge([(560,1440),(560,1540)],BLUE,'No forced review',570,1460)
+decision(1540,'06','Can quick rules decide?','Clearly routine, clearly risky, or still unclear?')
+edge([(560,1700),(560,1820)],PURPLE,'Unclear: ask the AI',574,1740)
+node(1820,'07','Qwen3.5: replaceable local AI',['Review unclear alerts and explain a recommendation.','Swap in another compatible local AI model if needed.'],PURPLE,'#241c35')
 edge([(560,1970),(560,2050)],PURPLE,'Model answer',574,1990)
-node(2050,'08','Check the proposed answer',['Validate output; recheck guardrails and confidence.','Model failure or suppression confidence < 0.7 -> escalate.'],PURPLE,'#241c35')
+node(2050,'08','Check the AI recommendation',['Check the answer against rules and required evidence.','If the AI fails or is too unsure, ask a person to review.'],PURPLE,'#241c35')
 
 # Conditional early exits are explicit and labelled, rather than hidden in prose.
-edge([(910,1360),(1060,1360),(1060,2300),(810,2300),(810,2425)],RED,'Yes: raise|an alert',925,1390)
-edge([(910,1620),(1000,1620),(1000,2280),(865,2280),(865,2425)],RED,'Suspicious',925,1650)
-edge([(210,1620),(60,1620),(60,2300),(280,2300),(280,2425)],GREEN,'Known benign|with sufficient|support',72,1660)
-edge([(560,2200),(560,2290),(370,2290),(370,2425)],GREEN,'Supported benign',312,2230)
-edge([(560,2200),(560,2290),(700,2290),(700,2425)],RED,'Suspicious / uncertain',605,2230)
+edge([(910,1360),(1060,1360),(1060,2300),(810,2300),(810,2425)],RED,'Yes: ask|for review',925,1390)
+edge([(910,1620),(1000,1620),(1000,2280),(865,2280),(865,2425)],RED,'Needs review',925,1650)
+edge([(210,1620),(60,1620),(60,2300),(280,2300),(280,2425)],GREEN,'Routine, with|enough support',72,1660)
+edge([(560,2200),(560,2290),(370,2290),(370,2425)],GREEN,'Enough routine evidence',285,2230)
+edge([(560,2200),(560,2290),(700,2290),(700,2425)],RED,'Risky / still uncertain',605,2230)
 text(454,2350,'THE TWO OUTCOMES',18,MUTED,True)
 for x,title,lines,color,fill in [
-    (90,'SUPPRESS / OBSERVATION',['Write why it is considered benign.','Retain the event and decision history.'],GREEN,'#163027'),
-    (600,'ESCALATE / ALERT',['Show the reason and supporting evidence.','Uncertainty is explicit; no action implied.'],RED,'#351e28'),
+    (90,'KEEP AS AN OBSERVATION',['Quiet the alert with a written reason.','Keep the record for later checks.'],GREEN,'#163027'),
+    (600,'FLAG FOR REVIEW',['Show why it needs someone\'s attention.','A warning alone does not block anything.'],RED,'#351e28'),
 ]:
     rect((x,2425,430,130),fill,color)
     text(x+20,2442,title,23,color,True,max_width=390)
     for i,line in enumerate(lines): text(x+20,2484+i*28,line,19,MUTED,max_width=390)
 edge([(305,2555),(305,2590),(560,2590),(560,2630)],GREEN)
 edge([(815,2555),(815,2590),(560,2590),(560,2630)],RED)
-node(2630,'09','Persist an auditable verdict',['SQLite audit + memory history + JSONL decision trail.','Record tier and available backend/model provenance.'],BLUE)
+node(2630,'09','Save the decision and reason',['Record the decision, evidence, and rule or model used.','Keep a history so a person can check the reasoning.'],BLUE)
 edge([(560,2780),(560,2830)])
-node(2830,'10','Explain it to the operator',['Same-origin API / SSE -> dashboard: trigger, origin, gaps.','Recommended steps + review; device actions need approval.'],BLUE)
+node(2830,'10','Show a person the next step',['Explain what happened, where, and what needs checking.','Suggestions do not authorize changes to the computer.'],BLUE)
 text(52,3010,'TRUST BOUNDARY',18,GOLD,True)
-text(52,3042,'The model advises. Policy and explicit authority control execution.',26,INK,True)
-text(52,3090,'Guardrail exception: a narrowly matching standing fact can route to AI review, never directly suppress.',18,MUTED)
+text(52,3042,'The AI advises. Separate approval and safety checks control actions.',26,INK,True)
+text(52,3090,'Exception: an exact approved fact may allow AI review of a rule hit; it cannot dismiss the alert alone.',18,MUTED)
 svg.append('</svg>')
 OUT.mkdir(parents=True,exist_ok=True)
 (OUT/'arbiter-flow.svg').write_text('\n'.join(svg)+'\n',encoding='utf-8')
