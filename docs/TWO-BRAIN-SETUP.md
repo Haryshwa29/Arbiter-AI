@@ -37,15 +37,24 @@ Qwen verdict. A pending or failed review keeps the warning visible.
    they do not enter Gemma's queue. Quiet observations also do not enter it.
 2. Qwen reviews unclear events. Only its successful local-model escalations go
    to Gemma. A failed Qwen call remains flagged by policy and bypasses L2.
-3. Gemma receives bounded recorded facts plus Qwen's opinion as unverified
-   context. Benchmark attack/benign scoring labels are not sent to either model.
-4. Gemma considers ordinary and malicious explanations and proposes a final
-   `escalate` or `suppress` decision, with a written reason.
+3. An independent **L2 pre-filter and safety check** runs first. It retains known
+   risky evidence without inference. It also retains isolated protocol/login
+   warnings that lack the context needed to settle them, avoiding a paid repeat
+   of the same evidence. Exact, human-corrected process history can resolve a
+   routine case: at least five explicit corrections, no unresolved risk, and the
+   same process hash, command, user, parent and environment. Broad host history
+   and the model's own previous opinions cannot authorize this shortcut.
+4. When a model review is useful, Gemma receives bounded original facts **without
+   Qwen's rationale or conclusion text**. Benchmark scoring labels are excluded.
+   It considers ordinary and malicious explanations and proposes one final
+   `escalate` or `suppress` decision, with a written reason. The older duplicate
+   `outlook` judgment is derived for display rather than requested independently.
 5. A separate Gemma call challenges that decision. This is a second pass by the
    same model, not an independent third model.
-6. Suppression needs an accepted challenge, exact copied facts, a routine-looking
-   assessment and confidence of at least 0.9. Uncertainty, low confidence,
-   malformed answers or errors retain the warning. Model confidence is not a
+6. A **shared final guardrail** checks L1 and L2 decisions, including shortcuts.
+   Model suppression needs an accepted challenge, exact copied facts and
+   confidence of at least 0.9. Uncertainty, low confidence,
+   malformed answers, known-risk vetoes or errors retain the warning. Model confidence is not a
    measured probability of correctness, and exact citations do not certify prose.
 7. Every completed decision is tied to its exact event. A newer event cannot
    inherit an older event's suppression. Rejecting L2's case retains the alert.

@@ -7,14 +7,14 @@ from PIL import Image, ImageDraw
 from render_architecture import font
 
 OUT = Path(__file__).resolve().parents[1] / 'docs' / 'architecture'
-W, H = 1120, 3620
+W, H = 1120, 4150
 INK, MUTED = '#eef3fa', '#b8c5d8'
 BLUE, PURPLE, RED, GREEN, GOLD = '#82b7ff', '#c4a0ff', '#ff939b', '#7cddb0', '#f2c777'
 base = Image.new('RGB', (W, H), '#0d1420')
 d = ImageDraw.Draw(base)
 svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="title desc">',
        '<title id="title">Arbiter AI: one event, from evidence to explained decision</title>',
-       '<desc id="desc">Follow an event through collection, evidence checks, rules and Qwen3.5:4b L1. Only Qwen escalations reach Gemma4:12b L2, which confirms or suppresses the alert after a separate challenge. Uncertain or failed reviews retain the alert; mandatory safety warnings bypass L2. Both reviews remain auditable. Either model can be replaced by a compatible local model. Classification does not authorize device actions.</desc>',
+       '<desc id="desc">Collection and L1 rules lead to Qwen3.5:4b. Only Qwen escalations enter separate L2 guardrails and a pre-filter. Gemma4:12b receives original facts without Qwen opinion text when model judgment is useful. Shared final guardrails protect both stages and shortcuts. Known risk or missing context retains review; supported ordinary activity can be quieted. Both models are replaceable compatible local models. Classification grants no device-action rights.</desc>',
        f'<rect width="{W}" height="{H}" fill="#0d1420"/>']
 
 
@@ -128,20 +128,26 @@ node(2630,'09','Save the decision and reason',['Record the decision, evidence, a
 edge([(560,2780),(560,2830)])
 node(2830,'10','Show a person the next step',['Explain what happened, where, and what needs checking.','Keep alerts visible while the second brain investigates.'],BLUE)
 edge([(560,2980),(560,3030)],PURPLE,'Only Qwen-flagged alerts',574,2990)
-node(3030,'11','L2 final review: Gemma4:12b',['Assess the recorded facts, then challenge that assessment.','Keep or quiet Qwen\'s alert, with a written reason.'],PURPLE,'#241c35')
-edge([(560,3180),(560,3230),(305,3230),(305,3290)],GREEN,'Supported routine explanation',95,3250)
-edge([(560,3180),(560,3230),(815,3230),(815,3290)],RED,'Risky, uncertain or failed',680,3250)
+node(3030,'11','L2 rules: settle or route',['Protect risky evidence; use exact human feedback.','Skip repeat reviews when needed context is missing.'],BLUE)
+edge([(560,3180),(560,3240)],PURPLE,'Needs model judgment',574,3196)
+node(3240,'12','Independent Gemma4:12b review',["Read original facts without Qwen's opinion text.",'Propose a decision, then challenge it in another pass.'],PURPLE,'#241c35')
+edge([(560,3390),(560,3470)],PURPLE)
+edge([(910,3105),(1060,3105),(1060,3440),(865,3440),(865,3470)],BLUE,'L2 rules settled it',920,3340)
+edge([(210,2905),(60,2905),(60,3440),(255,3440),(255,3470)],BLUE,'Other L1 decisions|same final check',70,3402)
+node(3470,'13','Shared final checks: L1 + L2',['Known risk can veto quieting, whichever stage proposed it.','Keep the original decisions, reasons and deciding layer.'],GOLD,'#302719')
+edge([(560,3620),(560,3670),(305,3670),(305,3740)],GREEN,'Supported ordinary activity',95,3695)
+edge([(560,3620),(560,3670),(815,3670),(815,3740)],RED,'Risky, uncertain or failed',680,3695)
 for x,title,lines,color,fill in [
-    (90,'SUPPRESS L1 ALERT',['Keep both reviews and the reason.','No device action.'],GREEN,'#163027'),
-    (600,'KEEP L1 ALERT',['Keep the warning visible.','A person investigates.'],RED,'#351e28'),
+    (90,'SUPPRESS ALERT',['Keep the reason and both reviews.','No device action.'],GREEN,'#163027'),
+    (600,'KEEP ALERT',['Keep the warning visible.','A person investigates.'],RED,'#351e28'),
 ]:
-    rect((x,3290,430,120),fill,color)
-    text(x+20,3305,title,23,color,True,max_width=390)
-    for i,line in enumerate(lines):text(x+20,3345+i*28,line,19,MUTED,max_width=390)
-text(52,3450,'WHO CAN AUTHORIZE A DEVICE CHANGE?',18,GOLD,True)
-text(52,3482,'Alert decisions do not authorize commands, blocks or other actions.',26,INK,True)
-text(52,3530,'Either model can be replaced by a compatible local model. Both reviews remain auditable.',18,MUTED)
-text(52,3562,'Mandatory safety-rule warnings stay flagged; they do not enter Gemma directly.',18,MUTED)
+    rect((x,3740,430,120),fill,color)
+    text(x+20,3755,title,23,color,True,max_width=390)
+    for i,line in enumerate(lines):text(x+20,3795+i*28,line,19,MUTED,max_width=390)
+text(52,3930,'WHO CAN AUTHORIZE A DEVICE CHANGE?',18,GOLD,True)
+text(52,3962,'Alert decisions do not authorize commands, blocks or other actions.',26,INK,True)
+text(52,4010,'Either model can be replaced by a compatible local model. Both reviews remain auditable.',18,MUTED)
+text(52,4042,'Only Qwen escalations enter L2. Rules can avoid an unnecessary Gemma call.',18,MUTED)
 svg.append('</svg>')
 OUT.mkdir(parents=True,exist_ok=True)
 (OUT/'arbiter-flow.svg').write_text('\n'.join(svg)+'\n',encoding='utf-8')

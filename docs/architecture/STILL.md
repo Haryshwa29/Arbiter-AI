@@ -5,8 +5,8 @@ These static diagrams contain the same labels as the
 understand the system. Follow the linked explanations for the full text equivalent.
 
 Each box explains its job in everyday language. **Qwen3.5:4b is L1;
-Gemma4:12b is L2 and receives only Qwen's escalations.** Gemma keeps or suppresses
-that alert with a written reason. Either model can be replaced with a compatible
+Gemma4:12b is the L2 model. Only Qwen's escalations enter the separate L2 rules;
+Gemma is called when useful.** Both stages use a shared final guardrail. Either model can be replaced with a compatible
 local model. Ollama is the current
 local runner, not the name of the model. See the [model and runner explanation](../ARCHITECTURE-WALKTHROUGH.md#qwen35-replacement-models-and-ollama).
 

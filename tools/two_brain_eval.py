@@ -61,15 +61,14 @@ def main():
         'secondary_verified_details':details,'git_parent':subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
         'code_sha256':code,'runner_sha256':digest(__file__),'python':platform.python_version(),
         'protocol':{'mode':'historical classification replay; Gemma may confirm or suppress successful Qwen escalations; no device actions',
-            'route':'only successful L1 local-model escalations; rule and failure-policy alerts bypass Gemma and remain visible',
+            'route':'successful L1 escalations enter independent L2 prefilter; known risk or insufficient isolated protocol/auth context retains without Gemma; exact human feedback may quiet; other cases go to Gemma',
             'first_stage':'fresh independent memory per alert; unchanged Qwen prompt',
-            'second_stage':'Gemma assessment plus separate challenge call; exact fact assertions and citations validated',
+            'second_stage':'L2 prefilter, independent Gemma assessment without L1 prose when needed, separate challenge, and shared final guardrail used by L1 and L2',
             'staging':'all Qwen decisions first, then all eligible Gemma reviews; not a live queue-delay measurement',
             'review_budget_s':args.review_seconds,'gemma_options':{'think':False,'num_ctx':8192,'num_predict':1536,'temperature':.1},
-            'suppression_policy':'Gemma suppress decision plus routine_looking outlook, confidence >=0.9 and accepted challenge; else retain alert',
+            'suppression_policy':'one Gemma classification, confidence >=0.9, accepted challenge and shared risk veto; compatibility outlook is derived, not a second independent model decision',
             'output_format':'JSON schemas for assessment and critic, then independent Python evidence/decision validation',
-            'user_mode_change':'advice-only pilot stopped after 5 of 96 reviews; no pilot reviews count in this new run',
-            'preflight':'one detailed probe with native thinking enabled timed out at 90s; final advice options were chosen before scored execution',
+            'development':'known old cases exposed anchoring, duplicate-decision inconsistency, missing DNS/port fields and dangerous quieting of root/DNS attack records; these cases were used for development and excluded from the new sample',
             'grounding_limit':'exact assertions/citation IDs are checked; semantic truth of all prose is not certified'},
         'started_utc':datetime.now(timezone.utc).isoformat()}
     meta_path=out/'run.json'
@@ -93,6 +92,7 @@ def main():
             finally:elapsed=time.perf_counter()-started;memory.close()
             row={k:v for k,v in item.items() if k!='event'}
             row.update(json.loads(v.to_json()),latency_s=elapsed,
+                final_guardrail=getattr(v,'final_guardrail',{}),
                 policy_fallback=v.rationale.startswith('LLM tier failed ('),backend='ollama',model=args.primary)
             primary.append(row);stream.write(json.dumps(row,allow_nan=False)+'\n');stream.flush()
             print(f"Qwen {i}/{len(sample)} {item['sample_id']} -> {row['decision']} [{row['tier']}] {elapsed:.2f}s",flush=True)
@@ -115,7 +115,8 @@ def main():
             row.update(latency_s=time.perf_counter()-started,usage=list(second.backend.usage),final_alert_decision=row['brief']['alert_decision'] if row['brief'] else 'escalate',action_executed=False)
             reviews.append(row);stream.write(json.dumps(row,allow_nan=False)+'\n');stream.flush()
             status=row['brief']['review_status']+':'+row['brief']['outlook'] if row['brief'] else 'ERROR:'+row['error']['type']
-            print(f"Gemma {i}/{len(selected)} {item['sample_id']} {status} {row['latency_s']:.2f}s; final={row['final_alert_decision']}",flush=True)
+            actor='Gemma' if row['usage'] else 'L2 rules'
+            print(f"{actor} {i}/{len(selected)} {item['sample_id']} {status} {row['latency_s']:.2f}s; final={row['final_alert_decision']}",flush=True)
             save(out/'progress.json',{'primary_done':len(primary),'primary_total':len(sample),'secondary_done':len(reviews),'secondary_total':len(selected),
                 'secondary_errors':sum(r['error'] is not None for r in reviews)})
     by_id={r['sample_id']:r for r in reviews}
@@ -124,7 +125,7 @@ def main():
         review=by_id.get(first['sample_id'])
         final.append({**first,'decision':review['final_alert_decision'] if review else first['decision'],
             'first_stage_decision':first['decision'],'second_stage':review,
-            'decision_source':'gemma' if review and review['brief'] else 'gemma-failure-policy' if review else first['tier']})
+            'decision_source':('l2-prefilter' if review['brief']['review_status']=='prefilter' else 'gemma') if review and review['brief'] else 'l2-failure-policy' if review else 'shared-final-guardrail' if first.get('final_guardrail',{}).get('veto') else first['tier']})
     with (out/'final.jsonl').open('w',encoding='utf-8') as stream:
         for row in final:stream.write(json.dumps(row,allow_nan=False)+'\n')
     summary={'first_stage':metrics(primary),'visible_final_alerts':metrics(final),
@@ -133,11 +134,17 @@ def main():
         'secondary_eligible':len(selected),'secondary_completed':len(reviews),
         'secondary_validated':sum(r['brief'] is not None for r in reviews),
         'secondary_errors':sum(r['error'] is not None for r in reviews),
+        'l2_prefilter_routes':dict(Counter(r['brief']['prefilter']['route'] if r['brief'] else 'error' for r in reviews)),
+        'gemma_reviews':sum(bool(r['usage']) for r in reviews),
+        'l2_prefilter_decisions':sum(r['brief'] is not None and r['brief']['review_status']=='prefilter' for r in reviews),
+        'first_stage_final_guardrail_vetoes':dict(Counter(r['final_guardrail']['veto'] for r in primary if r['final_guardrail'].get('veto'))),
         'secondary_status':dict(Counter(r['brief']['review_status'] if r['brief'] else 'unavailable' for r in reviews)),
         'advisory_outlooks':dict(Counter(r['brief']['outlook'] if r['brief'] else 'unavailable' for r in reviews)),
         'advisory_by_label_class':{name:dict(Counter(r['brief']['outlook'] if r['brief'] else 'unavailable' for r in reviews if r['expected_attack']==flag))
                                   for name,flag in [('attack_annotation',True),('no_attack_annotation',False)]},
-        'timing':{'qwen_engine':timing([r['latency_s'] for r in primary]),'gemma_review':timing([r['latency_s'] for r in reviews])},
+        'timing':{'qwen_engine':timing([r['latency_s'] for r in primary]),
+            'l2_stage':timing([r['latency_s'] for r in reviews]),
+            'gemma_review':timing([r['latency_s'] for r in reviews if r['usage']])},
         'actions_executed':0,'alert_decisions_changed_by_gemma':sum(r['final_alert_decision']=='suppress' for r in reviews),
         'gemma_decisions_by_label_class':{name:dict(Counter(r['final_alert_decision'] for r in reviews if r['expected_attack']==flag))
             for name,flag in [('attack_annotation',True),('no_attack_annotation',False)]},

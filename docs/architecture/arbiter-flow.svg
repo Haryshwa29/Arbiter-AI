@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="3620" viewBox="0 0 1120 3620" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="4150" viewBox="0 0 1120 4150" role="img" aria-labelledby="title desc">
 <title id="title">Arbiter AI: one event, from evidence to explained decision</title>
-<desc id="desc">Follow an event through collection, evidence checks, rules and Qwen3.5:4b L1. Only Qwen escalations reach Gemma4:12b L2, which confirms or suppresses the alert after a separate challenge. Uncertain or failed reviews retain the alert; mandatory safety warnings bypass L2. Both reviews remain auditable. Either model can be replaced by a compatible local model. Classification does not authorize device actions.</desc>
-<rect width="1120" height="3620" fill="#0d1420"/>
+<desc id="desc">Collection and L1 rules lead to Qwen3.5:4b. Only Qwen escalations enter separate L2 guardrails and a pre-filter. Gemma4:12b receives original facts without Qwen opinion text when model judgment is useful. Shared final guardrails protect both stages and shortcuts. Known risk or missing context retains review; supported ordinary activity can be quieted. Both models are replaceable compatible local models. Classification grants no device-action rights.</desc>
+<rect width="1120" height="4150" fill="#0d1420"/>
 <text x="52" y="56" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="700">ARBITER AI / SYSTEM ARCHITECTURE</text>
 <text x="52" y="117" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="39" font-weight="700">From raw evidence to a clear next step</text>
 <text x="52" y="159" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="24" font-weight="400">Qwen is L1. Only its escalations go to Gemma L2 for a final review.</text>
@@ -156,30 +156,58 @@
 <polygon points="560,3030 554.0,3019.0 566.0,3019.0" fill="#c4a0ff"/>
 <rect x="568" y="2990" width="230.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
 <text x="574" y="3008" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Only Qwen-flagged alerts</text>
-<rect x="210" y="3030" width="700" height="150" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
-<rect x="228" y="3048" width="38" height="34" rx="9" fill="#c4a0ff" stroke="#c4a0ff" stroke-width="2"/>
+<rect x="210" y="3030" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<rect x="228" y="3048" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
 <text x="238" y="3069" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">11</text>
-<text x="280" y="3074" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">L2 final review: Gemma4:12b</text>
-<text x="236" y="3117" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Assess the recorded facts, then challenge that assessment.</text>
-<text x="236" y="3148" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Keep or quiet Qwen&#x27;s alert, with a written reason.</text>
-<polyline points="560,3180 560,3230 305,3230 305,3290" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="305,3290 299.0,3279.0 311.0,3279.0" fill="#7cddb0"/>
-<rect x="89" y="3250" width="274.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="95" y="3268" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Supported routine explanation</text>
-<polyline points="560,3180 560,3230 815,3230 815,3290" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="815,3290 809.0,3279.0 821.0,3279.0" fill="#ff939b"/>
-<rect x="674" y="3250" width="223.984375" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="680" y="3268" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Risky, uncertain or failed</text>
-<rect x="90" y="3290" width="430" height="120" rx="16" fill="#163027" stroke="#7cddb0" stroke-width="2"/>
-<text x="110" y="3328" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">SUPPRESS L1 ALERT</text>
-<text x="110" y="3364" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Keep both reviews and the reason.</text>
-<text x="110" y="3392" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">No device action.</text>
-<rect x="600" y="3290" width="430" height="120" rx="16" fill="#351e28" stroke="#ff939b" stroke-width="2"/>
-<text x="620" y="3328" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">KEEP L1 ALERT</text>
-<text x="620" y="3364" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Keep the warning visible.</text>
-<text x="620" y="3392" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">A person investigates.</text>
-<text x="52" y="3468" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">WHO CAN AUTHORIZE A DEVICE CHANGE?</text>
-<text x="52" y="3508" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Alert decisions do not authorize commands, blocks or other actions.</text>
-<text x="52" y="3548" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Either model can be replaced by a compatible local model. Both reviews remain auditable.</text>
-<text x="52" y="3580" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Mandatory safety-rule warnings stay flagged; they do not enter Gemma directly.</text>
+<text x="280" y="3074" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">L2 rules: settle or route</text>
+<text x="236" y="3117" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Protect risky evidence; use exact human feedback.</text>
+<text x="236" y="3148" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Skip repeat reviews when needed context is missing.</text>
+<polyline points="560,3180 560,3240" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,3240 554.0,3229.0 566.0,3229.0" fill="#c4a0ff"/>
+<rect x="568" y="3196" width="210.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="574" y="3214" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Needs model judgment</text>
+<rect x="210" y="3240" width="700" height="150" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
+<rect x="228" y="3258" width="38" height="34" rx="9" fill="#c4a0ff" stroke="#c4a0ff" stroke-width="2"/>
+<text x="238" y="3279" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">12</text>
+<text x="280" y="3284" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Independent Gemma4:12b review</text>
+<text x="236" y="3327" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Read original facts without Qwen&#x27;s opinion text.</text>
+<text x="236" y="3358" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Propose a decision, then challenge it in another pass.</text>
+<polyline points="560,3390 560,3470" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="560,3470 554.0,3459.0 566.0,3459.0" fill="#c4a0ff"/>
+<polyline points="910,3105 1060,3105 1060,3440 865,3440 865,3470" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="865,3470 859.0,3459.0 871.0,3459.0" fill="#82b7ff"/>
+<rect x="914" y="3340" width="157.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="920" y="3358" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">L2 rules settled it</text>
+<polyline points="210,2905 60,2905 60,3440 255,3440 255,3470" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="255,3470 249.0,3459.0 261.0,3459.0" fill="#82b7ff"/>
+<rect x="64" y="3402" width="168.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="70" y="3420" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Other L1 decisions</text>
+<rect x="64" y="3426" width="153.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="70" y="3444" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">same final check</text>
+<rect x="210" y="3470" width="700" height="150" rx="16" fill="#302719" stroke="#f2c777" stroke-width="2"/>
+<rect x="228" y="3488" width="38" height="34" rx="9" fill="#f2c777" stroke="#f2c777" stroke-width="2"/>
+<text x="238" y="3509" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">13</text>
+<text x="280" y="3514" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Shared final checks: L1 + L2</text>
+<text x="236" y="3557" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Known risk can veto quieting, whichever stage proposed it.</text>
+<text x="236" y="3588" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Keep the original decisions, reasons and deciding layer.</text>
+<polyline points="560,3620 560,3670 305,3670 305,3740" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="305,3740 299.0,3729.0 311.0,3729.0" fill="#7cddb0"/>
+<rect x="89" y="3695" width="246.015625" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="95" y="3713" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Supported ordinary activity</text>
+<polyline points="560,3620 560,3670 815,3670 815,3740" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="815,3740 809.0,3729.0 821.0,3729.0" fill="#ff939b"/>
+<rect x="674" y="3695" width="223.984375" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
+<text x="680" y="3713" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Risky, uncertain or failed</text>
+<rect x="90" y="3740" width="430" height="120" rx="16" fill="#163027" stroke="#7cddb0" stroke-width="2"/>
+<text x="110" y="3778" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">SUPPRESS ALERT</text>
+<text x="110" y="3814" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Keep the reason and both reviews.</text>
+<text x="110" y="3842" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">No device action.</text>
+<rect x="600" y="3740" width="430" height="120" rx="16" fill="#351e28" stroke="#ff939b" stroke-width="2"/>
+<text x="620" y="3778" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">KEEP ALERT</text>
+<text x="620" y="3814" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Keep the warning visible.</text>
+<text x="620" y="3842" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">A person investigates.</text>
+<text x="52" y="3948" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">WHO CAN AUTHORIZE A DEVICE CHANGE?</text>
+<text x="52" y="3988" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Alert decisions do not authorize commands, blocks or other actions.</text>
+<text x="52" y="4028" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Either model can be replaced by a compatible local model. Both reviews remain auditable.</text>
+<text x="52" y="4060" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Only Qwen escalations enter L2. Rules can avoid an unnecessary Gemma call.</text>
 </svg>

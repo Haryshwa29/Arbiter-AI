@@ -3,6 +3,20 @@ import ipaddress
 import re
 
 
+def network_tuple(text):
+    """Read the endpoint tuple from an older IDS text record without guessing roles."""
+    match=re.search(r'\{(TCP|UDP)\}\s+\[?([\da-fA-F:.]+)\]?:(\d{1,5})\s+->\s+\[?([\da-fA-F:.]+)\]?:(\d{1,5})\s*$',text)
+    if not match:
+        return {}
+    protocol,src,sp,dst,dp=match.groups()
+    try:
+        if max(int(sp),int(dp))>65535: return {}
+        return {'src_ip':str(ipaddress.ip_address(src)),'src_port':int(sp),
+                'dst_ip':str(ipaddress.ip_address(dst)),'dst_port':int(dp),'protocol':protocol}
+    except ValueError:
+        return {}
+
+
 def observations(raw: dict, groups: list[str]) -> dict:
     data = raw.get("data", {})
     rule = raw.get("rule", {})
@@ -14,6 +28,16 @@ def observations(raw: dict, groups: list[str]) -> dict:
     group_set = set(groups)
     decoder_name = decoder.get("name", "")
     text = str(raw.get("full_log", ""))
+    endpoints=network_tuple(text)
+    if endpoints:
+        result['network_tuple']=endpoints
+    dns=data.get('dns',{})
+    if isinstance(dns,dict) and isinstance(dns.get('query'),list):
+        queries=dns['query']
+        if len(queries)==1 and isinstance(queries[0],dict): dns=queries[0]
+        elif len(queries)>1: result['multiple_dns_questions']=True
+    if isinstance(dns,dict) and isinstance(dns.get('rrname'),str) and 0<len(dns['rrname'])<=2048:
+        result['dns_query']=dns['rrname']
     # These are source-generated attack/recon rule groups, not URI keywords
     # or dataset identities. A 404 alone in an ordinary access log is not an
     # attack verdict. A detector-classified application alert needs review.

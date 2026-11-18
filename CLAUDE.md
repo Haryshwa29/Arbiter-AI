@@ -4,6 +4,26 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 17 independent L2 correction: the earlier final-review route did not
+wire the requested separate L2 noise pre-filter and complete shared final exit.
+`l2_prefilter.py` now resolves known risk and exact human-corrected process
+context, or retains isolated protocol/login observations without another model
+call when useful context is absent. Gemma sees original facts without Qwen prose
+and returns one classification; compatibility outlook is derived. Native Wazuh
+DNS question arrays and older IDS endpoint tuples are preserved. L2 evidence
+rules protect sudo/root session closures, encoded-looking DNS payloads, explicit
+source attack classes and conflicting/incompletely represented evidence.
+`guardrails.final_guardrail_check` protects L1 and L2 model/rule exits, preserving
+the existing narrow L1 standing-fact exception. The terminal stores both stages;
+no new runtime dependency or actuation rights. A fresh 192-record public sample
+excludes all 416 earlier selected raw records; results are separately frozen in
+`evals/2026-11-17-l2-independent`. See `docs/L2-INDEPENDENT-REVIEW.md`.
+Windows denial responses now consume bounded rejected POST bodies before close;
+this prevents connection resets without relaxing auth/CSRF. Source validation:
+514 tests passed, 2 skipped, 25 subtests; the mock CLI sample passed. Installed
+dashboard/portable builds have not been upgraded. Older results below remain
+historical, not measurements of the corrected route.
+
 November 17 L1/L2 follow-up: `--l2-final-review` uses Qwen3.5:4b as L1 and
 Gemma4:12b as L2. Only successful local-model escalations enter L2; quiet,
 mandatory-rule and model-failure policy decisions bypass it. L2 can confirm or

@@ -355,6 +355,20 @@ def make_handler(ctx: Ctx):
             self.end_headers()
             self.wfile.write(body)
 
+        def _reject_post(self, code, payload):
+            # Unread request bytes can reset a Windows connection before its denial arrives.
+            previous=self.connection.gettimeout()
+            try:
+                n=int(self.headers.get('Content-Length',0) or 0)
+                if 0<n<=8*1024*1024 and not self.headers.get('Transfer-Encoding'):
+                    self.connection.settimeout(1)
+                    self.rfile.read(n)
+            except (ValueError,OSError):
+                pass
+            finally:
+                self.connection.settimeout(previous)
+            return self._send_json(code,payload)
+
         def _read_json(self) -> dict | None:
             try:
                 n = int(self.headers.get("Content-Length", 0) or 0)
@@ -489,9 +503,9 @@ def make_handler(ctx: Ctx):
         def do_POST(self) -> None:
             path = urlparse(self.path).path
             if path != "/api/login" and not self._session_user():
-                return self._send_json(401, {"error": "unauthenticated"})
+                return self._reject_post(401, {"error": "unauthenticated"})
             if not self._check_csrf():
-                return self._send_json(403, {"error": "csrf token missing or invalid"})
+                return self._reject_post(403, {"error": "csrf token missing or invalid"})
             try:
                 size = int(self.headers.get("Content-Length", 0) or 0)
             except ValueError:

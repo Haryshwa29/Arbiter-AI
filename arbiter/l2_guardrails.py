@@ -1,5 +1,39 @@
 """L2 output grounding and action guardrails, independent of L1 verdict parsing."""
 import math
+import re
+
+
+def review_floor(event):
+    """L2 evidence rules also protect decisions made without the second model."""
+    from .guardrails import GuardrailHit
+    from .tool_policy import verified_finding, source_observations
+    if not verified_finding(event,'wazuh'):
+        return None
+    from .ingestion.wazuh_evidence import network_tuple
+    endpoints=network_tuple(event.message)
+    if any(event.fields.get(k) not in (None,'',v) for k,v in endpoints.items()):
+        return GuardrailHit('L2_ENDPOINT_CONFLICT','l2_endpoint_conflict',
+            'structured and original-text network endpoints disagree; do not quiet conflicting evidence')
+    if re.search(r'\bsudo:\s+pam_unix\(sudo:session\):\s+session (?:opened|closed) for user root\b',event.message,re.I):
+        return GuardrailHit('L2_PRIVILEGED_SESSION','l2_privileged_session',
+            'a recorded sudo session for root requires review, including its closure; a normal-looking closing log does not explain the privileged action')
+    observed=source_observations(event,'wazuh')
+    category=observed.get('suricata',{}).get('category','').casefold()
+    if category in {'web application attack','attempted administrator privilege gain',
+                     'attempted user privilege gain','a network trojan was detected'}:
+        return GuardrailHit('L2_SOURCE_ATTACK_CLASS','l2_source_attack_class',
+            'the source detector explicitly classifies an attack behavior; keep it for investigation rather than treating a failed request as harmless')
+    if observed.get('multiple_dns_questions') is True:
+        return GuardrailHit('L2_MULTIPLE_DNS_QUESTIONS','l2_multiple_dns_questions',
+            'multiple DNS questions require contextual review; do not quiet an incompletely represented query set')
+    query=observed.get('dns_query','')
+    if (isinstance(query,str) and len(query)>=120
+            and any(len(part)>=48 for part in query.split('.'))
+            and (re.search(r'\.(?:xlsx?|docx?|csv|pdf|zip|txt|db)(?:\.|-)',query,re.I)
+                 or sum(len(part)>=48 and len(set(part))>=16 for part in query.split('.'))>=2)):
+        return GuardrailHit('L2_DNS_PAYLOAD','l2_dns_payload',
+            'the recorded DNS question contains long encoded-looking data or a long payload with a file-name marker; investigate possible data transfer')
+    return None
 
 TEXT = ('assessment','evidence','gaps','recommendation','alternatives','recovery','urgency')
 

@@ -178,6 +178,7 @@ def wazuh(data: dict, source="wazuh") -> SecurityEvent:
     observed = observations(data, groups)
     embedded = observed.get("suricata", {})
     mail = observed.get("mail_auth", {})
+    endpoints=observed.get('network_tuple',{})
     severity = level * 10 / 15
     if embedded:
         kind, category = "network_alert", "network"
@@ -191,7 +192,7 @@ def wazuh(data: dict, source="wazuh") -> SecurityEvent:
         message=message, username=str(detail.get("dstuser", detail.get("srcuser", mail.get("username", "")))),
         src_ip=str(detail.get("srcip", detail.get("src_ip", mail.get("src_ip", "")))),
         dst_ip=str(detail.get("dstip", detail.get("dest_ip", mail.get("dst_ip", "")))),
-        src_port=detail.get("srcport", detail.get("src_port")), dst_port=detail.get("dstport", detail.get("dest_port")),
+        src_port=detail.get("srcport", detail.get("src_port",endpoints.get('src_port'))), dst_port=detail.get("dstport", detail.get("dest_port",endpoints.get('dst_port'))),
         protocol=str(detail.get("proto", detail.get("protocol", ""))), file_path=str(fim.get("path", "")),
         file_hash=str(fim.get("sha256_after", "")), action=str(fim.get("event", "")),
         rule_id=str(rule["id"]), rule_name=description, tags=groups,

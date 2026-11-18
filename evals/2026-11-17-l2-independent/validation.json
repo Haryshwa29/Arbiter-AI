@@ -1,0 +1,25 @@
+{
+  "pytest": {
+    "passed": 514,
+    "skipped": 2,
+    "subtests_passed": 25,
+    "duration_s": 55.39
+  },
+  "mock_cli_smoke": {
+    "events": 22,
+    "escalated": 14,
+    "suppressed": 8,
+    "actions": 0
+  },
+  "source_agent_setup": {
+    "backend": "ollama",
+    "model": "qwen3.5:4b",
+    "l2_enabled": true,
+    "l2_model": "gemma4:12b",
+    "l2_mode": "final-alert-review",
+    "containment_enabled": false
+  },
+  "installed_build_replaced": false,
+  "live_collectors_started_for_eval": false,
+  "note": "Earlier local HTTP tests exposed unread rejected POST bodies causing Windows resets. Bounded drain fixed the shared response path; denial status/authentication/CSRF rules are unchanged. Five focused denial tests and the full suite pass."
+}

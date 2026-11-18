@@ -1,5 +1,10 @@
 # Qwen L1 and Gemma L2: public attack-data results
 
+**Architecture correction:** this historical run did not include the requested
+separate L2 noise-oriented pre-filter and complete shared final exit. The
+[independent L2 follow-up](L2-INDEPENDENT-REVIEW.md) documents that correction and
+a different frozen sample. The original measurements below remain unchanged.
+
 **Qwen decides what to escalate. Gemma receives only those escalations and may keep the warning or suppress it with a written reason. No device action was authorized or executed.**
 
 **Measured result:** after both stages, 74/74 attack-annotated records remained flagged (100.0%), and 48/128 records without attack annotations were quieted (37.5%). Gemma removed 0 Qwen warnings, including 0 attack-annotated records.

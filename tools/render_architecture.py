@@ -45,13 +45,14 @@ CHAPTERS = [
         [("undo", "Check the action, expiry and removal", ["Record what happened and check that a rule was removed", "Undo cannot restore a connection that was already interrupted"], GREEN)],
     ], [("read", "explain"), ("explain", "review"), ("review", "deadline"), ("deadline", "gate"), ("gate", "execute"), ("execute", "undo")], "The action path is conditional. Most reviews need no native operation."),
     ("04-boundaries", "04 / KEEP RESPONSIBILITIES SEPARATE", "An AI opinion is not permission", "The optional second opinion and public demonstration have separate limits", [
-        [("l1", "L1 first reviewer: Qwen3.5:4b", ["Review unclear events; escalate those needing a deeper review", "Only Qwen's escalations enter Gemma's queue"], BLUE)],
-        [("dossier", "Give the second brain the recorded facts", ["Qwen's earlier opinion is context, not independent proof", "Historical records stay historical and grant no action rights"], BLUE)],
+        [("l1", "L1 first reviewer: Qwen3.5:4b", ["Review unclear events; escalate those needing a deeper review", "Only Qwen's escalations enter L2; rules may settle them first"], BLUE)],
+        [("dossier", "Give L2 the recorded facts", ["The model assessment does not receive Qwen's opinion text", "Historical records stay historical and grant no action rights"], BLUE)],
+        [("l2rules", "Separate L2 guardrails and pre-filter", ["Protect risky evidence; use exact human-corrected history", "Retain context-poor protocol/login alerts without a model repeat"], BLUE)],
         [("l2", "L2 final reviewer: Gemma4:12b", ["Assess the evidence, then challenge that decision in a second pass", "Keep or suppress Qwen's alert with a written explanation"], PURPLE)],
-        [("policy", "Check the decision; preserve both reviews", ["Suppression needs checked facts, confidence and an accepted challenge", "Uncertainty or failure retains the alert; no device action rights"], AMBER)],
+        [("policy", "Shared final guardrail: L1 and L2", ["Check every final route, including pre-filter shortcuts", "A known risk veto retains the alert; preserve the reasons and layer"], AMBER)],
         [("customer", "Customer installation", ["AI and records stay local", "No tracking or remote assets"], GREEN), ("demo", "Public demonstration", ["Separate consented cloud demo", "Cannot change your device"], BLUE)],
         [("future", "Planned: coordinate protected devices", ["A future controller would send authenticated, restricted requests", "This remote design is planned; it is not a shipped protection claim"], MUTED)],
-    ], [("l1", "dossier"), ("dossier", "l2"), ("l2", "policy")], "Lower boxes describe deployment boundaries, not outbound data flow."),
+    ], [("l1", "dossier"), ("dossier", "l2rules"), ("l2rules", "l2"), ("l2", "policy")], "L2 rules can bypass Gemma. All final routes pass the shared guardrail."),
 ]
 
 

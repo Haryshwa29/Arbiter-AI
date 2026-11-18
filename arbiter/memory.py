@@ -180,6 +180,15 @@ class Memory:
             self.conn.commit()
             self._history_cache.clear()
 
+    def human_cleared_context(self, signature, pending_ts=''):
+        """Require five explicit false-alarm corrections and no other unresolved risk."""
+        with self._lock:
+            row=self.conn.execute("SELECT SUM(decision!='suppress' AND human_label='overruled'), "
+                "SUM((decision='suppress' AND human_label='overruled') OR "
+                "(decision!='suppress' AND human_label!='overruled' AND NOT(ts=? AND human_label=''))) "
+                "FROM verdict_history WHERE signature=?",(pending_ts,signature)).fetchone()
+        return (row[0] or 0)>=5 and (row[1] or 0)==0
+
     # -- environment facts ---------------------------------------------------
     def add_fact(self, fact: str, scope: str = "*", *, user: str = "",
                  path: str = "", process: str = "",

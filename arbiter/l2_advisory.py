@@ -51,6 +51,14 @@ def packet_for(event, first_review, replay=False, final_review=False):
         if isinstance(embedded,dict) and isinstance(embedded.get('signature'),str):
             fact['signature']=embedded['signature'][:512]
         if isinstance(finding.get('rule_id'),str):fact['rule_id']=finding['rule_id'][:128]
+        if isinstance(observed,dict) and isinstance(observed.get('dns_query'),str):
+            fact['dns_query']=observed['dns_query'][:2048]
+    if final_review:
+        from .ingestion.wazuh_evidence import network_tuple
+        endpoints=network_tuple(event.message)
+        if not any(key in fact and fact[key]!=value for key,value in endpoints.items()):
+            for key,value in endpoints.items():
+                if key not in fact: fact[key]=value
     packet = {'host':event.host, 'current_event':event.id, 'facts':[fact],
         'mode':'historical_replay_advice' if replay else 'alert_advice',
         'action_authority':False,
@@ -59,10 +67,11 @@ def packet_for(event, first_review, replay=False, final_review=False):
     packet['allowed_assertions']=[{'fact_id':'F1','field':key,'value':value} for key,value in fact.items()
                                   if key not in {'id','message','source_details'}]
     if final_review:
+        packet.pop('first_review')
         packet['mode']='historical_final_review' if replay else 'final_alert_review'
         packet['review_policy']='Confirm or suppress a successful first-model escalation; no device action authority'
-        preferred=('signature','rule_id','command_line','process_name','file_path','username','src_ip','dst_ip')
-        selected=[a for key in preferred for a in packet['allowed_assertions'] if a['field']==key][:4]
+        preferred=('dns_query','signature','rule_id','command_line','process_name','file_path','username','src_ip','dst_ip','src_port','dst_port')
+        selected=[a for key in preferred for a in packet['allowed_assertions'] if a['field']==key][:10]
         packet['allowed_assertions']=selected or [a for a in packet['allowed_assertions'] if a['field']=='event_type']
     packet['digest'] = hashlib.sha256(json.dumps(packet,sort_keys=True).encode()).hexdigest()
     return packet
@@ -104,6 +113,9 @@ class AdvisoryL2Brain(L2Brain):
         prompt = {'evidence_packet':packet,'independent_assessment':assessment,'supported_proposal':None}
         deadline = started+self.review_seconds
         data = validate(safe_json(self.backend.generate(json.dumps(prompt),self.system,deadline=deadline,format_schema=self.assessment_format)),packet,assessment,None)
+        if getattr(self,'final_review',False) is True and 'outlook' not in data:
+            data['outlook']='routine_looking' if data.get('decision')=='suppress' else 'suspicious'
+            data['outlook_derived_from_decision']=True
         if data['action']!='human_review' or data.get('target') is not None:
             raise ValueError('advice-only review cannot clear an alert or authorize a target')
         if data.get('outlook') not in {'suspicious','routine_looking','uncertain'}:

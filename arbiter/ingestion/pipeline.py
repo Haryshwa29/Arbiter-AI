@@ -58,6 +58,8 @@ class Pipeline:
                 analysis = {k: existing[k] for k in ("decision", "tier", "score", "rationale", "evidence")}
                 detail = safe_json(existing.get("detail") or "{}")
                 reasoning = detail.get("fields", {}).get("_analysis_backend", {})
+                analysis['final_guardrail']=detail.get('fields',{}).get('_final_guardrail',{})
+                analysis['context_signature']=detail.get('fields',{}).get('_context_signature','')
                 analysis["backend"] = reasoning.get("backend", "unrecorded") if analysis["tier"] == "llm" else "deterministic"
                 analysis["model"] = reasoning.get("model", "")
             else:
@@ -69,9 +71,12 @@ class Pipeline:
                 if context: legacy.fields["_context_signature"] = context
                 legacy.fields["_analysis_backend"] = {"backend": backend, "model": model}
                 verdict = self.engine.triage(legacy)
+                legacy.fields['_final_guardrail']=getattr(verdict,'final_guardrail',{})
                 self.audit.record_verdict(legacy, verdict)
                 analysis = safe_json(verdict.to_json())
                 analysis["recommended_steps"] = getattr(verdict, "recommended_steps", [])
+                analysis['context_signature']=legacy.fields.get('_context_signature','')
+                analysis['final_guardrail']=getattr(verdict,'final_guardrail',{})
                 analysis["backend"] = backend if analysis["tier"] == "llm" else "deterministic"
                 analysis["model"] = model if analysis["backend"] in {"ollama", "ollama-cloud"} else ""
             if analysis["tier"] == "llm" and analysis["rationale"].startswith("LLM tier failed ("):

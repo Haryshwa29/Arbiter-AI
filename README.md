@@ -13,7 +13,9 @@ account validation and production-scale delivery remain future validation work.
 
 ## Public-data evaluation
 
-The [Qwen L1 / Gemma L2 evaluation](docs/TWO-BRAIN-PUBLIC-EVAL.md) tests the
+The [corrected independent L2 evaluation](docs/L2-INDEPENDENT-REVIEW.md) measures
+the separate L2 pre-filter, independent Gemma judgment and shared final guardrail.
+The [earlier Qwen L1 / Gemma L2 evaluation](docs/TWO-BRAIN-PUBLIC-EVAL.md) tests the
 two-brain workflow: Qwen3.5:4b escalates unclear alerts; Gemma4:12b receives only
 those escalations and keeps or suppresses them with a written reason. The
 [source-agent setup guide](docs/TWO-BRAIN-SETUP.md) explains how to run it locally.
@@ -30,8 +32,9 @@ results on simulated attacks; production detection rates remain unverified.
 
 Follow one connected flowchart with everyday explanations at each stage.
 It names **Qwen3.5:4b as L1** and **Gemma4:12b as L2**, and shows that compatible
-local models can replace either. Gemma receives only Qwen's escalations, then
-keeps or suppresses the alert with a written reason. Labelled branches explain when rules
+local models can replace either. Only Qwen's escalations enter L2. Its separate
+rules can avoid unnecessary model work; Gemma assesses original facts independently
+when useful. A shared final guardrail protects both L1 and L2 decisions. Labelled branches explain when rules
 can decide without AI and when a person needs to review an alert.
 Blue follows collection and rules, purple marks AI, green means suppressed,
 and red means escalated. The detailed walkthrough links every stage to code.

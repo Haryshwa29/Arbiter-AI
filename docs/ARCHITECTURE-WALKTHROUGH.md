@@ -9,8 +9,10 @@ route through the software; they are not live traffic or measured speed.
 
 **Qwen3.5:4b is L1, the first reviewer. Gemma4:12b is L2, the final reviewer of
 alerts Qwen escalates. Both can be replaced with compatible local models.**
-Gemma never receives the incoming stream directly. It can keep or suppress a
-Qwen alert with a written reason. Pending, uncertain or failed reviews keep the
+Gemma never receives the incoming stream directly. Separate L2 guardrails and a
+pre-filter settle clear cases or avoid a repeat model review when needed context
+is missing. Gemma reads original facts without Qwen's opinion text and can keep
+or suppress an alert with a written reason. Pending, uncertain or failed reviews keep the
 warning visible. Neither model can authorize a device change in this preset.
 
 **Prefer no motion? [Read the identical still-diagram edition](architecture/STILL.md).**
@@ -44,7 +46,12 @@ observation; **red** asks a person to review. Both outcomes keep a written recor
 | 08 — Check the AI answer | Check its format, confidence and consistency with the safety rules. | An AI failure or a recommendation that is too uncertain goes to human review. These checks do not guarantee a correct judgment. |
 | 09 — Save the decision | Keep the reason, evidence, history and which rule or model decided. | A person can inspect the decision and correct it later. |
 | 10 — Explain the next step | Show what happened, where it came from, what is unknown and what to check. | Advice helps a person investigate; it does not authorize changes to a computer. |
-| 11 — Ask Gemma4:12b for a final review | Review only Qwen's escalations, then challenge the proposed final decision. | Keep the alert or suppress it with a written reason, checked facts, confidence of at least 0.9 and an accepted challenge. Uncertainty or failure retains the alert. No device action rights. |
+| 11 — Apply separate L2 rules | Check only Qwen's escalations for known risk, exact human-corrected context and missing investigation context. | Resolve supported cases without inference; retain unresolved protocol/login warnings without paying for a repeat opinion. |
+| 12 — Ask Gemma4:12b when useful | Read original facts independently, then challenge the proposed decision. | A model suppression needs a written reason, checked facts, confidence of at least 0.9 and an accepted challenge. |
+| 13 — Apply shared final guardrails | The same suppression veto protects L1 and L2 exits, including shortcuts. | A known risk overrides quieting. Preserve which layer proposed and decided; no device action rights. |
+
+The shared policy runs at each stage's exit. L1 shortcuts do not wait for Gemma;
+the diagram joins the routes to show that they use the same final-check code.
 
 Mandatory safety-rule warnings remain visible and do not enter Gemma directly.
 Quiet observations and Qwen-failure policy alerts also bypass L2. The original
@@ -260,11 +267,16 @@ different states. No general-purpose remote shell is exposed by the model.
 
 ### Optional L2 belongs to the terminal agent
 
-The selected Qwen/Gemma preset uses **final alert review**. Only successful Qwen
-escalations enter this route. Separate local transport requests a fixed response
+The selected Qwen/Gemma preset uses **independent final alert review**. Only successful Qwen
+escalations enter the separate L2 pre-filter. Known risk stays flagged. Exact
+human corrections can settle routine process activity; broad history and the
+model's own earlier answers cannot. Isolated protocol/login records without
+useful extra context stay flagged without a model repeat. Cases needing model
+judgment reach Gemma without Qwen's opinion text. Separate local transport requests a fixed response
 format; code then validates copied fact values, citation IDs and the proposed
-decision. Gemma assesses and challenges it. Suppression needs a routine-looking
-assessment, confidence of at least 0.9 and an accepted challenge. Internal thinking
+decision. Gemma assesses and challenges it. It returns one classification; the
+compatibility outlook is derived. Suppression needs confidence of at least 0.9,
+an accepted challenge and the shared final veto to pass. Internal thinking
 is off; written hypotheses and challenge remain visible. An uncertain, invalid or
 unavailable review retains the warning. These checks do not certify conclusions.
 Each completed decision belongs to its exact event, so a newer event cannot
@@ -311,6 +323,8 @@ native adapters do not establish that the distributed controller/edge channel
 or fleet-wide containment has shipped or been validated.
 
 **Code:** [terminal agent](../arbiter/agent.py), [L2 engine](../arbiter/l2.py),
+[L2 pre-filter](../arbiter/l2_prefilter.py), [independent final review](../arbiter/l2_final_review.py),
+[shared final guardrail](../arbiter/guardrails.py),
 [dossier](../arbiter/l2_evidence.py), [L2 policy](../arbiter/l2_workflow.py),
 [L2 validation](../arbiter/l2_guardrails.py),
 [public demo backend](../arbiter/site_cloud.py), [installer](../arbiter/install).

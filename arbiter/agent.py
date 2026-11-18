@@ -111,6 +111,7 @@ class Agent:
             raise ValueError('final review requires a successful local first model')
         brain_type = FinalReviewL2Brain if final_review else AdvisoryL2Brain if advice_only else L2Brain
         brain = brain_type(model,review_seconds)
+        if final_review: brain.memory=self.memory
         self.l2 = L2Workflow(self, brain, ResponsePolicy(policy), notify=notify)
         self.l2_model = model
         self.l2.start()
