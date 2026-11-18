@@ -35,3 +35,45 @@ def test_publication_refuses_unconfirmed_stop(tmp_path):
     with pytest.raises(ValueError,match='has not been verified'):
         prepare(run,tmp_path/'work',tmp_path/'public',tmp_path/'cache')
     assert not (tmp_path/'public').exists()
+
+
+def test_complete_publication_contains_raw_inputs_and_preserves_a_missed_attack(tmp_path):
+    from datetime import datetime,timezone
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+    from tools.full_public_eval import journal,finish,evaluate
+    from tools.stop_public_eval_at import export_run
+    from tools.public_dataset_eval import digest
+    from arbiter.llm import LLMVerdict
+    from arbiter.schema import Decision
+    run=tmp_path/'run';cache=tmp_path/'cache';run.mkdir();cache.mkdir()
+    raw={'@timestamp':'2022-01-21T00:02:27Z','rule':{'description':'Example','id':'100','level':4,'groups':['test']},
+        'agent':{'ip':'10.0.0.1','id':'1','name':'lab'},'full_log':'Recorded observation'}
+    originals=[]
+    backend=SimpleNamespace(model='qwen3.5:4b',triage=Mock(return_value=LLMVerdict(Decision.SUPPRESS,.99,'Controlled reply','Recorded fact')))
+    second=SimpleNamespace(backend=SimpleNamespace(usage=[]),review_event=Mock())
+    db,counts=journal(run/'results.db')
+    for seq,attack in [(1,False),(2,True)]:
+        data={**raw,'id':str(seq)};originals.append(json.dumps(data).encode()+b'\n')
+        item={'sample_id':f'fox:{seq}','scenario':'fox','raw_line':seq,'label_row':seq+1,
+            'label':'attack' if attack else '-','expected_attack':attack}
+        row=evaluate(data,item,backend,second,run/'audit.jsonl')
+        with db:attempt=db.execute("INSERT INTO attempts (seq,started,status) VALUES (?,?,'running')",(seq,datetime.now(timezone.utc).isoformat())).lastrowid
+        finish(db,seq,attempt,row,counts)
+    db.close()
+    with zipfile.ZipFile(cache/'ait_ads.zip','w') as z:z.writestr('fox_wazuh.json',b''.join(originals))
+    with zipfile.ZipFile(cache/'alerts_csv.zip','w') as z:z.writestr('alerts_csv/fox_alerts.txt','name,ip,event_label\nWazuh: Example,10.0.0.1,-\nWazuh: Example,10.0.0.1,attack\n')
+    (run/'run.json').write_text(json.dumps({'dataset':{'dataset_sha256':digest(cache/'ait_ads.zip'),'labels_sha256':digest(cache/'alerts_csv.zip')}}))
+    receipt={'target':2,'actual_completed':2,'worker_exit_confirmed':True,'stopped_utc':datetime.now(timezone.utc).isoformat()}
+    ready=export_run(run,tmp_path/'snapshot',receipt)
+    (run/'export-ready.json').write_text(json.dumps(ready))
+    publication=tmp_path/'public'
+    prepare(run,tmp_path/'work',publication,cache)
+    analysis=json.loads((publication/'summary.json').read_text())
+    assert analysis['final']['attack_labels_quieted']==1
+    assert analysis['attack_labels_quieted_ids']==['fox:2']
+    with zipfile.ZipFile(publication/'checkpoint-data.zip') as z:
+        assert z.read('raw-events.jsonl')==b''.join(originals)
+        assert z.testzip() is None and 'results.db' in z.namelist()
+    report=(publication/'README.md').read_text()
+    assert 'false negative' in report and 'No commercial system was run' in report
