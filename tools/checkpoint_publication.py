@@ -87,7 +87,7 @@ def prepare(run,work,publication,cache):
         for seq,payload in db.execute('SELECT seq,payload FROM results ORDER BY seq'):
             row=json.loads(payload);first=row['first_stage'];second=row['second_stage'] or {}
             selected.append({'record':seq,**{k:row[k] for k in ('sample_id','scenario','raw_line','label_row','label')}})
-            total=row['l1_elapsed_s']+row['l2_elapsed_s']
+            total=row['elapsed_s']
             values['all_records'].append(total)
             values['qwen_l1' if first['tier']=='llm' else 'rules_only'].append(row['l1_elapsed_s'])
             if row['usage']:
@@ -165,7 +165,7 @@ def prepare(run,work,publication,cache):
     path_names={'all_records':'All records, including fast rules','rules_only':'L1 rules without Qwen','qwen_l1':'Qwen stage on model-reviewed records','gemma_review':'Gemma assessment + challenge','gemma_record_total':'Complete classification on Gemma-reviewed records'}
     for key,t in latency.items():lines.append(f"| {path_names[key]} | {t['n']:,} | {t['mean_s']:.4f}s | {t['p50_s']:.4f}s | {t['p95_s']:.4f}s |")
     lines+=['',f"Local hardware snapshot: {hardware.get('cpu','see bundle')}; {hardware.get('ram_bytes',0)/1024**3:.1f} GiB RAM; GPU/model-memory/driver report: {hardware.get('gpu','see bundle')}. Models: Qwen3.5:4b (L1), Gemma4:12b (L2), with exact installed digests and requested options in run.json. This is not matched hardware against an enterprise cluster."]
-    lines+=['',f"Observed complete-run rate: **{n*60/elapsed:.2f} saved records/minute** over {elapsed/3600:.2f} elapsed hours. The earlier rough 50/minute estimate is not substituted for the final measured rate.",'',
+    lines+=['',f"Observed checkpoint wall-clock rate: **{n*60/elapsed:.2f} saved records/minute** over {elapsed/3600:.2f} hours from the first journalled attempt to the confirmed stop. The earlier rough 50/minute estimate is not substituted for the final measured rate.",'',
         'This is one sequential replay worker. On a Gemma case, the next record waits for both its assessment and challenge. The normal source agent has separate L1/L2 queues/workers, but that concurrent mode was not measured here. Timings exclude live collector/network delay and pre-processing queue residence; they are not ingestion-to-containment times. This historical replay executes no response actions. Other desktop/development activity shared the machine.','',
         '## Corporate reference points: context, not a matched speed benchmark','',
         'No commercial system was run on these same records, hardware, context, quality targets and forced one-record workflow. A claim that enterprise products would be slower one-by-one is therefore untested. The proposed 1–3 alerts/minute figure has not been established as a universal automated corporate standard and is not used to claim superiority.','',
