@@ -5,7 +5,8 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $outputPath = [IO.Path]::GetFullPath($OutputDirectory)
 New-Item -ItemType Directory -Force -Path $outputPath | Out-Null
-$pythonPath = (Get-Command python -ErrorAction Stop).Source
+$pythonPath = (& python -c 'import sys; print(sys.executable)').Trim()
+if ($LASTEXITCODE -ne 0) { throw 'Could not locate the local Python interpreter.' }
 $runnerPath = Join-Path $PSScriptRoot 'full_public_eval.py'
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $logPath = Join-Path $outputPath "runner-$stamp.log"
