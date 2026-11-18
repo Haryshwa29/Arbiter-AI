@@ -120,7 +120,7 @@ class Agent:
         rows = self.service.buffer.query({"scope": "live"}, limit=100)
         results = []
         final_mode = self.l2 and getattr(self.l2.brain,'final_review',False) is True
-        cases = {c['event_id']:c for c in self.l2.cases()} if final_mode else {}
+        cases = {c['event_id']:c for c in reversed(self.l2.cases(event_ids=[r['event_id'] for r in rows]))} if final_mode else {}
         for row in rows:
             detail = self.service.buffer.detail(row["event_id"])
             if final_mode and detail.get('analysis'):
@@ -143,7 +143,7 @@ class Agent:
         self.protection.reconcile()
         if command.startswith("l2-"):
             if not self.l2: raise ValueError("L2 is disabled")
-            if command == "l2-cases" and not values: return {"cases": self.l2.cases()}
+            if command == "l2-cases" and not values: return {"cases": self.l2.cases(limit=100), "limit":100}
             if command == "l2-notices" and len(values) <= 1: return {"notices": self.l2.notices(int(values[0]) if values else 0)}
             operation = command[3:]
             if operation in {"stop", "resume"} and not values: return self.l2.control(operation)
@@ -153,12 +153,8 @@ class Agent:
         if command == "status" and not values:
             status = self.service.status()
             if self.l2 and getattr(self.l2.brain,'final_review',False) is True:
-                cases = self.l2.cases()
                 status['l2_classification'] = {
-                    'suppressed':sum(c.get('state')!='rejected' and (c.get('brief') or {}).get('alert_decision')=='suppress' for c in cases),
-                    'retained':sum(c.get('state')=='rejected' or (c.get('brief') or {}).get('alert_decision')=='escalate' for c in cases),
-                    'failed':sum(bool(c.get('review_failed')) for c in cases),
-                    'pending':sum(not c.get('brief') and not c.get('review_failed') and c.get('state')!='rejected' for c in cases),
+                    **self.l2.classification_counts(),
                     'note':'Ingestion totals retain first-stage decisions; events and l2-cases show final reviews.'}
             if platform.system() == "Linux":
                 status["elevated"] = os.geteuid() == 0

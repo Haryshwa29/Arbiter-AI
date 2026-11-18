@@ -251,3 +251,33 @@ def test_l2_prefilter_independently_quiets_a_noisy_l1_without_calling_gemma(tmp_
         assert final['first_stage']['decision']=='escalate' and final['decision']=='suppress'
         assert final['second_stage']['prefilter']['rule']=='L2_NATIVE_VULNERABILITY_RESOLVED'
     finally:agent.close()
+
+
+def test_recent_case_view_is_bounded_while_status_counts_all_cases(tmp_path,monkeypatch):
+    agent,_=setup_agent(tmp_path,monkeypatch)
+    try:
+        for index in range(150):
+            decision=('suppress','escalate',None)[index%3]
+            agent.l2.save(dict(id=f'case-{index}',event_id=f'synthetic-{index}',state='waiting',
+                brief={'alert_decision':decision} if decision else None,review_failed=index%6==2,
+                deadline=None,action_id=None))
+        shown=agent.command('l2-cases')
+        assert len(shown['cases'])==shown['limit']==100 and shown['cases'][0]['id']=='case-149'
+        assert len(agent.l2.cases(event_ids=['synthetic-0','synthetic-149']))==2
+        assert agent.l2.classification_counts()==dict(suppressed=50,retained=50,failed=25,pending=25)
+        agent.l2.control('reject','case-0','Human requires review')
+        assert agent.l2.classification_counts()==dict(suppressed=49,retained=51,failed=25,pending=25)
+    finally:agent.close()
+
+
+def test_quieted_case_does_not_emit_an_overdue_retained_warning(tmp_path,monkeypatch):
+    agent,_=setup_agent(tmp_path,monkeypatch)
+    try:
+        agent.service.buffer.enqueue(event(),'wazuh');wait_for(lambda: done(agent,'one'))
+        assert agent.events()[0]['analysis']['decision']=='suppress'
+        original=agent.l2.clock
+        agent.l2.clock=lambda:original()+2000
+        agent.service.pipeline._last_deadlines=0
+        agent.service.pipeline._housekeeping()
+        assert not agent.l2.cases()[0].get('deadline_alerted')
+    finally:agent.close()

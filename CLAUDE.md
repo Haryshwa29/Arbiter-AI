@@ -13,8 +13,7 @@ while L2 waits; pending alerts, human rejection and exact-event bindings remain.
 Status exposes stage activity, queues and errors. Shutdown joins writers before
 closing stores; restart reuses durable L1 and rechecks saved L2 exits. Model
 changes retain the pipeline and require distinct L1/L2 models. No new dependency
-or actuation authority. Eleven controlled concurrency tests and the 538-test
-suite passed before the final case-binding check. Real-GPU speedup is unmeasured.
+or actuation authority. Real-GPU speedup is unmeasured.
 The running public checkpoint and installed app remain unchanged. Changes stay
 local pending the owner's requested review/explicit GitHub push approval.
 The terminal now uses suppress-or-pass L2 routing: insufficient context no longer
@@ -22,8 +21,8 @@ skips Gemma. Known risk still vetoes suppression at the final gate. A narrow
 Wazuh 23502 Solved-CVE notification rule and exact human-corrected process history
 can independently quiet supported routine cases; neither promises a suppression
 rate. Legacy sequential comparison callers keep their earlier routing protocol.
-Final local validation: 553 tests passed, 2 skipped and 25 subtests passed;
-26 focused queue/routing/noise-lookalike checks passed. The packaged stdlib agent
+Final local validation: 555 tests passed, 2 skipped and 25 subtests passed;
+28 focused queue/routing/noise-lookalike checks passed. The packaged stdlib agent
 contains the new pipeline and offline catalog and passed the 22-event mock CLI
 smoke. No extra real-model inference was run alongside the frozen checkpoint.
 See docs/FIVE-WORKER-PIPELINE.md.

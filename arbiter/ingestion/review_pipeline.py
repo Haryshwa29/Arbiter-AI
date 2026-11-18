@@ -68,7 +68,8 @@ class ReviewPipeline(Pipeline):
             with self.buffer.lock:
                 expired = [json.loads(r[0]) for r in self.buffer.conn.execute(
                     "SELECT body FROM l2_cases WHERE json_extract(body,'$.deadline')<=? "
-                    "AND json_extract(body,'$.state')='waiting' AND COALESCE(json_extract(body,'$.deadline_alerted'),0)=0 LIMIT 100", (w.clock(),))]
+                    "AND json_extract(body,'$.state')='waiting' AND COALESCE(json_extract(body,'$.deadline_alerted'),0)=0 "
+                    "AND COALESCE(json_extract(body,'$.brief.alert_decision'),'escalate')!='suppress' LIMIT 100", (w.clock(),))]
             for case in expired:
                 case['deadline_alerted'] = True
                 w.save(case, 'Review deadline reached; alert remains visible and requires human review')

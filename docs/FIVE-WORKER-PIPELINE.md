@@ -14,7 +14,7 @@ flowchart TD
     Q[Durable waiting line: already normalized source records]
     G[Worker 1 - Gateway: load the next record and connect nearby clues]
     A[Worker 2 - L1: quick rules, Qwen3.5:4b when needed, and L1 safety checks]
-    P[Worker 3 - L2 prefilter: check risk and whether enough context exists]
+    P[Worker 3 - L2 prefilter: check for a supported routine explanation]
     B[Worker 4 - L2: Gemma4:12b assesses and challenges its decision]
     F[Worker 5 - Final guardrail: check the proposed outcome and preserve both stages]
     V[Show the result: retain uncertainty for review, or quiet a supported ordinary case]
@@ -75,6 +75,13 @@ includes downstream backpressure; it is not pure model compute time. A record
 may bypass stages, so completed counts need not be equal. Existing queue totals
 include unfinished records; first-stage audit totals and L2 classifications
 remain distinct.
+
+`l2-cases` shows the latest 100 cases; the complete records remain in SQLite.
+Status totals cover all cases using a small indexed classification scan, and
+the event view fetches reviews only for its displayed records. Control actions
+look up the exact case directly. Viewing a growing history does not load every
+large evidence packet into memory. Quieted cases do not raise overdue-warning
+notices; pending and retained cases still get review-deadline notices.
 
 L1 warnings stay visible while L2 is pending. A human rejection wins even if a
 model reply arrives later. Each case is tied to one event. A restart recovers

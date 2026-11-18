@@ -58,15 +58,41 @@ class L2Workflow:
             b.conn.execute('CREATE TABLE IF NOT EXISTS l2_cases (id TEXT PRIMARY KEY, body TEXT NOT NULL)')
             b.conn.execute('CREATE TABLE IF NOT EXISTS l2_notices (id INTEGER PRIMARY KEY, ts REAL, case_id TEXT, body TEXT)')
             b.conn.execute('CREATE TABLE IF NOT EXISTS l2_settings (key TEXT PRIMARY KEY, value TEXT)')
+            b.conn.execute("CREATE INDEX IF NOT EXISTS idx_l2_event ON l2_cases(json_extract(body,'$.event_id'))")
+            b.conn.execute("CREATE INDEX IF NOT EXISTS idx_l2_classification ON l2_cases(json_extract(body,'$.state'),json_extract(body,'$.review_failed'),json_extract(body,'$.brief.alert_decision'),json_type(body,'$.brief'))")
             b.conn.execute("INSERT OR IGNORE INTO l2_settings VALUES ('stopped','false')")
         # Crash during execution is never blindly retried.
-        for case in self.cases():
+        with b.lock:
+            interrupted = [json.loads(r[0]) for r in b.conn.execute("SELECT body FROM l2_cases WHERE json_extract(body,'$.state')='executing'")]
+        for case in interrupted:
             if case['state'] == 'executing':
                 case['state'] = 'needs_review'; self.save(case, 'Interrupted action: inspect actions and native firewall before recovery')
 
-    def cases(self):
+    def cases(self, event_ids=None, limit=None):
         b = self.agent.service.buffer
-        with b.lock: return [json.loads(r[0]) for r in b.conn.execute('SELECT body FROM l2_cases')]
+        sql, values = 'SELECT body FROM l2_cases', []
+        if event_ids is not None:
+            if not event_ids: return []
+            values = list(event_ids)
+            sql += " WHERE json_extract(body,'$.event_id') IN ("+','.join('?' for _ in values)+')'
+        sql += ' ORDER BY rowid DESC'
+        if limit is not None:
+            sql += ' LIMIT ?'; values.append(max(1,min(int(limit),500)))
+        with b.lock: return [json.loads(r[0]) for r in b.conn.execute(sql, values)]
+
+    def classification_counts(self):
+        b = self.agent.service.buffer
+        with b.lock:
+            groups = b.conn.execute("SELECT json_extract(body,'$.state'),json_extract(body,'$.review_failed'),"
+                "json_extract(body,'$.brief.alert_decision'),json_type(body,'$.brief'),COUNT(*) "
+                "FROM l2_cases INDEXED BY idx_l2_classification GROUP BY 1,2,3,4").fetchall()
+        counts = dict(suppressed=0, retained=0, failed=0, pending=0)
+        for state, failed, decision, brief_type, n in groups:
+            counts['suppressed'] += n if state!='rejected' and decision=='suppress' else 0
+            counts['retained'] += n if state=='rejected' or decision=='escalate' else 0
+            counts['failed'] += n if failed else 0
+            counts['pending'] += n if brief_type in (None,'null') and not failed and state!='rejected' else 0
+        return counts
 
     def notices(self, after=0):
         b = self.agent.service.buffer
@@ -95,7 +121,9 @@ class L2Workflow:
                     b.conn.execute("UPDATE l2_settings SET value=? WHERE key='stopped'", ('true' if command == 'stop' else 'false',))
                 self.agent.audit.record_iam(self.agent.actor, 'l2_'+command, '')
                 return {'automatic_stopped': self.halted()}
-            case = next((c for c in self.cases() if c['id'] == case_id), None)
+            b = self.agent.service.buffer
+            with b.lock: saved = b.conn.execute('SELECT body FROM l2_cases WHERE id=?', (case_id,)).fetchone()
+            case = json.loads(saved[0]) if saved else None
             if not case: raise ValueError('unknown L2 case')
             if command == 'revert':
                 if not case.get('action_id'): raise ValueError('no action to revert')
