@@ -151,12 +151,15 @@ def prepare(run,work,publication,cache):
     kept=final['unannotated_flagged']+final['attack_labels_flagged']
     context_kept=summary['l2_rules'].get('L2_CONTEXT_REQUIRED',0)
     wall_seconds=round(elapsed)
+    scenario_text=', '.join(f'{name.title()} ({count:,} records)' for name,count in summary['by_scenario'].items())
+    layer_names={'prefilter':'L1 quick rules','llm':'Qwen, L1','guardrail':'L1 safety rules',
+        'l2-prefilter':'L2 quick rules','gemma':'Gemma, L2','l2-failure-policy':'L2 failure policy'}
     lines=[f'# Arbiter AI: {n:,}-record public-data checkpoint','',
         '**This is a user-requested partial checkpoint, not the completed 2.6-million-record evaluation.**','',
         f"**Arbiter kept {100*kept/n:.2f}% of the records visible for review ({kept:,}/{n:,}). Its policy is to raise a warning when activity looks suspicious and the available evidence does not justify suppressing it.**",'',
         f"Of the retained warnings, {context_kept:,} ({100*context_kept/kept if kept else 0:.2f}%) were explicitly retained by L2's context-required rule after Qwen raised a concern. The other deciding layers are broken down below. These are requests for investigation; independent evidence is needed to establish whether an attack occurred.",'',
-        f"The run stopped after {n:,} committed records from {summary['by_scenario']}. Input was sequential original file order, one scenario at a time, with empty history for each record. It was not randomized or balanced. No live device actions were enabled.",'',
-        f"**Time to this checkpoint: {wall_seconds//3600} hours, {(wall_seconds%3600)//60} minutes, {wall_seconds%60} seconds.** The first record attempt started at {started}; the stop was confirmed at {summary['stop']['stopped_utc']} (UTC). This elapsed time includes model work and ordinary pauses/overhead during the run, rather than adding up inference durations alone.",'',
+        f"The run stopped after {n:,} saved decisions from {scenario_text}. Input was sequential original file order, one scenario at a time, with empty history for each record. It was not randomized or balanced. No live device actions were enabled.",'',
+        f"**Time to this checkpoint: {wall_seconds//3600} hours, {(wall_seconds%3600)//60} minutes, {wall_seconds%60} seconds.** The first record attempt started at {datetime.fromisoformat(started).strftime('%Y-%m-%d %H:%M:%S UTC')}; the stop was confirmed at {datetime.fromisoformat(summary['stop']['stopped_utc']).strftime('%Y-%m-%d %H:%M:%S UTC')}. This elapsed time includes model work and ordinary pauses/overhead during the run, rather than adding up inference durations alone.",'',
         '## Our safety policy','',f'> {QUOTE}','',
         '**Terminology correction:** suppressing a real attack is a false negative. A true negative is correctly quieting a harmless record and is desirable. The intended policy is: keep suspicious alerts visible when the available evidence does not justify suppression.','',
         'That policy is implemented through uncertain/error escalation, L2 context-required routing, known-risk vetoes, suppression-confidence checks and the shared final guardrail. It is a design requirement, not a guarantee that model reasoning never fails. Conservative policy does not turn a benchmark false positive into a successful detection.','',
@@ -196,10 +199,11 @@ def prepare(run,work,publication,cache):
     lines+=['',
         '| Final deciding layer | Unannotated quieted | Unannotated flagged | Attack quieted | Attack flagged |','|---|---:|---:|---:|---:|']
     for actor,counts in actors.items():
-        lines.append(f"| {actor} | {counts['unannotated_suppress']:,} | {counts['unannotated_escalate']:,} | {counts['attack_suppress']:,} | {counts['attack_escalate']:,} |")
+        lines.append(f"| {layer_names.get(actor,actor)} | {counts['unannotated_suppress']:,} | {counts['unannotated_escalate']:,} | {counts['attack_suppress']:,} | {counts['attack_escalate']:,} |")
     lines+=['','Examples below identify actual scored records, not a separately scored explanation-quality study.','']
-    for actor,e in examples.items():lines.append(f"- {actor}, record {e['record']} ({e['id']}), {e['decision']}: {e['reason']}")
+    for actor,e in examples.items():lines.append(f"- {layer_names.get(actor,actor)}, record {e['record']} ({e['id']}), {e['decision']}: {e['reason']}")
     lines+=['','## Per-record latency: what was actually timed','',
+        'Mean means average time. Median is the middle record. The 95th percentile is the time within which 95% of records on that measured path finished. These are classification times, not proof that a protective action occurred.','',
         '| Measured path | Records | Mean | Median | 95th percentile |','|---|---:|---:|---:|---:|']
     path_names={'all_records':'All records, including fast rules','rules_only':'L1 rules without Qwen','qwen_l1':'Qwen stage on model-reviewed records','gemma_review':'Gemma assessment + challenge','gemma_record_total':'Complete classification on Gemma-reviewed records'}
     for key,t in latency.items():lines.append(f"| {path_names[key]} | {t['n']:,} | {t['mean_s']:.4f}s | {t['p50_s']:.4f}s | {t['p95_s']:.4f}s |")
