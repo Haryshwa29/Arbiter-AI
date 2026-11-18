@@ -164,6 +164,16 @@ export default {
       "reason": "a high-priority security-tool finding requires review; benign history or model confidence cannot dismiss it"
     },
     {
+      "code": "NON_SUPPRESSIBLE_WEB_ALERT",
+      "name": "source_web_alert",
+      "reason": "a source-classified web attack/reconnaissance alert or correlated path enumeration requires review; an HTTP error does not establish harmlessness or prove compromise"
+    },
+    {
+      "code": "NON_SUPPRESSIBLE_PRIVILEGED_SESSION",
+      "name": "source_privileged_session",
+      "reason": "a recorded root sudo operation or privileged/service-account identity transition requires review; authentication success alone is not a benign explanation"
+    },
+    {
       "code": "NON_SUPPRESSIBLE_EXPOSURE",
       "name": "internet_exposure",
       "reason": "exposing a sensitive service to a broad/public scope is never a benign maintenance side-effect"
