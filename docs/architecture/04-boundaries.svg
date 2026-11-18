@@ -11,21 +11,21 @@
 <polyline points="500.0,744 500.0,771.0 500.0,771.0 500.0,798" fill="none" stroke="#536575" stroke-width="3"/>
 <path d="M494.0,789 L500.0,798 L506.0,789" fill="none" stroke="#536575" stroke-width="3"/>
 <rect x="70" y="210" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,230 V332" stroke="#8bbcff" stroke-width="4"/>
-<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">First review: Qwen3.5 or a replacement</text>
-<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">The terminal agent can ask for a separate second opinion</text>
-<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">That extra review must be enabled; no automatic model download</text>
+<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L1 first reviewer: Qwen3.5:4b</text>
+<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Review unclear events; escalate those needing a deeper review</text>
+<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Only Qwen&#x27;s escalations enter Gemma&#x27;s queue</text>
 <rect x="70" y="406" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,426 V528" stroke="#8bbcff" stroke-width="4"/>
-<text x="94" y="450" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Rebuild a small set of trustworthy evidence</text>
-<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Use up to 64 relevant records and identify the supporting facts</text>
-<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Reject old, replayed, unrelated or unsupported action evidence</text>
+<text x="94" y="450" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Give the second brain the recorded facts</text>
+<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Qwen&#x27;s earlier opinion is context, not independent proof</text>
+<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Historical records stay historical and grant no action rights</text>
 <rect x="70" y="602" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,622 V724" stroke="#c4a7ff" stroke-width="4"/>
-<text x="94" y="646" fill="#c4a7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">A separate local model gives a second opinion</text>
-<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Use a distinct, larger model when this optional feature is enabled</text>
-<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Challenge the first assessment; explain evidence gaps and alternatives</text>
+<text x="94" y="646" fill="#c4a7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L2 final reviewer: Gemma4:12b</text>
+<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Assess the evidence, then challenge that decision in a second pass</text>
+<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Keep or suppress Qwen&#x27;s alert with a written explanation</text>
 <rect x="70" y="798" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,818 V920" stroke="#eac080" stroke-width="4"/>
-<text x="94" y="842" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Keep permission checks outside the AI</text>
-<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">A recommendation still needs the policy and target checks</text>
-<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Advice alone cannot authorize a change to a computer</text>
+<text x="94" y="842" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Check the decision; preserve both reviews</text>
+<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Suppression needs checked facts, confidence and an accepted challenge</text>
+<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Uncertainty or failure retains the alert; no device action rights</text>
 <rect x="70" y="994" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1014 V1116" stroke="#94d7b4" stroke-width="4"/>
 <text x="94" y="1038" fill="#94d7b4" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Customer installation</text>
 <text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">AI and records stay local</text>

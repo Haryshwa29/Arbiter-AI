@@ -138,6 +138,11 @@ class L2Workflow:
             for row in observations:
                 row['proposal'] = self.agent.protection.proposal(row) if self.agent.scope else None
                 if row['state'] != 'done' or row['analysis']['decision'] != 'escalate': continue
+                if getattr(self.brain,'model_escalations_only',False) is True and row['analysis'].get('tier')!='llm':
+                    continue  # deterministic warnings remain visible without waiting for this model-review queue
+                if getattr(self.brain,'final_review',False) is True:
+                    from .l2_final_review import eligible
+                    if not eligible(row['analysis']): continue
                 row = self.evidence_row(row)
                 event = row['event']
                 identity = [row['connector'], event['hostname'], event['event_type'], event.get('src_ip'), event.get('dst_ip'), event.get('process_name'), event.get('username'), event.get('metadata', {}).get('process_created')]
@@ -153,6 +158,9 @@ class L2Workflow:
                 # events() is newest first: do not replace evidence with an older row.
                 old = self.agent.service.buffer.detail(case['event_id'])
                 if old and event['timestamp'] < old['event']['timestamp']: continue
+                if getattr(self.brain,'final_review',False) is True and case['event_id'] != row['event_id']:
+                    case['brief'] = None
+                    case.pop('review_failed',None)
                 case['event_id'] = row['event_id']
                 if list(WINDOWS).index(level) < list(WINDOWS).index(case['severity']):
                     case['severity'] = level; case['acknowledged'] = False
@@ -180,6 +188,10 @@ class L2Workflow:
                     continue
                 if case['state'] not in {'waiting','needs_review'}: continue
                 if reviewed_level != case['severity']: continue
+                if (getattr(self.brain,'final_review',False) is True and brief
+                        and brief.get('reviewed_event_id') != case['event_id']):
+                    self.save(case,'Earlier-event review arrived; newer alert retained for its own L2 review')
+                    continue
                 if error:
                     case['review_failed'] = True; case['state'] = 'needs_review'
                     self.save(case, 'L2 unavailable or invalid output; human review required')

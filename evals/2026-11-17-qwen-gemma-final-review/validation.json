@@ -1,0 +1,27 @@
+{
+  "pytest": {
+    "passed": 496,
+    "skipped": 2,
+    "subtests_passed": 25,
+    "duration_s": 54.53
+  },
+  "pytest_note": "One earlier suite run had a Windows local HTTP connection-abort failure. The targeted test and a full unchanged-source rerun passed.",
+  "mock_cli_smoke": {
+    "seed": "passed",
+    "sample_events": 22,
+    "escalated": 14,
+    "suppressed": 8,
+    "device_actions": 0
+  },
+  "source_agent_setup": {
+    "backend": "ollama",
+    "model": "qwen3.5:4b",
+    "l2_enabled": true,
+    "l2_model": "gemma4:12b",
+    "l2_mode": "final-alert-review",
+    "containment_enabled": false
+  },
+  "powershell_launcher_syntax": "passed",
+  "installed_or_portable_build_replaced": false,
+  "live_collectors_started_for_evaluation": false
+}

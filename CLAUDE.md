@@ -4,6 +4,29 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 17 L1/L2 follow-up: `--l2-final-review` uses Qwen3.5:4b as L1 and
+Gemma4:12b as L2. Only successful local-model escalations enter L2; quiet,
+mandatory-rule and model-failure policy decisions bypass it. L2 can confirm or
+suppress an L1 alert with a written reason; suppression requires confidence
+at least 0.9, routine-looking outlook, exact fact checks and an accepted separate
+challenge. Invalid, uncertain and unavailable reviews retain the warning. JSON
+schemas constrain response format; they do not certify semantic conclusions.
+Every final decision is bound to its exact event; newer events cannot inherit
+older suppression. Native-response defaults and executor authority are unchanged.
+The terminal `events` projection preserves both stages; durable `l2-cases` holds
+final reviews. Original ingestion/audit totals remain first-stage evidence.
+The source launcher has no containment scope. Customer/portable dashboard builds
+were not replaced. See `docs/TWO-BRAIN-SETUP.md` and the separate public replay
+report for measured results and limits. No new runtime dependency.
+The completed 202-record replay retained 74/74 attack annotations and quieted
+48/128 unannotated records. Gemma reviewed all 97 eligible Qwen escalations,
+returned 97 checked replies, proposed no suppressions and changed no decisions.
+Median L2 review was 31.58s; total measured L2 work was 50.51 minutes. Its own
+challenge accepted all 97, including inspected explanations with interpretation
+limits. Added L2 did not reduce warnings on this run. A minimal-code efficiency
+review attributed about 97.2% of measured L2 time to server-reported model work;
+no speculative performance rewrite or model-setting changes were applied.
+
 November 17 documentation follow-up: the public findings now start with
 `docs/FINDINGS-IN-PLAIN-ENGLISH.md`. The detailed evaluation and frozen evidence
 remain available separately. The architecture diagrams name Qwen3.5 as the

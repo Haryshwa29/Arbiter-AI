@@ -1,5 +1,9 @@
 # AIT-ADS evaluation: Qwen3.5 triage failures and deterministic hardening
 
+The later [Qwen L1 / Gemma L2 report](TWO-BRAIN-PUBLIC-EVAL.md) separately measures
+the second model's final alert decisions. The single-brain results below remain
+the historical baseline.
+
 **Start with [the findings in plain English](FINDINGS-IN-PLAIN-ENGLISH.md)**
 for the dataset, failures, improvements and planned next tests. This page keeps
 the detailed measurements and methods for readers who want to check the evidence.

@@ -4,8 +4,10 @@ These static diagrams contain the same labels as the
 [animated walkthrough](../ARCHITECTURE-WALKTHROUGH.md). No motion is required to
 understand the system. Follow the linked explanations for the full text equivalent.
 
-Each box now explains its job in everyday language. **Qwen3.5 is the model
-shown; another compatible local AI model can replace it.** Ollama is the current
+Each box explains its job in everyday language. **Qwen3.5:4b is L1;
+Gemma4:12b is L2 and receives only Qwen's escalations.** Gemma keeps or suppresses
+that alert with a written reason. Either model can be replaced with a compatible
+local model. Ollama is the current
 local runner, not the name of the model. See the [model and runner explanation](../ARCHITECTURE-WALKTHROUGH.md#qwen35-replacement-models-and-ollama).
 
 ## 1–2. Complete intake and triage flow

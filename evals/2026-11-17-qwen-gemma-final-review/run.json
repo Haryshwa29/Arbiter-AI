@@ -1,0 +1,390 @@
+{
+  "sample_sha256": "5485da312eae0023c4aa1d4241b61114bc9c0d86a73ac1f86abba18b1486c2bc",
+  "sample_size": 202,
+  "sample_source": "evals/2026-11-17-ait-ads-hardening/holdout/sample.jsonl",
+  "dataset": "AIT-ADS v1, DOI 10.5281/zenodo.8263181",
+  "primary": {
+    "name": "qwen3.5:4b",
+    "model": "qwen3.5:4b",
+    "modified_at": "2026-07-07T13:50:43.9949588-04:00",
+    "size": 3389983735,
+    "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen35",
+      "families": [
+        "qwen35"
+      ],
+      "parameter_size": "4.7B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 262144,
+      "embedding_length": 2560,
+      "runner": "ggml"
+    },
+    "capabilities": [
+      "completion",
+      "vision",
+      "tools",
+      "thinking"
+    ]
+  },
+  "secondary": {
+    "name": "gemma4:12b",
+    "model": "gemma4:12b",
+    "modified_at": "2026-06-28T17:04:40.9883609-04:00",
+    "size": 7556508396,
+    "digest": "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "gemma4",
+      "families": [
+        "gemma4"
+      ],
+      "parameter_size": "11.9B",
+      "quantization_level": "Q4_K_M",
+      "context_length": 262144,
+      "embedding_length": 3840,
+      "runner": "ggml"
+    },
+    "capabilities": [
+      "completion",
+      "vision",
+      "audio",
+      "tools",
+      "thinking"
+    ]
+  },
+  "secondary_verified_details": {
+    "parent_model": "",
+    "format": "gguf",
+    "family": "gemma4",
+    "families": [
+      "gemma4"
+    ],
+    "parameter_size": "11.9B",
+    "quantization_level": "Q4_K_M"
+  },
+  "git_parent": "e6c52f0af4e338ea5b2465e70fe11f6b2723d490",
+  "code_sha256": {
+    "arbiter/__init__.py": {
+      "raw": "507e0168d96e3adbeaa0428a7871d7304f2bcbb8c4df4aa4b8ae803b9632bbf8",
+      "canonical_lf": "507e0168d96e3adbeaa0428a7871d7304f2bcbb8c4df4aa4b8ae803b9632bbf8"
+    },
+    "arbiter/__main__.py": {
+      "raw": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+      "canonical_lf": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279"
+    },
+    "arbiter/agent.py": {
+      "raw": "89665c11a170fbf7b4807954e44a445770f1fcad9c9b7c7468fdc764dc369762",
+      "canonical_lf": "89665c11a170fbf7b4807954e44a445770f1fcad9c9b7c7468fdc764dc369762"
+    },
+    "arbiter/api/__init__.py": {
+      "raw": "a9b4409ebdc508e5f068045db91666a0ea52ffbd60cce5c01bb2e079389642ce",
+      "canonical_lf": "a9b4409ebdc508e5f068045db91666a0ea52ffbd60cce5c01bb2e079389642ce"
+    },
+    "arbiter/api/server.py": {
+      "raw": "a52cb91dbc93c729e6c14faccfa9695d5880d8617cd48ad1e12aa89778c1124f",
+      "canonical_lf": "a52cb91dbc93c729e6c14faccfa9695d5880d8617cd48ad1e12aa89778c1124f"
+    },
+    "arbiter/api/static.py": {
+      "raw": "64d90322ee9a3f9fc168219839ae52dee76eb877e4adeb00d31430ea44edaf09",
+      "canonical_lf": "64d90322ee9a3f9fc168219839ae52dee76eb877e4adeb00d31430ea44edaf09"
+    },
+    "arbiter/bench.py": {
+      "raw": "39247bfb3c99a0b769484d4007f3f9fe8ac67bf066b6454080a24b76596cafa1",
+      "canonical_lf": "39247bfb3c99a0b769484d4007f3f9fe8ac67bf066b6454080a24b76596cafa1"
+    },
+    "arbiter/briefing.py": {
+      "raw": "08c27b517314a49c6ccc68d3686c5745b023a1e910db1d0e91f6a01d633975fb",
+      "canonical_lf": "08c27b517314a49c6ccc68d3686c5745b023a1e910db1d0e91f6a01d633975fb"
+    },
+    "arbiter/cli.py": {
+      "raw": "981f30eeef49d6a36dc5570f7f5aeef02be5b7d278da5e8e6ec6d3a1cafcf30c",
+      "canonical_lf": "981f30eeef49d6a36dc5570f7f5aeef02be5b7d278da5e8e6ec6d3a1cafcf30c"
+    },
+    "arbiter/eval.py": {
+      "raw": "aeaa7aa925c5271bf0b217396a0d33f4da98db3405dcddf66f1abcb047bccf59",
+      "canonical_lf": "aeaa7aa925c5271bf0b217396a0d33f4da98db3405dcddf66f1abcb047bccf59"
+    },
+    "arbiter/facts.py": {
+      "raw": "4ad0e51ff4690c9314ce764de178a534d2f18c4e5dddc63ea5c68e1b9aca24cc",
+      "canonical_lf": "4ad0e51ff4690c9314ce764de178a534d2f18c4e5dddc63ea5c68e1b9aca24cc"
+    },
+    "arbiter/guardrails.py": {
+      "raw": "49a674877c1e838fbde9400d8eeebe9b63569fd0f05b04d1880d01fe5d2fc3a7",
+      "canonical_lf": "49a674877c1e838fbde9400d8eeebe9b63569fd0f05b04d1880d01fe5d2fc3a7"
+    },
+    "arbiter/iam.py": {
+      "raw": "93cad2677abcf4983d718f35158b37a8c7eab75c94345c1e7bb04241a46a170f",
+      "canonical_lf": "93cad2677abcf4983d718f35158b37a8c7eab75c94345c1e7bb04241a46a170f"
+    },
+    "arbiter/ingestion/__init__.py": {
+      "raw": "36e396545c58851d0d9aa992f5b28341b4a0e4801d5fb3c8fb5a5f211077d386",
+      "canonical_lf": "36e396545c58851d0d9aa992f5b28341b4a0e4801d5fb3c8fb5a5f211077d386"
+    },
+    "arbiter/ingestion/base.py": {
+      "raw": "feeb128d839bf6e72b409619d5e1cbabe0a335c3b84c1605a9d8f136cbb8f441",
+      "canonical_lf": "feeb128d839bf6e72b409619d5e1cbabe0a335c3b84c1605a9d8f136cbb8f441"
+    },
+    "arbiter/ingestion/collectors/__init__.py": {
+      "raw": "33ae46c93cc13fe6ee58d657b396a047092dbb371853afd39ab2c0e6ef12502e",
+      "canonical_lf": "33ae46c93cc13fe6ee58d657b396a047092dbb371853afd39ab2c0e6ef12502e"
+    },
+    "arbiter/ingestion/collectors/attachments.py": {
+      "raw": "c558ccec4946cd4330fcf49d3f9db669da8b0bc7e0aa09fb410bda08ed780379",
+      "canonical_lf": "c558ccec4946cd4330fcf49d3f9db669da8b0bc7e0aa09fb410bda08ed780379"
+    },
+    "arbiter/ingestion/collectors/aws.py": {
+      "raw": "b22006c9f5fcc95879beef31e3a472028e26b2658c239cccc3ebf7ce330e551f",
+      "canonical_lf": "b22006c9f5fcc95879beef31e3a472028e26b2658c239cccc3ebf7ce330e551f"
+    },
+    "arbiter/ingestion/collectors/defender.py": {
+      "raw": "07eb9320f9e27271dc5e6d292392bb1dcb0f924754879816d2dd08c67992cf6a",
+      "canonical_lf": "07eb9320f9e27271dc5e6d292392bb1dcb0f924754879816d2dd08c67992cf6a"
+    },
+    "arbiter/ingestion/collectors/future.py": {
+      "raw": "73cd0d807549d9a6599e58391467fd34ea56ef5d18e820e357cfddff025993df",
+      "canonical_lf": "73cd0d807549d9a6599e58391467fd34ea56ef5d18e820e357cfddff025993df"
+    },
+    "arbiter/ingestion/collectors/linux_auth.py": {
+      "raw": "821fbdd19cc115f421c728b79b914af529b92df3b7b70984d6d49a30a63b2411",
+      "canonical_lf": "821fbdd19cc115f421c728b79b914af529b92df3b7b70984d6d49a30a63b2411"
+    },
+    "arbiter/ingestion/collectors/local_process.py": {
+      "raw": "ebada66c4cae8081836914e074062ce1479c819839d5d52f7e63348e2b453ea5",
+      "canonical_lf": "ebada66c4cae8081836914e074062ce1479c819839d5d52f7e63348e2b453ea5"
+    },
+    "arbiter/ingestion/collectors/osquery.py": {
+      "raw": "49481d533ba553741e63548475da1d947274e6b7fecdc7200bfa55b2ce29f365",
+      "canonical_lf": "49481d533ba553741e63548475da1d947274e6b7fecdc7200bfa55b2ce29f365"
+    },
+    "arbiter/ingestion/collectors/security.py": {
+      "raw": "6b29eafb4572cdb5debd1e012689f14dc6bd5c25d88fad58732dfce51f8c9b88",
+      "canonical_lf": "6b29eafb4572cdb5debd1e012689f14dc6bd5c25d88fad58732dfce51f8c9b88"
+    },
+    "arbiter/ingestion/collectors/suricata.py": {
+      "raw": "de01c325db0b7523685affcf8fbb97ae38bdfd8f5afbee27a3382e274c23e92c",
+      "canonical_lf": "de01c325db0b7523685affcf8fbb97ae38bdfd8f5afbee27a3382e274c23e92c"
+    },
+    "arbiter/ingestion/collectors/syslog.py": {
+      "raw": "d1fee528186b47aeb2e1c519f24c10745d0ec66b0bf70f86cc5779ad685e13ac",
+      "canonical_lf": "d1fee528186b47aeb2e1c519f24c10745d0ec66b0bf70f86cc5779ad685e13ac"
+    },
+    "arbiter/ingestion/collectors/wazuh.py": {
+      "raw": "733c9cc02f1fa90ef8fa95ba2791d6525e4030f1b097675d17a637ef71300ed3",
+      "canonical_lf": "733c9cc02f1fa90ef8fa95ba2791d6525e4030f1b097675d17a637ef71300ed3"
+    },
+    "arbiter/ingestion/collectors/windows.py": {
+      "raw": "8aadf5aa22f91b678d2a1e42aeb66ecf3fc89936c982107fd141ad153fb0d57a",
+      "canonical_lf": "8aadf5aa22f91b678d2a1e42aeb66ecf3fc89936c982107fd141ad153fb0d57a"
+    },
+    "arbiter/ingestion/containment.py": {
+      "raw": "48c354c9900052998f4b5742a675174a522e87e68bb9a533c61a355e511c5a91",
+      "canonical_lf": "48c354c9900052998f4b5742a675174a522e87e68bb9a533c61a355e511c5a91"
+    },
+    "arbiter/ingestion/correlation.py": {
+      "raw": "8543eab19a41a4db5a0841d97cfedb4c641791e7dbc3047e6c958274ad209375",
+      "canonical_lf": "8543eab19a41a4db5a0841d97cfedb4c641791e7dbc3047e6c958274ad209375"
+    },
+    "arbiter/ingestion/demo.py": {
+      "raw": "85fd00cde001021279c523c5b1277bf67080bba59c35bc8d872d7e5e2640fbc6",
+      "canonical_lf": "85fd00cde001021279c523c5b1277bf67080bba59c35bc8d872d7e5e2640fbc6"
+    },
+    "arbiter/ingestion/discovery.py": {
+      "raw": "e4d1bd482e1bc6a39335e92aa794a6b302e5cc995162f8550e6a5e58874089df",
+      "canonical_lf": "e4d1bd482e1bc6a39335e92aa794a6b302e5cc995162f8550e6a5e58874089df"
+    },
+    "arbiter/ingestion/evidence.py": {
+      "raw": "753b1e0bcadf897e300dfe24fe61155fd1997cd20cb9d97c6cbd80fab62607d5",
+      "canonical_lf": "753b1e0bcadf897e300dfe24fe61155fd1997cd20cb9d97c6cbd80fab62607d5"
+    },
+    "arbiter/ingestion/files.py": {
+      "raw": "cc071ab53f4c7b7a16fcd203b365eb365013df8d654fc824037e48bb64ad0410",
+      "canonical_lf": "cc071ab53f4c7b7a16fcd203b365eb365013df8d654fc824037e48bb64ad0410"
+    },
+    "arbiter/ingestion/models.py": {
+      "raw": "14b34259ee8f2fcf66b7c55f435b1bdb62c98ce2dbb56d78b11dccbd2237c5ef",
+      "canonical_lf": "14b34259ee8f2fcf66b7c55f435b1bdb62c98ce2dbb56d78b11dccbd2237c5ef"
+    },
+    "arbiter/ingestion/normalization.py": {
+      "raw": "942ad1daeab086f9440f7cb6832de60457d023d43420ac78ca67c5fa96beee93",
+      "canonical_lf": "942ad1daeab086f9440f7cb6832de60457d023d43420ac78ca67c5fa96beee93"
+    },
+    "arbiter/ingestion/permissions.py": {
+      "raw": "b8c5b9929412a942c71bdfd6961ba3bd8fe345017e54eef11ddcd9207934588d",
+      "canonical_lf": "b8c5b9929412a942c71bdfd6961ba3bd8fe345017e54eef11ddcd9207934588d"
+    },
+    "arbiter/ingestion/pipeline.py": {
+      "raw": "ba9f8e712165320c3fe146118535bb041363ed31f5da02bf9e789ea8403a77c7",
+      "canonical_lf": "ba9f8e712165320c3fe146118535bb041363ed31f5da02bf9e789ea8403a77c7"
+    },
+    "arbiter/ingestion/protection.py": {
+      "raw": "28a3247b87501edb2ff0598fa8e74185fb0576c1fac0fe3ab408750c7d49926a",
+      "canonical_lf": "28a3247b87501edb2ff0598fa8e74185fb0576c1fac0fe3ab408750c7d49926a"
+    },
+    "arbiter/ingestion/recommendations.py": {
+      "raw": "c11c6a8c64c0a6628213a3c0273212cf0b9047b4973cdca769a99f22487d49ef",
+      "canonical_lf": "2221f43493ba83e9618f399c8bef41d5a681249b360125c0093e319aaa326c6a"
+    },
+    "arbiter/ingestion/registry.py": {
+      "raw": "ff7dc1da2b9a4b61bf789453212cf905e2960709d8225d7a863a1219859b00d8",
+      "canonical_lf": "ff7dc1da2b9a4b61bf789453212cf905e2960709d8225d7a863a1219859b00d8"
+    },
+    "arbiter/ingestion/response_workflow.py": {
+      "raw": "696df48eee15eba72ebef627e05011f44c6692b6fd6302ea99949be494460850",
+      "canonical_lf": "696df48eee15eba72ebef627e05011f44c6692b6fd6302ea99949be494460850"
+    },
+    "arbiter/ingestion/schema.py": {
+      "raw": "32668f61dbe8dfbd17ac8c50bb76aa0cfe6346578af441885eb842830b80b929",
+      "canonical_lf": "32668f61dbe8dfbd17ac8c50bb76aa0cfe6346578af441885eb842830b80b929"
+    },
+    "arbiter/ingestion/service.py": {
+      "raw": "4d9c6a5989bdc30f60eea2cb09f631c7f60aa30db0117e9043ccbaaf2ebaf0b8",
+      "canonical_lf": "4d9c6a5989bdc30f60eea2cb09f631c7f60aa30db0117e9043ccbaaf2ebaf0b8"
+    },
+    "arbiter/ingestion/store.py": {
+      "raw": "a0df5880d13be727b7e53998c8433bf32c13777e2719f4ffc3287e2217fd4871",
+      "canonical_lf": "a0df5880d13be727b7e53998c8433bf32c13777e2719f4ffc3287e2217fd4871"
+    },
+    "arbiter/ingestion/wazuh_evidence.py": {
+      "raw": "ad3c3ac66776a69dab859023d2b1b8bda0b6e045702b8482eb3e140a0b0fc93d",
+      "canonical_lf": "ad3c3ac66776a69dab859023d2b1b8bda0b6e045702b8482eb3e140a0b0fc93d"
+    },
+    "arbiter/install/__init__.py": {
+      "raw": "71c4d9614120ae6651060a2aaf79433f28b8eba39adbbb4f8d11fcac5ba72ae3",
+      "canonical_lf": "71c4d9614120ae6651060a2aaf79433f28b8eba39adbbb4f8d11fcac5ba72ae3"
+    },
+    "arbiter/install/cli.py": {
+      "raw": "ed42b630faa19ad424db1b272c4dbc1d01463d96fdd55294f14d5c767f107919",
+      "canonical_lf": "ed42b630faa19ad424db1b272c4dbc1d01463d96fdd55294f14d5c767f107919"
+    },
+    "arbiter/install/lifecycle.py": {
+      "raw": "f7083368e4ebb848304e3497777c13f3752b3797a9e37e6dcaf696567b9d147a",
+      "canonical_lf": "f7083368e4ebb848304e3497777c13f3752b3797a9e37e6dcaf696567b9d147a"
+    },
+    "arbiter/install/monitoring.py": {
+      "raw": "dd3cdf738b54456f121ef70b456e38ee7dc45d288d441606f6fbee11e89d3094",
+      "canonical_lf": "dd3cdf738b54456f121ef70b456e38ee7dc45d288d441606f6fbee11e89d3094"
+    },
+    "arbiter/install/plan.py": {
+      "raw": "57c26672a063f078013e052bf116d2bbedead1b60b847aeedfec7ff5d9343ec4",
+      "canonical_lf": "57c26672a063f078013e052bf116d2bbedead1b60b847aeedfec7ff5d9343ec4"
+    },
+    "arbiter/install/preflight.py": {
+      "raw": "b9c9f8fff181cb6deefd97d4e1cd0a143725b08e49610b85a9ca9670cf98cfe7",
+      "canonical_lf": "b9c9f8fff181cb6deefd97d4e1cd0a143725b08e49610b85a9ca9670cf98cfe7"
+    },
+    "arbiter/install/runtime.py": {
+      "raw": "de3ca8d9ae82ce9292e0436328af6dace63d751f3e09f2da295fdfa1928c6175",
+      "canonical_lf": "de3ca8d9ae82ce9292e0436328af6dace63d751f3e09f2da295fdfa1928c6175"
+    },
+    "arbiter/install/service.py": {
+      "raw": "5f86dd40d18ba925f7b4fa95809934f23d972c08f76ee23792f84b9ee80cc7f3",
+      "canonical_lf": "5f86dd40d18ba925f7b4fa95809934f23d972c08f76ee23792f84b9ee80cc7f3"
+    },
+    "arbiter/l2.py": {
+      "raw": "c77006d15a709da64b70b0bf1f4ed6aaf0283dad3eba1c92812fb6b4d70fc8a2",
+      "canonical_lf": "c77006d15a709da64b70b0bf1f4ed6aaf0283dad3eba1c92812fb6b4d70fc8a2"
+    },
+    "arbiter/l2_advisory.py": {
+      "raw": "8b103534e7782fdf2b6f44a621ff8a01c494ac9d9307e5b64e2f806babecb06f",
+      "canonical_lf": "8b103534e7782fdf2b6f44a621ff8a01c494ac9d9307e5b64e2f806babecb06f"
+    },
+    "arbiter/l2_evidence.py": {
+      "raw": "473dafc7ebfcd12892023b81786752ec8b23aeb663c4d5333956510d5aa3f9fa",
+      "canonical_lf": "473dafc7ebfcd12892023b81786752ec8b23aeb663c4d5333956510d5aa3f9fa"
+    },
+    "arbiter/l2_final_review.py": {
+      "raw": "678cc7ef306beef402678ee687c99bda877746da4a5d538f6b428199109e23df",
+      "canonical_lf": "678cc7ef306beef402678ee687c99bda877746da4a5d538f6b428199109e23df"
+    },
+    "arbiter/l2_guardrails.py": {
+      "raw": "f210beea46784857f77ecbc81e0874318a8f1ece4272c9781d40236019033dff",
+      "canonical_lf": "f210beea46784857f77ecbc81e0874318a8f1ece4272c9781d40236019033dff"
+    },
+    "arbiter/l2_transport.py": {
+      "raw": "d1d328ca483d2b4176722b975e87f94b446ab60f1eca73ab2784d9de7a4ef5b4",
+      "canonical_lf": "d1d328ca483d2b4176722b975e87f94b446ab60f1eca73ab2784d9de7a4ef5b4"
+    },
+    "arbiter/l2_workflow.py": {
+      "raw": "f56b1d9a6c8ed8234be05bd2dd3d08e1c56bdb94165cd6cfac6c303abd28d4a6",
+      "canonical_lf": "f56b1d9a6c8ed8234be05bd2dd3d08e1c56bdb94165cd6cfac6c303abd28d4a6"
+    },
+    "arbiter/llm.py": {
+      "raw": "764801e059221dfc30d6ef58702de0d5edfbe0f82cd603a7986c190ff6b4049f",
+      "canonical_lf": "4fead6a31702616831cb5c419e25a69df2acd5a45bb65a5ee0e966be9db3b6f3"
+    },
+    "arbiter/memory.py": {
+      "raw": "f4d5c94d02b84faf026cdb0fa93af30aed3101059b94fae3e4e0649354befe3b",
+      "canonical_lf": "f4d5c94d02b84faf026cdb0fa93af30aed3101059b94fae3e4e0649354befe3b"
+    },
+    "arbiter/portable.py": {
+      "raw": "f14cddff5099819afc20e3fa273cbee0f3e9eec17ce04d36735cd6ae3f3acde1",
+      "canonical_lf": "f14cddff5099819afc20e3fa273cbee0f3e9eec17ce04d36735cd6ae3f3acde1"
+    },
+    "arbiter/prefilter.py": {
+      "raw": "470eac58b053f9b83fd558b087bc61f3800cc6bd592d494fa277758a4da5ef7f",
+      "canonical_lf": "470eac58b053f9b83fd558b087bc61f3800cc6bd592d494fa277758a4da5ef7f"
+    },
+    "arbiter/readiness.py": {
+      "raw": "a031c24efe4996c7258c97895f381a1ab71280e29803ef35780f005f6ba8f2ea",
+      "canonical_lf": "a031c24efe4996c7258c97895f381a1ab71280e29803ef35780f005f6ba8f2ea"
+    },
+    "arbiter/respond.py": {
+      "raw": "76c6493af57deaf4d4b54cc33a0b4feb98c6fb27bedb947e3af8f68c32016762",
+      "canonical_lf": "76c6493af57deaf4d4b54cc33a0b4feb98c6fb27bedb947e3af8f68c32016762"
+    },
+    "arbiter/review.py": {
+      "raw": "c149b57b9bd96302f6a97b0f0d524e8d64b151606459f7b1911ce106a4f8ccde",
+      "canonical_lf": "c149b57b9bd96302f6a97b0f0d524e8d64b151606459f7b1911ce106a4f8ccde"
+    },
+    "arbiter/schema.py": {
+      "raw": "9c4c2fd5824cdb9e751f88e0f3286de6f4308166da2b841aa8fb5525f7cad7e2",
+      "canonical_lf": "9c4c2fd5824cdb9e751f88e0f3286de6f4308166da2b841aa8fb5525f7cad7e2"
+    },
+    "arbiter/site_cloud.py": {
+      "raw": "025622468778cd182260b6bec4dbf3870b49ac58514b5c23a5e71e3b713b115c",
+      "canonical_lf": "025622468778cd182260b6bec4dbf3870b49ac58514b5c23a5e71e3b713b115c"
+    },
+    "arbiter/site_demo.py": {
+      "raw": "517dc945be8c057ce1ca95a09817f6e322ec38ae77d35ecf83b46dd562633a88",
+      "canonical_lf": "517dc945be8c057ce1ca95a09817f6e322ec38ae77d35ecf83b46dd562633a88"
+    },
+    "arbiter/store.py": {
+      "raw": "758b4fe4c682feb6b1d126d66933ab748a3658cd0b268e9fd0c641bfd2cf9779",
+      "canonical_lf": "758b4fe4c682feb6b1d126d66933ab748a3658cd0b268e9fd0c641bfd2cf9779"
+    },
+    "arbiter/tool_policy.py": {
+      "raw": "6448c686d8db34749e139f28cdedd4b4e1165291cde2c9ffe447c2e08d49ec68",
+      "canonical_lf": "6448c686d8db34749e139f28cdedd4b4e1165291cde2c9ffe447c2e08d49ec68"
+    },
+    "arbiter/triage.py": {
+      "raw": "777b8b4869e4811b6ebfd5b6246465a4a71418e5484ffb207eec13a0abdf27f2",
+      "canonical_lf": "777b8b4869e4811b6ebfd5b6246465a4a71418e5484ffb207eec13a0abdf27f2"
+    }
+  },
+  "runner_sha256": "e83b09c9422aeec20cd81b225971cc0b479646421fc2969065ee51e26a897366",
+  "python": "3.14.5",
+  "protocol": {
+    "mode": "historical classification replay; Gemma may confirm or suppress successful Qwen escalations; no device actions",
+    "route": "only successful L1 local-model escalations; rule and failure-policy alerts bypass Gemma and remain visible",
+    "first_stage": "fresh independent memory per alert; unchanged Qwen prompt",
+    "second_stage": "Gemma assessment plus separate challenge call; exact fact assertions and citations validated",
+    "staging": "all Qwen decisions first, then all eligible Gemma reviews; not a live queue-delay measurement",
+    "review_budget_s": 180,
+    "gemma_options": {
+      "think": false,
+      "num_ctx": 8192,
+      "num_predict": 1536,
+      "temperature": 0.1
+    },
+    "suppression_policy": "Gemma suppress decision plus routine_looking outlook, confidence >=0.9 and accepted challenge; else retain alert",
+    "output_format": "JSON schemas for assessment and critic, then independent Python evidence/decision validation",
+    "user_mode_change": "advice-only pilot stopped after 5 of 96 reviews; no pilot reviews count in this new run",
+    "preflight": "one detailed probe with native thinking enabled timed out at 90s; final advice options were chosen before scored execution",
+    "grounding_limit": "exact assertions/citation IDs are checked; semantic truth of all prose is not certified"
+  },
+  "started_utc": "2026-11-18T00:48:33.792454+00:00"
+}

@@ -7,9 +7,11 @@ needs attention, and explain the next step to a person. Separate approval and
 safety checks control any supported device action. The moving dots show the
 route through the software; they are not live traffic or measured speed.
 
-**Qwen3.5 is the local AI model shown here and used in our public-data test. It
-is replaceable with another compatible local AI model.** The model gives an
-opinion; it does not control the safety rules or authorize device changes.
+**Qwen3.5:4b is L1, the first reviewer. Gemma4:12b is L2, the final reviewer of
+alerts Qwen escalates. Both can be replaced with compatible local models.**
+Gemma never receives the incoming stream directly. It can keep or suppress a
+Qwen alert with a written reason. Pending, uncertain or failed reviews keep the
+warning visible. Neither model can authorize a device change in this preset.
 
 **Prefer no motion? [Read the identical still-diagram edition](architecture/STILL.md).**
 The explanations below also provide a complete text equivalent. The GIF and SVG
@@ -21,7 +23,7 @@ to test next](FINDINGS-IN-PLAIN-ENGLISH.md).
 
 ## The complete flow: intake and triage together
 
-![One connected animated flowchart from security signals through collection, normalization, queue, context, guardrails and prefilter to optional local reasoning, validated verdicts, audit storage and an operator-facing explanation. Labelled shortcut branches show direct suppression and escalation without AI.](architecture/arbiter-flow.gif)
+![Collection, evidence and rules lead to Qwen L1; only Qwen's escalations reach Gemma L2. Gemma confirms or suppresses them after a separate challenge, with written reasons and both reviews preserved. Mandatory safety warnings bypass L2; failed or uncertain reviews retain the alert.](architecture/arbiter-flow.gif)
 
 Read downward along the center when an event is unclear. Follow the side arrows
 when the rules can decide sooner. **Blue** gathers and organizes information;
@@ -38,16 +40,26 @@ observation; **red** asks a person to review. Both outcomes keep a written recor
 | 04 — Connect clues | Look at nearby events, the computer's role, previous decisions and approved facts. | One event can be misleading. A fact about a different account or action should not excuse it. |
 | 05 — Apply safety rules | Ask whether a recorded risky signal requires review. | The AI cannot simply dismiss a protected finding. A warning does not prove a breach succeeded. |
 | 06 — Use quick sorting rules | Decide clear cases without asking the AI. | Routine observations can stay quiet; clearly risky events can be flagged promptly. |
-| 07 — Ask Qwen3.5 | Have the local model read an unclear alert and explain its recommendation. | This is the replaceable model stage. Another compatible local model needs its own evaluation. |
+| 07 — Ask Qwen3.5:4b | Have the first local model read an unclear alert and explain its recommendation. | Another compatible local model can replace it but needs its own evaluation. |
 | 08 — Check the AI answer | Check its format, confidence and consistency with the safety rules. | An AI failure or a recommendation that is too uncertain goes to human review. These checks do not guarantee a correct judgment. |
 | 09 — Save the decision | Keep the reason, evidence, history and which rule or model decided. | A person can inspect the decision and correct it later. |
 | 10 — Explain the next step | Show what happened, where it came from, what is unknown and what to check. | Advice helps a person investigate; it does not authorize changes to a computer. |
+| 11 — Ask Gemma4:12b for a final review | Review only Qwen's escalations, then challenge the proposed final decision. | Keep the alert or suppress it with a written reason, checked facts, confidence of at least 0.9 and an accepted challenge. Uncertainty or failure retains the alert. No device action rights. |
+
+Mandatory safety-rule warnings remain visible and do not enter Gemma directly.
+Quiet observations and Qwen-failure policy alerts also bypass L2. The original
+single-brain evaluation remains a baseline; the two-brain replay records fresh
+Qwen decisions, Gemma's final decisions, missed attack annotations, remaining
+warnings, challenges, failures and timing. The source terminal view preserves
+both reviews; original ingestion/audit totals remain first-stage evidence.
 
 ## Qwen3.5, replacement models, and Ollama
 
 **Qwen3.5 is the model that reads and reasons about the alert. Ollama is the
 software currently used to run that model locally. They are different parts.**
-The diagram names the model, rather than presenting its runner as the AI itself.
+The diagram names the models, rather than presenting their runner as the AI itself.
+Gemma4:12b is the selected second model. The two-brain source-agent preset is
+documented in [the second-brain setup guide](TWO-BRAIN-SETUP.md).
 
 You can replace Qwen3.5 with another compatible local language model. It must
 accept the evidence and return the decision format Arbiter expects. A different
@@ -247,6 +259,19 @@ different states. No general-purpose remote shell is exposed by the model.
 ![Vertical optional L2 flow: agent escalation, independently rebuilt dossier, separate local investigation and challenge, policy gate; separate customer/public deployment boxes and a clearly planned remote controller/edge target.](architecture/04-boundaries.gif)
 
 ### Optional L2 belongs to the terminal agent
+
+The selected Qwen/Gemma preset uses **final alert review**. Only successful Qwen
+escalations enter this route. Separate local transport requests a fixed response
+format; code then validates copied fact values, citation IDs and the proposed
+decision. Gemma assesses and challenges it. Suppression needs a routine-looking
+assessment, confidence of at least 0.9 and an accepted challenge. Internal thinking
+is off; written hypotheses and challenge remain visible. An uncertain, invalid or
+unavailable review retains the warning. These checks do not certify conclusions.
+Each completed decision belongs to its exact event, so a newer event cannot
+inherit an older event's suppression.
+
+The stricter native response mode described below remains separate. Historical
+Wazuh/public replay records are not accepted as fresh native containment evidence.
 
 L2 is off by default and explicitly configured with a distinct local model.
 Metadata must report more than four billion parameters; no model is downloaded

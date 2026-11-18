@@ -1,5 +1,9 @@
 # Arbiter AI: what our public attack-data test taught us
 
+**New two-brain test:** [Qwen L1 → Gemma L2 results](TWO-BRAIN-PUBLIC-EVAL.md)
+explain what happened when Gemma could confirm or suppress Qwen's escalations.
+This page preserves the earlier single-brain findings and rule improvements.
+
 **We fixed the missed attack-related alerts found in our first sample. Arbiter also became better at quieting routine-looking alerts, but it still asks people to review too many of them. These results come from a small public laboratory dataset, not from protecting a real company during a breach.**
 
 ## What did we test with?

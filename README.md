@@ -13,6 +13,11 @@ account validation and production-scale delivery remain future validation work.
 
 ## Public-data evaluation
 
+The [Qwen L1 / Gemma L2 evaluation](docs/TWO-BRAIN-PUBLIC-EVAL.md) tests the
+two-brain workflow: Qwen3.5:4b escalates unclear alerts; Gemma4:12b receives only
+those escalations and keeps or suppresses them with a written reason. The
+[source-agent setup guide](docs/TWO-BRAIN-SETUP.md) explains how to run it locally.
+
 Start with [the findings in plain English](docs/FINDINGS-IN-PLAIN-ENGLISH.md):
 what public attack data we used, where Qwen3.5 made the wrong call, what we
 improved, and what we plan to test next. The [technical report and evidence](docs/PUBLIC-DATA-EVAL-2026-11-17.md)
@@ -24,13 +29,16 @@ results on simulated attacks; production detection rates remain unverified.
 **[Explore the detailed animated architecture walkthrough →](docs/ARCHITECTURE-WALKTHROUGH.md)**
 
 Follow one connected flowchart with everyday explanations at each stage.
-It names **Qwen3.5** as the current local AI model and shows that another
-compatible local model can replace it. Labelled branches explain when rules
+It names **Qwen3.5:4b as L1** and **Gemma4:12b as L2**, and shows that compatible
+local models can replace either. Gemma receives only Qwen's escalations, then
+keeps or suppresses the alert with a written reason. Labelled branches explain when rules
 can decide without AI and when a person needs to review an alert.
 Blue follows collection and rules, purple marks AI, green means suppressed,
 and red means escalated. The detailed walkthrough links every stage to code.
+The L1/L2 route shown is the optional terminal-agent preset; the installed
+dashboard requires a separate update and integration.
 
-[![Complete animated Arbiter architecture: sources converge into collectors, validated events and durable storage; correlation and scoped memory feed guardrails and a prefilter; explicit shortcuts bypass local AI; validated decisions become observations or alerts, persist to audit, and reach the operator with reasons and next steps.](docs/architecture/arbiter-flow.gif)](docs/ARCHITECTURE-WALKTHROUGH.md)
+[![Arbiter architecture: collection and rules lead to Qwen3.5:4b L1; only Qwen escalations reach Gemma4:12b L2, which confirms or suppresses them with a written reason. Failed or uncertain reviews retain the alert. Both reviews remain auditable; classification grants no device-action rights.](docs/architecture/arbiter-flow.gif)](docs/ARCHITECTURE-WALKTHROUGH.md)
 
 [Read without animation](docs/architecture/STILL.md).
 

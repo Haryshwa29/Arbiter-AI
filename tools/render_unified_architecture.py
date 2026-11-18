@@ -7,14 +7,14 @@ from PIL import Image, ImageDraw
 from render_architecture import font
 
 OUT = Path(__file__).resolve().parents[1] / 'docs' / 'architecture'
-W, H = 1120, 3160
+W, H = 1120, 3620
 INK, MUTED = '#eef3fa', '#b8c5d8'
 BLUE, PURPLE, RED, GREEN, GOLD = '#82b7ff', '#c4a0ff', '#ff939b', '#7cddb0', '#f2c777'
 base = Image.new('RGB', (W, H), '#0d1420')
 d = ImageDraw.Draw(base)
 svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="title desc">',
        '<title id="title">Arbiter AI: one event, from evidence to explained decision</title>',
-       '<desc id="desc">Follow an event through reading reports, organizing evidence, saving a waiting line, connecting clues, safety rules, quick sorting, optional Qwen3.5 review, answer checks, saved decisions and human review. Qwen3.5 can be replaced with another compatible local AI model. The model cannot authorize a device action.</desc>',
+       '<desc id="desc">Follow an event through collection, evidence checks, rules and Qwen3.5:4b L1. Only Qwen escalations reach Gemma4:12b L2, which confirms or suppresses the alert after a separate challenge. Uncertain or failed reviews retain the alert; mandatory safety warnings bypass L2. Both reviews remain auditable. Either model can be replaced by a compatible local model. Classification does not authorize device actions.</desc>',
        f'<rect width="{W}" height="{H}" fill="#0d1420"/>']
 
 
@@ -76,7 +76,7 @@ def decision(y,n,title,line):
 
 text(52,35,'ARBITER AI / SYSTEM ARCHITECTURE',21,BLUE,True)
 text(52,78,'From raw evidence to a clear next step',39,INK,True)
-text(52,135,'Rules handle clear cases. Qwen3.5 reviews the unclear ones.',24,MUTED)
+text(52,135,'Qwen is L1. Only its escalations go to Gemma L2 for a final review.',24,MUTED)
 
 for x,title,lines,color,fill in [
     (50,'COMPUTER REPORTS',['Windows / Sysmon','Defender / osquery'],BLUE,'#162840'),
@@ -104,7 +104,7 @@ decision(1280,'05','Must someone review?','Safety rules check for known risky si
 edge([(560,1440),(560,1540)],BLUE,'No forced review',570,1460)
 decision(1540,'06','Can quick rules decide?','Clearly routine, clearly risky, or still unclear?')
 edge([(560,1700),(560,1820)],PURPLE,'Unclear: ask the AI',574,1740)
-node(1820,'07','Qwen3.5: replaceable local AI',['Review unclear alerts and explain a recommendation.','Swap in another compatible local AI model if needed.'],PURPLE,'#241c35')
+node(1820,'07','First brain: Qwen3.5:4b',['Review unclear alerts and explain a recommendation.','This local model can be replaced by a compatible one.'],PURPLE,'#241c35')
 edge([(560,1970),(560,2050)],PURPLE,'Model answer',574,1990)
 node(2050,'08','Check the AI recommendation',['Check the answer against rules and required evidence.','If the AI fails or is too unsure, ask a person to review.'],PURPLE,'#241c35')
 
@@ -126,10 +126,22 @@ edge([(305,2555),(305,2590),(560,2590),(560,2630)],GREEN)
 edge([(815,2555),(815,2590),(560,2590),(560,2630)],RED)
 node(2630,'09','Save the decision and reason',['Record the decision, evidence, and rule or model used.','Keep a history so a person can check the reasoning.'],BLUE)
 edge([(560,2780),(560,2830)])
-node(2830,'10','Show a person the next step',['Explain what happened, where, and what needs checking.','Suggestions do not authorize changes to the computer.'],BLUE)
-text(52,3010,'TRUST BOUNDARY',18,GOLD,True)
-text(52,3042,'The AI advises. Separate approval and safety checks control actions.',26,INK,True)
-text(52,3090,'Exception: an exact approved fact may allow AI review of a rule hit; it cannot dismiss the alert alone.',18,MUTED)
+node(2830,'10','Show a person the next step',['Explain what happened, where, and what needs checking.','Keep alerts visible while the second brain investigates.'],BLUE)
+edge([(560,2980),(560,3030)],PURPLE,'Only Qwen-flagged alerts',574,2990)
+node(3030,'11','L2 final review: Gemma4:12b',['Assess the recorded facts, then challenge that assessment.','Keep or quiet Qwen\'s alert, with a written reason.'],PURPLE,'#241c35')
+edge([(560,3180),(560,3230),(305,3230),(305,3290)],GREEN,'Supported routine explanation',95,3250)
+edge([(560,3180),(560,3230),(815,3230),(815,3290)],RED,'Risky, uncertain or failed',680,3250)
+for x,title,lines,color,fill in [
+    (90,'SUPPRESS L1 ALERT',['Keep both reviews and the reason.','No device action.'],GREEN,'#163027'),
+    (600,'KEEP L1 ALERT',['Keep the warning visible.','A person investigates.'],RED,'#351e28'),
+]:
+    rect((x,3290,430,120),fill,color)
+    text(x+20,3305,title,23,color,True,max_width=390)
+    for i,line in enumerate(lines):text(x+20,3345+i*28,line,19,MUTED,max_width=390)
+text(52,3450,'WHO CAN AUTHORIZE A DEVICE CHANGE?',18,GOLD,True)
+text(52,3482,'Alert decisions do not authorize commands, blocks or other actions.',26,INK,True)
+text(52,3530,'Either model can be replaced by a compatible local model. Both reviews remain auditable.',18,MUTED)
+text(52,3562,'Mandatory safety-rule warnings stay flagged; they do not enter Gemma directly.',18,MUTED)
 svg.append('</svg>')
 OUT.mkdir(parents=True,exist_ok=True)
 (OUT/'arbiter-flow.svg').write_text('\n'.join(svg)+'\n',encoding='utf-8')
