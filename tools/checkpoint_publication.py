@@ -27,7 +27,15 @@ REFERENCES=[
      'scope':'Query cadence and data window, not one alert processed per minute.'},
     {'title':'Published guided-response architecture, 2024','url':'https://arxiv.org/html/2407.09017v1',
      'metric':'15-minute inference-job interval; batch latency of a few minutes while handling very large daily incident volumes.',
-     'scope':'Distributed incident-level recommendation batches, not an isolated single-alert timing on our hardware.'}]
+     'scope':'Distributed incident-level recommendation batches, not an isolated single-alert timing on our hardware.'},
+    {'title':'Managed SOC observed workload, reported March 2026',
+     'url':'https://investors.n-able.com/news/news-details/2026/N-able-Report-Reveals-Why-AI-Powered-Layered-Cyber-Defense-Is-Essential-for-Business-Resilience/default.aspx',
+     'metric':'Average two alerts/minute during March-December 2025, as reported by the provider.',
+     'scope':'Observed operational volume, not an ideal rate, measured maximum capacity or isolated-alert latency.'},
+    {'title':'Published automated workflow capacity claim',
+     'url':'https://d3security.com/resources/event-pipeline-automate-handling-of-hundreds-of-alerts-per-minute/',
+     'metric':'Up to 200 alerts/minute advertised for automated tier-one workflows.',
+     'scope':'Vendor-reported capacity with normalization, deduplication, triage and enrichment; no matched AIT-ADS quality/hardware test or single-alert latency.'}]
 
 
 def raw_subset(cache, selected, destination):
@@ -171,7 +179,7 @@ def prepare(run,work,publication,cache):
         'No commercial system was run on these same records, hardware, context, quality targets and forced one-record workflow. A claim that enterprise products would be slower one-by-one is therefore untested. The proposed 1–3 alerts/minute figure has not been established as a universal automated corporate standard and is not used to claim superiority.','',
         '| Published reference | Number and unit | Why it is not our same measurement |','|---|---|---|']
     for ref in REFERENCES:lines.append(f"| [{ref['title']}]({ref['url']}) | {ref['metric']} | {ref['scope']} |")
-    lines+=['','References checked November 18, 2026. A one-minute query schedule is not a one-alert-per-minute throughput ceiling. A distributed batch can process many incidents together; its interval cannot be divided or multiplied into an invented isolated-alert latency. Fast local classification is a measured property of this replay, not proof of faster corporate investigation, ingestion, correlation, or response.','',
+    lines+=['','References checked November 18, 2026. A one-minute query schedule is not a one-alert-per-minute throughput ceiling. The reported two-alerts/minute workload is not a processing limit; the 200/minute automation claim also prevents treating 1-3/minute as a universal corporate capacity. Vendor claims are attributed, not independently reproduced here. A distributed batch can process many incidents together; its interval cannot be divided or multiplied into an invented isolated-alert latency. Fast local classification is a measured property of this replay, not proof of faster corporate investigation, ingestion, correlation, or response.','',
         '## Next steps','',
         'Use a separate frozen, balanced attack/routine comparison or a complete attack-containing timeline; preserve scoring labels outside prompts. Test the actual concurrent agent with persistent scoped context, case grouping and realistic arrival bursts. Compare identical isolated records and quality requirements on both systems if a true one-to-one commercial benchmark is required. Improve independently supported ordinary explanations, inspect unsupported suppressions, and test live queue delay before publishing response-time claims.','',
         'The original data and completed decisions were not rewritten or selectively retried. A last unfinished attempt can be interrupted by the requested stop and is not scored as a completed result. The dataset and source hashes identify the exact run; the ZIP manifest protects the downloadable bytes.','']
