@@ -125,6 +125,16 @@ def prepare(run,work,publication,cache):
     raw_subset(cache,selected,work)
     elapsed=(datetime.fromisoformat(summary['stop']['stopped_utc'])-datetime.fromisoformat(started)).total_seconds()
     latency={k:timing(v) for k,v in values.items()}
+    layers=summary['layers'];l1_mean=layers['l1_elapsed_s']/n;l2_mean=layers['l2_elapsed_s']/n
+    projections=[]
+    overlap_gain=100*((l1_mean+l2_mean)/max(l1_mean,l2_mean)-1)
+    if 'gemma_review' in latency:
+        review_mean=latency['gemma_review']['mean_s'];eligible_share=layers['l2_inputs']/n
+        for suppress_share in (0,.5,.75,.9):
+            l2_cost=eligible_share*(1-suppress_share)*review_mean
+            projections.append({'assumed_l2_prefilter_suppression_percent':100*suppress_share,
+                'serial_inference_records_per_minute':60/(l1_mean+l2_cost),
+                'ideal_stage_overlap_records_per_minute':60/max(l1_mean,l2_cost)})
     analysis={'completed':n,'scope':summary['scope'],'by_scenario':summary['by_scenario'],
         'l1':summary['l1'],'final':summary['final'],'layers':summary['layers'],
         'latency':latency,'wall_elapsed_s':elapsed,'observed_records_per_minute':n*60/elapsed,
@@ -132,13 +142,21 @@ def prepare(run,work,publication,cache):
         'l2_rules':summary['l2_rules'],'retained_unannotated_sources':dict(noisy_sources.most_common()),
         'hardware':hardware,'reference_checked_date':'2026-11-18','corporate_references':REFERENCES,
         'workload_references':[{**ref,'average_arrivals_per_minute':ref['daily_alerts']/1440} for ref in WORKLOAD_REFERENCES],
+        'performance_estimates':{'unchanged_routing_ideal_stage_overlap_gain_percent':overlap_gain,
+            'corrected_routing_scenarios':projections,'measured':False},
         'comparison_result':'No matched commercial single-alert benchmark was run; no superiority or speedup factor is established.'}
     final=summary['final'];c=summary['layers'];attacks=final['attack_labels_flagged']+final['attack_labels_quieted']
     negative=final['unannotated_flagged']+final['unannotated_quieted']
     first_noise=summary['l1']['unannotated_flagged'];cleared=first_noise-final['unannotated_flagged']
+    kept=final['unannotated_flagged']+final['attack_labels_flagged']
+    context_kept=summary['l2_rules'].get('L2_CONTEXT_REQUIRED',0)
+    wall_seconds=round(elapsed)
     lines=[f'# Arbiter AI: {n:,}-record public-data checkpoint','',
         '**This is a user-requested partial checkpoint, not the completed 2.6-million-record evaluation.**','',
+        f"**Arbiter kept {100*kept/n:.2f}% of the records visible for review ({kept:,}/{n:,}). Its policy is to raise a warning when activity looks suspicious and the available evidence does not justify suppressing it.**",'',
+        f"Of the retained warnings, {context_kept:,} ({100*context_kept/kept if kept else 0:.2f}%) were explicitly retained by L2's context-required rule after Qwen raised a concern. The other deciding layers are broken down below. These are requests for investigation; independent evidence is needed to establish whether an attack occurred.",'',
         f"The run stopped after {n:,} committed records from {summary['by_scenario']}. Input was sequential original file order, one scenario at a time, with empty history for each record. It was not randomized or balanced. No live device actions were enabled.",'',
+        f"**Time to this checkpoint: {wall_seconds//3600} hours, {(wall_seconds%3600)//60} minutes, {wall_seconds%60} seconds.** The first record attempt started at {started}; the stop was confirmed at {summary['stop']['stopped_utc']} (UTC). This elapsed time includes model work and ordinary pauses/overhead during the run, rather than adding up inference durations alone.",'',
         '## Our safety policy','',f'> {QUOTE}','',
         '**Terminology correction:** suppressing a real attack is a false negative. A true negative is correctly quieting a harmless record and is desirable. The intended policy is: keep suspicious alerts visible when the available evidence does not justify suppression.','',
         'That policy is implemented through uncertain/error escalation, L2 context-required routing, known-risk vetoes, suppression-confidence checks and the shared final guardrail. It is a design requirement, not a guarantee that model reasoning never fails. Conservative policy does not turn a benchmark false positive into a successful detection.','',
@@ -156,7 +174,7 @@ def prepare(run,work,publication,cache):
         f"| Unannotated records still flagged | {summary['l1']['unannotated_flagged']:,} | {final['unannotated_flagged']:,} |",
         f"| Agreement with publisher labels | {summary['l1']['label_agreement_percent']:.2f}% | {final['label_agreement_percent']:.2f}% |",'',
         ('**No attack-labelled records were processed. Attack-detection recall and missed-attack performance are unmeasured; do not publish the agreement percentage as overall attack accuracy.**' if not attacks else f"Attack-label recall: {final['attack_label_recall_percent']:.2f}% on {attacks:,} selected records; not a production detection rate."),'',
-        f"The {final['unannotated_flagged']:,} retained unannotated records count as false positives under this label-based scoring convention ({100*final['unannotated_flagged']/negative:.2f}% of unannotated records). Missing attack annotations do not independently certify harmlessness. These flags remain an unresolved noise cost, not successes excused by the safety policy.",'',
+        f"The {final['unannotated_flagged']:,} retained unannotated records count as false positives under this label-based scoring convention ({100*final['unannotated_flagged']/negative:.2f}% of unannotated records). Missing attack annotations do not independently certify harmlessness. The conservative policy explains why warnings remain visible; they still create review work and retain their benchmark scores.",'',
         '## What worked, and what remains weak','',
         f"- Qwen reviews: {c['qwen_reviews']:,}; L2 inputs: {c['l2_inputs']:,}; L2 decisions without Gemma: {c['l2_rule_decisions']:,}.",
         f"- Actual Gemma reviews with replies: {c['gemma_reviews']:,}; additional warnings quieted by Gemma: {c['gemma_suppressions']:,}.",
@@ -164,6 +182,7 @@ def prepare(run,work,publication,cache):
         f"- Qwen errors: {c['qwen_errors']:,}; L2 errors: {c['l2_errors']:,}. Successful completion/format validation is not a semantic-correctness score.",
         '- Both model stages and final vetoes are preserved. Alerts lacking enough context remain visible; no containment permission was granted.',
         '- Many retained warnings still lack useful independent flow/login context. This checkpoint does not establish strong noise reduction by L2.',
+        '- Routing limitation: the current L2 prefilter retained context-poor alerts without letting Gemma investigate. This saved model calls but did not follow the requested suppress-or-pass-to-Gemma handoff. The separate upgrade corrects that routing; its prefilter must independently justify routine suppressions, and unresolved cases go to Gemma before the final guardrail. These corrected decisions are not part of this checkpoint.',
         '- The separate context-upgrade development probe found unsupported Gemma suppressions accepted by its critic. Those different synthetic checks are preserved separately and are not mixed into these scores. The upgrade was not installed into this frozen run.','',
         '### Where the unwanted alerts came from','',
         'The final deciding-layer table below separates who left each warning visible. Qwen can raise a concern, then the L2 prefilter can retain it because supporting context is absent; in that case Gemma never sees it. This is conservative routing, not evidence that Gemma reviewed and agreed with every warning. It also means the current L2 policy often cannot reduce noise on isolated records. More context must support a specific ordinary explanation, rather than simply instructing the model to suppress more.','',
@@ -202,6 +221,15 @@ def prepare(run,work,publication,cache):
         '| Published reference | Number and unit | Why it is not our same measurement |','|---|---|---|']
     for ref in REFERENCES:lines.append(f"| [{ref['title']}]({ref['url']}) | {ref['metric']} | {ref['scope']} |")
     lines+=['','References checked November 18, 2026. A one-minute query schedule is not a one-alert-per-minute throughput ceiling. The reported two-alerts/minute workload is not a processing limit; the 200/minute automation claim also prevents treating 1-3/minute as a universal corporate capacity. An under-two-minute claim is an upper bound, not an exact measured latency from which to invent a speedup factor. Vendor claims are attributed, not independently reproduced here. A distributed batch can process many incidents together; its interval cannot be divided or multiplied into an invented isolated-alert latency. Fast local classification is a measured property of this replay, not proof of faster corporate investigation, ingestion, correlation, or response.','',
+        '## Upcoming upgrade: estimated performance, not measured improvement','',
+        'The proposed terminal pipeline has five workers: gateway, L1, L2 prefilter, L2 and final guardrail. Controlled software tests can establish that the stages overlap; they do not establish real-GPU speedup. The checkpoint above remains the original sequential architecture.','',
+        f"With the existing routing and the same stage costs, perfect independent overlap of L1 and L2 would reduce their serial bottleneck enough for at most about **{overlap_gain:.2f}% higher stage-work throughput**. This calculation compares summed stage time with the slower stage, not with an enterprise product. It excludes queue/database overhead and is not a promised wall-clock gain.",'',
+        'The routing fix is a separate change: it sends unresolved Qwen escalations to Gemma instead of treating missing context as a terminal flag. A stronger independent L2 prefilter can quiet supported routine cases, but its suppression rate has not been established. More Gemma reviews can outweigh the benefit of parallel workers.','',
+        'The upcoming prefilter uses independently checked reasons, including exact human-corrected process context and a narrow native Wazuh resolved-vulnerability notification check. It does not copy Qwen\'s opinion or promise to suppress most escalations. The final guardrail still protects risky or unsupported exits. These are software-tested rules, not measured improvements on this public checkpoint.','',
+        '| Assumed share of L1 escalations safely quieted by L2 prefilter | Serial inference scenario, records/min | Ideal independent-stage overlap, records/min |','|---|---:|---:|']
+    for projection in projections:
+        lines.append(f"| {projection['assumed_l2_prefilter_suppression_percent']:.0f}% | {projection['serial_inference_records_per_minute']:.2f} | {projection['ideal_stage_overlap_records_per_minute']:.2f} |")
+    lines+=['','These are planning scenarios, not tested outcomes or guaranteed bounds. Each assumes this checkpoint\'s mean L1 cost, fraction of eligible L1 escalations and mean Gemma review time remain unchanged; every unsuppressed eligible escalation reaches Gemma. The first column is an assumption, not a suppression target. The serial scenario adds average stage costs; the ideal overlap scenario uses the slower stage. Shared-GPU contention, reloads, longer context, extra enrichment, bursts and storage can make real throughput worse than either estimate. Overlapping different records does not by itself shorten one Gemma assessment/challenge. Do not force unsafe suppressions to reach a desired percentage. No estimated accuracy gain is claimed before a separate attack-containing evaluation.','',
         '## Next steps','',
         'Use a separate frozen, balanced attack/routine comparison or a complete attack-containing timeline; preserve scoring labels outside prompts. Test the actual concurrent agent with persistent scoped context, case grouping and realistic arrival bursts. Compare identical isolated records and quality requirements on both systems if a true one-to-one commercial benchmark is required. Improve independently supported ordinary explanations, inspect unsupported suppressions, and test live queue delay before publishing response-time claims.','',
         'The original data and completed decisions were not rewritten or selectively retried. A last unfinished attempt can be interrupted by the requested stop and is not scored as a completed result. The dataset and source hashes identify the exact run; the ZIP manifest protects the downloadable bytes.','']
