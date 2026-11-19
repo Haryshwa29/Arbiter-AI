@@ -1,5 +1,5 @@
 """Durable L2 deadlines and policy-controlled response, outside the triage brain."""
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import hashlib
 import json
 import queue
@@ -170,9 +170,14 @@ class L2Workflow:
         sources=('windows','sysmon','defender','linux_auth','local_process')
         if getattr(self.brain,'final_review',False) is True: sources+=('wazuh',)
         placeholders=','.join('?' for _ in sources)
-        state = "(state='done' OR (state='processing' AND analysis IS NOT NULL))" if getattr(self.brain,'final_review',False) is True else "state='done'"
+        final=getattr(self.brain,'final_review',False) is True
+        state = "(state='done' OR (state='processing' AND analysis IS NOT NULL))" if final else "state='done'"
+        index=' INDEXED BY idx_telemetry_review_context' if final else ''
+        window=' AND timestamp>=?' if final else ''
+        values=[row['event']['hostname'],*sources,row['event']['timestamp']]
+        if final:values.append((datetime.fromisoformat(row['event']['timestamp'])-timedelta(minutes=5)).isoformat())
         with buffer.lock:
-            ids = [r[0] for r in buffer.conn.execute(f"SELECT event_id FROM telemetry WHERE host=? AND {state} AND connector IN ({placeholders}) AND timestamp<=? ORDER BY timestamp DESC,id DESC LIMIT 64", (row['event']['hostname'],*sources,row['event']['timestamp']))]
+            ids = [r[0] for r in buffer.conn.execute(f"SELECT event_id FROM telemetry{index} WHERE host=? AND {state} AND connector IN ({placeholders}) AND timestamp<=?{window} ORDER BY timestamp DESC,id DESC LIMIT 64",values)]
         prepared = {**row, '_l2_related':[buffer.detail(event_id) for event_id in ids if event_id != row['event_id']]}
         from .l2_evidence import dossier, assess
         prepared['_l2_assessment'] = assess(dossier(prepared,prepared['_l2_related']), self.agent.protection.proposal(prepared))

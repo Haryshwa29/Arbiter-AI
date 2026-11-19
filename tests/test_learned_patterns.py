@@ -163,3 +163,24 @@ def test_restart_backfill_only_reads_the_missing_decision_index(tmp_path,monkeyp
         assert 'idx_telemetry_missing_decision' in plan
         assert 'idx_telemetry_priority' not in plan
     finally:buffer.close()
+
+
+def test_l2_context_does_not_sort_or_include_older_history(tmp_path):
+    from arbiter.agent import Agent
+    from arbiter.l2_final_review import FinalReviewL2Brain
+    from arbiter.l2_workflow import L2Workflow
+    from tests.test_l2_final_review import first
+    agent=Agent(tmp_path);workflow=L2Workflow(agent,FinalReviewL2Brain('gemma4:12b'))
+    buffer=agent.service.buffer;queries=[]
+    try:
+        old=native('old');old.timestamp='2026-11-18T09:00:00+00:00'
+        buffer.enqueue(old,'wazuh');row=buffer.claim();buffer.finish(row['id'],{'decision':'suppress'},[],1)
+        current=native();buffer.conn.set_trace_callback(queries.append)
+        prepared=workflow.evidence_row({'event':current.to_dict(),'analysis':first(),'event_id':current.event_id,'connector':'wazuh','state':'processing'})
+        assert prepared['_l2_related']==[]
+        sql=next(q for q in queries if q.startswith('SELECT event_id FROM telemetry') and 'host=' in q)
+        buffer.conn.set_trace_callback(None)
+        plan=' '.join(str(tuple(row)) for row in buffer.conn.execute('EXPLAIN QUERY PLAN '+sql))
+        assert 'idx_telemetry_review_context' in plan and 'TEMP B-TREE' not in plan
+        assert 'timestamp>=' in sql
+    finally:workflow.close();agent.close()

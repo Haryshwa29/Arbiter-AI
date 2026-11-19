@@ -87,6 +87,10 @@ Nearby-context lookup reads an ordered time index across completed and
 L1-completed/pending-L2 records. It can stop at the bounded context limit rather
 than sorting the whole matching history. This corrects a database wait exposed
 by a large installed history; it is not a measured model-throughput improvement.
+The L2 dossier's separate lookup uses this index too and restricts final-review
+context to the preceding five minutes. It no longer sorts all older host records
+while other workers and dashboard requests wait for database access. Startup
+backfill also uses the existing index of records missing a saved decision.
 
 `l2-cases` shows the latest 100 cases; the complete records remain in SQLite.
 Status totals cover all cases using a small indexed classification scan, and

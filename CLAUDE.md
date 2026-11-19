@@ -33,7 +33,7 @@ these subsequent upgrades. The shared normalized host label covers 11 raw agent
 identities and 22 native rule IDs, not proof of one machine. 57.52% label agreement
 is not attack accuracy. Models and cold-start/original-order limits are explicit.
 
-Validation: 586 tests passed, 2 skipped, 25 subtests; frontend build/type check,
+Validation: 587 tests passed, 2 skipped, 25 subtests; frontend build/type check,
 lint (two existing Fast Refresh warnings), 17 frontend checks and source/packaged
 22-event mock CLI smoke passed. Four seen-record handoffs exercised real Qwen,
 four Gemma assessments and four challenges with no worker errors; an earlier
@@ -63,6 +63,14 @@ minutes. A virtual single FIFO worker peaks at 103.63 minutes of waiting (record
 queue times or upgraded throughput. The frozen run's largest service cost was
 57.07s. No new accuracy claim. The legacy full_public_eval runner does not
 benchmark the five-stage live pipeline or warmed learned-pattern memory.
+
+Installed steady-state tracing also exposed the final-review dossier's separate
+history query sorting old records under the shared buffer lock. It now uses the
+same ordered index and a five-minute lower bound, matching the intended context
+window. The older native-response/advisory query retains its existing behavior.
+A regression checks the query plan and exclusion of stale records. Overview
+totals explicitly say first review; Data Sources tolerates slower large-history
+aggregate responses without aggressive repeated requests. No new dependency.
 
 ## Earlier checkpoints (historical state at the date written)
 

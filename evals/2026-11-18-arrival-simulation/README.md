@@ -30,6 +30,8 @@ stable timestamp ordering produces the same maximum. The model assumes one FIFO
 worker, an empty queue at the first arrival and unchanged recorded `elapsed_s`
 costs. It ignores collection/network delay, priorities, batching, changing model
 costs and learned reuse. Subsequent arrivals after record 26,002 are excluded.
+Recorded costs reflect the original shared-desktop/GPU conditions; they are not
+a dedicated-hardware capacity guarantee.
 L2 rule/housekeeping work in the highlighted hour is under one second; Gemma had
 no inference work. The bottleneck was overwhelmingly L1.
 

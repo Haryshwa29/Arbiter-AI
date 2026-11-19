@@ -9,9 +9,10 @@ to skip Qwen; only eligible Qwen escalations enter L2.
 
 This is local SQLite memory, not model training. It begins empty. It does not
 retroactively treat earlier unannotated public records as verified benign.
-Native Sysmon process execution keeps its existing stricter path: five real
-model assessments and the exact process/hash/user/parent/environment scope.
-The new shortcut does not reduce that requirement at either level.
+Native Sysmon process execution keeps its existing stricter paths: L1 requires
+five real model assessments and exact process/hash/user/parent/environment scope;
+L2's process-history rule requires five human false-alarm corrections. The new
+shortcut does not bypass either requirement.
 
 | Match requirement | Everyday meaning |
 |---|---|
