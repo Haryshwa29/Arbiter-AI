@@ -83,6 +83,7 @@ class Protection:
         self.firewall = firewall or WindowsFirewall()
         self.scope, self.verify = scope, verify
         self.lock = threading.RLock()
+        self.project = None
         with buffer.lock, buffer.conn:
             buffer.conn.execute("CREATE TABLE IF NOT EXISTS protection_actions (id TEXT PRIMARY KEY, event_id TEXT NOT NULL, target TEXT NOT NULL, status TEXT NOT NULL, expires_at TEXT NOT NULL, actor TEXT NOT NULL)")
 
@@ -130,7 +131,12 @@ class Protection:
 
     def approve(self, event_id, actor, expected_target=None, evidence_row=None):
         with self.lock:
-            proposal = self.proposal(evidence_row if evidence_row is not None else self.buffer.detail(event_id))
+            original=self.buffer.detail(event_id)
+            if self.project:
+                projected=self.project(original)
+                if not projected or not projected.get('analysis') or projected['analysis']['decision']!='escalate':
+                    raise ValueError('final review does not authorize an alert response')
+            proposal = self.proposal(evidence_row if evidence_row is not None else self.project(original) if self.project else original)
             if not proposal: raise ValueError("no supported protection action for this event")
             if expected_target is not None and proposal["target"] != expected_target:
                 raise ValueError("approval target no longer matches the proposal")

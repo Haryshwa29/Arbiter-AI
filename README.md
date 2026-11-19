@@ -13,6 +13,18 @@ account validation and production-scale delivery remain future validation work.
 
 ## Public-data evaluation
 
+**Latest: [26,002-record checkpoint and downloadable raw evidence](evals/2026-11-18-26k-checkpoint/README.md).**
+The stopped run took 14 hours 31 minutes 28 seconds: 57.52% were quieted and
+42.48% retained for review. This original-order prefix contains no attack labels,
+so these percentages do not measure attack-detection accuracy. The report explains
+the L2 routing failure, latency, limitations and next evaluation.
+
+The subsequent [five-worker upgrade](docs/FIVE-WORKER-PIPELINE.md) supports the
+terminal and local dashboard. [Scoped repeat-pattern memory](docs/LEARNED-PATTERNS.md)
+lets each model teach its own pre-filter exact routine repeats, with expiry,
+revocation and safety checks. These upgrades were made after the frozen run;
+their real-world speed and detection quality still need a fresh evaluation.
+
 To process every supported public record with both local models, see
 [the resumable full-dataset run guide](docs/FULL-PUBLIC-RUN.md).
 
@@ -44,8 +56,9 @@ when useful. A shared final guardrail protects both L1 and L2 decisions. Labelle
 can decide without AI and when a person needs to review an alert.
 Blue follows collection and rules, purple marks AI, green means suppressed,
 and red means escalated. The detailed walkthrough links every stage to code.
-The L1/L2 route shown is the optional terminal-agent preset; the installed
-dashboard requires a separate update and integration.
+The L1/L2 route is available in the terminal preset and an explicitly configured
+local dashboard. Existing installations require the new build, L2 configuration
+and a restart; installing source changes alone does not replace a running app.
 
 [![Arbiter architecture: collection and rules lead to Qwen3.5:4b L1; only Qwen escalations reach Gemma4:12b L2, which confirms or suppresses them with a written reason. Failed or uncertain reviews retain the alert. Both reviews remain auditable; classification grants no device-action rights.](docs/architecture/arbiter-flow.gif)](docs/ARCHITECTURE-WALKTHROUGH.md)
 

@@ -53,7 +53,7 @@ def score_event(event: Event, memory: Memory) -> float:
     return max(0.0, min(10.0, raw))
 
 
-def prefilter(event: Event, memory: Memory) -> PrefilterResult:
+def prefilter(event: Event, memory: Memory, learned_key=None) -> PrefilterResult:
     score = score_event(event, memory)
     context = event.fields.get("_context_signature")
     history = memory.history(context or event.signature)
@@ -74,6 +74,14 @@ def prefilter(event: Event, memory: Memory) -> PrefilterResult:
             f"score {score:.1f} >= {ESCALATE_AT} "
             f"(severity {event.severity}, asset criticality {criticality})",
         )
+
+    from .guardrails import final_guardrail_check
+    learned=(memory.match_pattern('l1',learned_key) if broad_overrule==0 and history.overruled==0
+             and not final_guardrail_check(event,'suppress') else None)
+    if learned:
+        return PrefilterResult(Decision.SUPPRESS,score,
+            f"L1 learned exact routine pattern {learned_key[:12]}; model-reviewed origin {learned['origin_event']}; "
+            f"repeat {learned['hit']}/25 within one hour. Prior reason: {learned['reason']}")
 
     if (
         score < SUPPRESS_AT

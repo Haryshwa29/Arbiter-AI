@@ -3,6 +3,8 @@ import re
 import json
 import time
 import urllib.request
+from urllib.parse import urlsplit
+import ipaddress
 from .ingestion.schema import safe_json
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -10,10 +12,17 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         raise ValueError('L2 inference redirects are forbidden')
 
 class L2Transport:
-    def __init__(self, model, *, think=True, num_ctx=16384, num_predict=3072):
+    def __init__(self, model, *, think=True, num_ctx=16384, num_predict=3072, base_url='http://127.0.0.1:11434'):
         if not isinstance(model,str) or not model.strip() or model.lower().endswith((':cloud','-cloud')):
             raise ValueError('L2 requires an installed local model')
         self.model=model
+        endpoint=urlsplit(base_url)
+        try: local=endpoint.hostname=='localhost' or ipaddress.ip_address(endpoint.hostname or '').is_loopback
+        except ValueError: local=False
+        if (not local or endpoint.scheme!='http' or not endpoint.port or endpoint.username or endpoint.password
+                or endpoint.path not in ('','/') or endpoint.query or endpoint.fragment):
+            raise ValueError('L2 inference requires a literal loopback or localhost HTTP endpoint')
+        self.base_url=base_url.rstrip('/')
         if type(think) is not bool or type(num_ctx) is not int or not 4096<=num_ctx<=16384 or type(num_predict) is not int or not 256<=num_predict<=3072:
             raise ValueError('invalid bounded L2 generation options')
         self.think,self.num_ctx,self.num_predict=think,num_ctx,num_predict
@@ -21,7 +30,7 @@ class L2Transport:
         self.usage=[]
 
     def request(self, path, data=None, timeout=5):
-        request=urllib.request.Request('http://127.0.0.1:11434'+path,
+        request=urllib.request.Request(self.base_url+path,
             data=json.dumps(data).encode() if data is not None else None,
             headers={'Content-Type':'application/json'})
         with self.opener.open(request,timeout=timeout) as response:

@@ -112,7 +112,8 @@ def cmd_serve(args):
           iam_db=args.iam_db, mem_db=args.db, demo_feed=args.demo_feed,
           events=args.events, backend=args.backend, model=args.model,
           demo_feed_interval=args.demo_feed_interval,
-          dev_accounts=args.dev_accounts, local_access=args.local_access)
+          dev_accounts=args.dev_accounts, local_access=args.local_access,
+          l2_model=args.l2_model,l2_review_seconds=args.l2_review_seconds)
 
 
 def main():
@@ -214,6 +215,8 @@ def main():
     wp.add_argument("--backend", choices=["mock", "ollama"], default="mock",
                     help="backend for --demo-feed's triage engine")
     wp.add_argument("--model", default="qwen3.5:4b")
+    wp.add_argument('--l2-model',default='',help='optional local final reviewer; enables the five-worker pipeline')
+    wp.add_argument('--l2-review-seconds',type=int,default=180,help='L2 review/challenge budget, 10..180 seconds')
     wp.add_argument("--dev-accounts", action="store_true",
                     help="dev only, off by default: force admin/admin123 and "
                          "analyst/analyst123 on every boot, clearing any "

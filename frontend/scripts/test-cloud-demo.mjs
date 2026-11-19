@@ -195,6 +195,9 @@ test("AI status labels never classify a completed verdict as awaiting analysis",
   assert.equal(eventStatus({state:'completed',analysis:{decision:'escalate'}}),'Alerted · escalated for review');
   assert.equal(eventStatus({state:'processing',analysis:null}),'Analyzing');
   assert.equal(eventStatus({state:'pending',analysis:null}),'Awaiting analysis');
+  assert.equal(eventStatus({state:'processing',analysis:{decision:'escalate',second_stage_status:'pending-alert-visible'}}),'Alert visible · second review pending');
+  assert.equal(eventStatus({state:'done',analysis:{decision:'escalate',second_stage_status:'human-rejected-alert-retained'}}),'Alert retained by a person');
+  assert.equal(eventStatus({state:'done',analysis:{decision:'escalate',second_stage_status:'invalid-review-alert-retained'}}),'Alert visible · second review unavailable');
 });
 
 test("policy thresholds are independent of the configured model family", async () => {

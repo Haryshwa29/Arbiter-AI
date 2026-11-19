@@ -395,7 +395,7 @@ def make_handler(ctx: Ctx):
                 if not self._session_user():
                     return self._send_json(401, {"error": "unauthenticated"})
                 return self._send_json(200, {"ok": True, "ingestion": bool(ctx.ingestion and
-                    ctx.ingestion.pipeline.thread and ctx.ingestion.pipeline.thread.is_alive())})
+                    ctx.ingestion.status(include_metrics=False)['worker_alive'])})
 
             if path != "/api" and not path.startswith("/api/"):
                 resource = dashboard_resource(path)
@@ -453,7 +453,7 @@ def make_handler(ctx: Ctx):
                 if path == "/api/datasets":
                     return self._send_json(200, {"datasets": list(prepared_datasets())})
                 if path == "/api/event":
-                    event = ctx.ingestion.buffer.detail((query.get("id") or [""])[0])
+                    event = ctx.ingestion.project(ctx.ingestion.buffer.detail((query.get("id") or [""])[0]))
                     if event and ctx.responses:
                         event = ctx.responses.enrich(event)
                     if event and ctx.protection:
@@ -465,7 +465,7 @@ def make_handler(ctx: Ctx):
                     rows = ctx.ingestion.buffer.query(filters, int(query.get("limit", ["100"])[0]), int(query.get("offset", ["0"])[0]))
                 except (ValueError, OverflowError):
                     return self._send_json(400, {"error": "invalid event filters"})
-                return self._send_json(200, {"events": rows})
+                return self._send_json(200, {"events": ctx.ingestion.project_rows(rows)})
 
             if path == "/api/summary":
                 return self._send_json(200, {
@@ -520,6 +520,19 @@ def make_handler(ctx: Ctx):
                 return self._login(body)
 
             user = self._session_user()
+            if path == '/api/l2/reject':
+                if not require_admin(user): return self._send_json(403, {'error':'administrator role required'})
+                workflow=ctx.ingestion.final_review if ctx.ingestion else None
+                if not workflow: return self._send_json(409, {'error':'L2 final review is not enabled'})
+                event_id,reason=body.get('event_id'),body.get('reason')
+                if not isinstance(event_id,str) or not 0<len(event_id)<=128 or not isinstance(reason,str) or not reason.strip() or len(reason)>1000:
+                    return self._send_json(400, {'error':'event id and review reason required'})
+                cases=workflow.cases(event_ids=[event_id],limit=1)
+                if not cases: return self._send_json(404, {'error':'L2 case not found'})
+                try: workflow.control('reject',cases[0]['id'],reason)
+                except ValueError: return self._send_json(409, {'error':'case cannot be rejected in its current state'})
+                ctx.store.record_iam(user['username'],'l2_review_rejected',json.dumps({'event_id':event_id,'reason':reason}))
+                return self._send_json(200, {'ok':True})
             if path in {"/api/briefing/preview", "/api/briefing/save", "/api/briefing/remove"}:
                 if not require_admin(user):
                     return self._send_json(403, {"error": "administrator role required"})
@@ -793,7 +806,8 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
           demo_feed_interval: float = 2.0,
           dev_accounts: bool = False,
           ollama_url: str = "http://localhost:11434",
-          health_callback=None, local_access: bool = False) -> None:
+          health_callback=None, local_access: bool = False,
+          l2_model: str = '', l2_review_seconds: int = 180) -> None:
     if local_access and not ipaddress.ip_address(host).is_loopback:
         raise ValueError("local access requires a literal loopback bind address")
     if demo_feed and (not events or not Path(events).exists()):
@@ -830,7 +844,7 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
     ctx.backend = ctx.ingestion.backend
     ctx.simulator = DemoManager(ctx.ingestion.backend, ctx.ingestion.model, ollama_url)
     ctx.protection = Protection(ctx.ingestion.buffer, store, verify=True)
-    ctx.responses = ResponseWorkflow(ctx.ingestion.buffer, store, ctx.protection)
+    ctx.responses = ResponseWorkflow(ctx.ingestion.buffer, store, ctx.protection, project=ctx.ingestion.project)
     # Preserve earlier demo imports as an archive rather than device detections.
     with ctx.ingestion.buffer.lock:
         old_demo_ids = [r[0] for r in ctx.ingestion.buffer.conn.execute("SELECT event_id FROM telemetry WHERE connector IN ('file','replay')")]
@@ -840,6 +854,7 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
     httpd = poller = demo_thread = health_thread = None
     health_failure = []
     try:
+        if l2_model: ctx.ingestion.enable_final_review(l2_model,ctx.protection,l2_review_seconds)
         httpd = build_httpd(ctx, host, port)
         if Path(sys.argv[0]).suffix == ".pyz" and "serve" in sys.argv and ipaddress.ip_address(host).is_loopback:
             def elevate():
@@ -848,6 +863,7 @@ def serve(*, host: str, port: int, store_db: str, iam_db: str, mem_db: str,
                     "--iam-db", str(Path(iam_db).resolve()), "--backend", backend, "--model", model]
                 if local_access:
                     argv.append("--local-access")
+                if l2_model: argv.extend(['--l2-model',l2_model,'--l2-review-seconds',str(l2_review_seconds)])
                 request_elevation(argv, port)
                 threading.Timer(.5, httpd.shutdown).start()
             ctx.elevate = elevate

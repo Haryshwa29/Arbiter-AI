@@ -43,7 +43,7 @@ class TriageEngine:
         self.shadow = shadow
         self.stats = TriageStats()
 
-    def triage(self, event: Event) -> Verdict:
+    def triage(self, event: Event, learned_key=None) -> Verdict:
         # Security guardrail, pre-LLM: non-suppressible signals escalate
         # immediately — no fact, score, or model verdict may silence them.
         # Sole exception: an admin-curated environment fact that names this
@@ -73,7 +73,7 @@ class TriageEngine:
             downgraded = (hit, fact)
             self.stats.guardrail_downgraded += 1
 
-        pre = prefilter(event, self.memory)
+        pre = prefilter(event, self.memory, learned_key)
 
         if downgraded is not None:
             # Rail fired but a standing fact corroborates the exact pattern:
@@ -162,6 +162,7 @@ class TriageEngine:
         # Advisory metadata is deliberately outside the stable Event/Verdict
         # serialization contract and cannot grant execution authority.
         verdict.recommended_steps = getattr(llm, "recommended_steps", [])
+        verdict.model_confidence = llm.confidence
         return verdict
 
     def _audit(self, event: Event, verdict: Verdict) -> None:

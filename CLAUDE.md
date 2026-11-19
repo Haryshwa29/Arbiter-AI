@@ -4,6 +4,47 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 18 integrated upgrade: Qwen3.5:4b L1 and Gemma4:12b L2 now share the
+five bounded worker stages in the terminal and explicitly configured dashboard.
+The L2 pre-filter suppresses supported routine cases or passes escalations to
+Gemma; missing context no longer bypasses L2. Native security/CVE/ATT&CK context
+and the shared final gates are integrated. No new dependency or action authority.
+
+Scoped live repeat memory lets each brain teach its own pre-filter exact routine
+matches; host/source/raw agent/rule/content/model/environment scope, one-hour or
+25-hit lifetime, no self-training, and human revocation are enforced. API/file/
+demo/replay inputs cannot teach or use these shortcuts. Native Sysmon process
+learning retains the prior five-real-model-assessment requirement. See
+docs/LEARNED-PATTERNS.md. No bulk deletion or host-wide model allowlist is added.
+
+Dashboard event/API projections preserve L1 evidence and show L2 final decisions,
+pending/failure status and human rejection. Response approval and scheduling use
+the final projection: quiet L2 outcomes cannot enter the action flow. Data Sources
+shows all five workers, queues/errors, separate L2 outcomes and learned counts.
+The second transport accepts only loopback/local inference, including the
+installed runtime's private port. New frontend fields reuse existing components;
+Magic/ui-ux-pro-max were unavailable, so neither was invoked for these incremental
+changes. No new view or runtime dependency was introduced.
+
+The stopped AIT-ADS checkpoint is public at issue #12 and
+evals/2026-11-18-26k-checkpoint, frozen at commit 58e30ea: 26,002 records in
+14h31m28s; 14,957 quiet, 11,045 retained, zero attack annotations. It did not use
+these subsequent upgrades. The shared normalized host label covers 11 raw agent
+identities and 22 native rule IDs, not proof of one machine. 57.52% label agreement
+is not attack accuracy. Models and cold-start/original-order limits are explicit.
+
+Validation: 576 tests passed, 2 skipped, 25 subtests; frontend build/type check,
+lint (two existing Fast Refresh warnings), 17 frontend checks and source/packaged
+22-event mock CLI smoke passed. Four seen-record handoffs exercised real Qwen,
+four Gemma assessments and four challenges with no worker errors; an earlier
+selection quieted at L1 and did not exercise L2. The compatibility archive records
+the source-provenance limit and is not a new accuracy/throughput benchmark.
+Local installed-update verification is in progress, with protected backups and
+automatic rollback if readiness/history checks fail. Real attack quality and
+GPU speedup of the new architecture and learning remain unmeasured.
+
+## Earlier checkpoints (historical state at the date written)
+
 November 18 separate five-worker final-review development: the terminal preset
 now uses bounded gateway/L1/L2-prefilter/L2/final-guardrail queues and five
 threads. Shared preparation/analysis/persistence helpers retain the ordinary

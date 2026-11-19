@@ -110,11 +110,11 @@ class AdvisoryL2Brain(L2Brain):
     assessment_format = None
     critic_format = None
 
-    def __init__(self, model, review_seconds=180):
+    def __init__(self, model, review_seconds=180, ollama_url='http://127.0.0.1:11434'):
         super().__init__(model,review_seconds)
         # This read-only route emits explicit hypotheses and is challenged in
         # a second call. Native response reasoning retains its existing defaults.
-        self.backend=L2Transport(model,think=False,num_ctx=8192,num_predict=1536)
+        self.backend=L2Transport(model,think=False,num_ctx=8192,num_predict=1536,base_url=ollama_url)
 
     def fast_review(self, row, proposal):
         return None

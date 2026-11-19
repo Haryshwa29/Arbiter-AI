@@ -1,13 +1,14 @@
 # Five workers: keep each stage moving
 
-The terminal agent's `--l2-final-review` preset now uses five worker threads.
+The terminal agent's `--l2-final-review` preset and L2-enabled local dashboard use five worker threads.
 They work on different events at the same time. **Qwen3.5:4b remains L1;
 Gemma4:12b remains L2. Only Qwen's successful model escalations enter L2.**
 Both models can be replaced by compatible local models and must remain distinct.
 
-This is separate development work. It was not installed into the ongoing
-26,000-record checkpoint, nor into the installed/portable dashboard. That
-checkpoint still measures one sequential replay worker.
+This upgrade followed the stopped 26,002-record checkpoint. That frozen
+checkpoint measures one sequential replay worker and must not be presented as a
+five-worker or learned-pattern result. Existing/portable installs require an
+updated release and explicit L2 configuration.
 
 ```mermaid
 flowchart TD
@@ -36,7 +37,7 @@ flowchart TD
 
 The old replay's `L2_CONTEXT_REQUIRED` shortcut retained warnings before Gemma
 could read them. That was a routing mismatch with the requested L1/L2 operation.
-This terminal pipeline corrects it: the L2 prefilter either suppresses with a
+This pipeline corrects it: the L2 prefilter either suppresses with a
 supported reason or passes the escalation to Gemma. Protected risk is still
 enforced by the final guardrail after that review. A risky model suppression
 cannot override the veto. Legacy sequential comparison tools retain the old
@@ -82,6 +83,25 @@ the event view fetches reviews only for its displayed records. Control actions
 look up the exact case directly. Viewing a growing history does not load every
 large evidence packet into memory. Quieted cases do not raise overdue-warning
 notices; pending and retained cases still get review-deadline notices.
+
+## Local dashboard
+
+Run `arbiter serve --backend ollama --model qwen3.5:4b --l2-model gemma4:12b
+--l2-review-seconds 180` with your existing store/IAM/memory paths. For an installed
+service, set `llm.l2_model = gemma4:12b` and `llm.l2_review_seconds = 180` in its
+existing configuration, alongside backend `ollama` and model `qwen3.5:4b`, then
+restart the service. Both models must already be available locally. The two
+brains share the same verified loopback inference endpoint, including an owned
+private runtime when configured. An absent L2 setting preserves single-brain mode.
+
+Data Sources shows each stage's activity, waiting line, completed work and
+errors, plus separate L2 outcomes and [learned-pattern counts](LEARNED-PATTERNS.md).
+Live event details show both opinions and the final result; administrators can
+choose **Keep this warning visible** to reject a suppression. That also revokes
+the matching learned L2 shortcut. Original audit/KPI totals remain L1 totals and
+are labelled separately from final L2 classifications. Final quiet cases cannot
+enter the guided-response approval/scheduling flow. Existing collection settings,
+accounts, evidence and explicit device-action approval gates are preserved.
 
 L1 warnings stay visible while L2 is pending. A human rejection wins even if a
 model reply arrives later. Each case is tied to one event. A restart recovers

@@ -28,7 +28,7 @@ def event(identity='one', message='Recorded observation needing investigation'):
 
 def setup_agent(tmp_path, monkeypatch, decision=Decision.ESCALATE):
     agent = Agent(tmp_path, backend='ollama', model='qwen3.5:4b', firewall=Mock())
-    agent.service.pipeline.engine.triage = Mock(side_effect=lambda e: Verdict(
+    agent.service.pipeline.engine.triage = Mock(side_effect=lambda e,**kwargs: Verdict(
         e.id,e.signature,decision,4,Tier.LLM,'Controlled L1 decision','Recorded observation'))
     brain = FinalReviewL2Brain('gemma4:12b',10)
     def generate(prompt,*args,**kwargs):

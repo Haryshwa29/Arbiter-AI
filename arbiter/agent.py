@@ -113,6 +113,9 @@ class Agent:
         brain = brain_type(model,review_seconds)
         if final_review: brain.memory=self.memory
         self.l2 = L2Workflow(self, brain, ResponsePolicy(policy), notify=notify)
+        if final_review:
+            self.service.final_review=self.l2
+            self.protection.project=self.service.project
         self.l2_model = model
         self.l2.start()
 
@@ -120,18 +123,9 @@ class Agent:
         rows = self.service.buffer.query({"scope": "live"}, limit=100)
         results = []
         final_mode = self.l2 and getattr(self.l2.brain,'final_review',False) is True
-        cases = {c['event_id']:c for c in reversed(self.l2.cases(event_ids=[r['event_id'] for r in rows]))} if final_mode else {}
+        if final_mode: rows=self.l2.project(rows)
         for row in rows:
-            detail = self.service.buffer.detail(row["event_id"])
-            if final_mode and detail.get('analysis'):
-                from .l2_final_review import eligible, project_final
-                first = detail['analysis']
-                if eligible(first):
-                    case = cases.get(row['event_id'],{})
-                    detail['analysis'] = project_final(first,case.get('brief') if case.get('state')!='rejected' else None,event_id=row['event_id'])
-                    detail['analysis']['second_stage_status'] = ('human-rejected-alert-retained' if case.get('state')=='rejected'
-                        else 'failed-alert-retained' if case.get('review_failed')
-                        else 'complete' if case.get('brief') else 'pending-alert-visible')
+            detail = row
             results.append({**detail, "proposal": self.protection.proposal(detail) if self.scope else None,
                             "actions": self.protection.actions(row["event_id"])})
         return results

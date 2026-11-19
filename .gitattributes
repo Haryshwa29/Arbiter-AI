@@ -8,3 +8,4 @@
 /evals/2026-11-17-l2-evidence-gated/** -text whitespace=cr-at-eol
 /evals/2026-11-18-26k-checkpoint/** -text whitespace=cr-at-eol
 /evals/2026-11-18-l2-context-development/** -text whitespace=cr-at-eol
+evals/2026-11-18-upgrade-compatibility/** -text

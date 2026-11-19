@@ -1,0 +1,1205 @@
+{
+  "scope": "Seen-record development compatibility, not an attack accuracy or throughput benchmark",
+  "runtime_provenance_limit": "Uncommitted dashboard/learning development; exact source identity was not frozen before inference. Current release hash below identifies the later packaged build, not the earlier probe runtime.",
+  "checkpoint": "58e30ea5d23813396f53dab2deb6757df330b508",
+  "later_packaged_release_sha256": "1acb582c34ace070aa9305cfaf7fb73272855871b21f053e7410a6f4de10a8a8",
+  "probes": [
+    {
+      "purpose": "Compatibility only: four seen public records, no accuracy or throughput estimate",
+      "elapsed_seconds": 9.230981500004418,
+      "source_checkpoint": "58e30ea5d23813396f53dab2deb6757df330b508",
+      "provenance": [
+        {
+          "record": 1,
+          "raw_sha256": "a23263a600fc7b24ef3fa4cb2360f3cbfb2b25f1a99a90a1baad7ea63d64a7ed",
+          "event_id": "17ab1fc5203e078e9dd368b77bb231439e3727a1fbc8dee274f6e8a413ccf1db"
+        },
+        {
+          "record": 775,
+          "raw_sha256": "086d4eddc7818ccb1c6102d19896e635915fe0c621547dd17ceb41f444070db5",
+          "event_id": "74a0d3d4da19f5fa5477c770fdd0ff0c0320263bb1f0bb5c8b1d194bfdbec5b3"
+        },
+        {
+          "record": 21760,
+          "raw_sha256": "489120ad00fd7b60e1ab5f2efbd0372ac260314de5544cfd096333ff00ec594e",
+          "event_id": "99ca6543276a7ad1d57732e9935c27835ad212506ea8d70abc444cdc884a340e"
+        },
+        {
+          "record": 25772,
+          "raw_sha256": "5c2a32c201183cab7d52868bbd0c75b23e8d0b5e22f82066af81bc8680b06ead",
+          "event_id": "f9dcf36cfe68cbd46c1bdbb2294904e0ab30e2a1faf14e329cba98e3eb785869"
+        }
+      ],
+      "model_usage": [],
+      "name": "native-probe",
+      "workers": {
+        "gateway": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 4218.781299772672,
+          "queue_wait_ms": 0.0,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 10000
+        },
+        "l1": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 9078.798100119457,
+          "queue_wait_ms": 10475.932799861766,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 1
+        },
+        "l2_prefilter": {
+          "busy": false,
+          "completed": 0,
+          "errors": 0,
+          "occupied_ms": 0.0,
+          "queue_wait_ms": 0.0,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 32
+        },
+        "l2": {
+          "busy": false,
+          "completed": 0,
+          "errors": 0,
+          "occupied_ms": 0.0,
+          "queue_wait_ms": 0.0,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 32
+        },
+        "final_guardrail": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 13.795100036077201,
+          "queue_wait_ms": 0.23319991305470467,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 32
+        }
+      },
+      "events": [
+        {
+          "event_id": "17ab1fc5203e078e9dd368b77bb231439e3727a1fbc8dee274f6e8a413ccf1db",
+          "state": "done",
+          "analysis": {
+            "event_id": "17ab1fc5203e078e9dd368b77bb231439e3727a1fbc8dee274f6e8a413ccf1db",
+            "signature": "wazuh:security_finding:wazuh-client",
+            "decision": "suppress",
+            "score": 2.6,
+            "tier": "prefilter",
+            "rationale": "Routine FreshClam signature-database update observation: the source decoder, update rule and recorded update-start message agree; no correlated detection. An update start does not prove completion or absence of malware.",
+            "evidence": "",
+            "timestamp": "2026-11-19T00:28:40.717219+00:00",
+            "recommended_steps": [],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "suppress",
+              "decision": "suppress",
+              "veto": null
+            },
+            "model_confidence": 0,
+            "backend": "deterministic",
+            "model": "",
+            "kind": "observation",
+            "correlation": [],
+            "pipeline_final_guardrail": {
+              "decision": "suppress",
+              "veto": null
+            },
+            "responses": [],
+            "guidance": null,
+            "completed_at": "2026-11-19T00:28:40.727720+00:00",
+            "brief": null
+          }
+        },
+        {
+          "event_id": "74a0d3d4da19f5fa5477c770fdd0ff0c0320263bb1f0bb5c8b1d194bfdbec5b3",
+          "state": "done",
+          "analysis": {
+            "event_id": "74a0d3d4da19f5fa5477c770fdd0ff0c0320263bb1f0bb5c8b1d194bfdbec5b3",
+            "signature": "wazuh:security_finding:wazuh-client",
+            "decision": "suppress",
+            "score": 2.6,
+            "tier": "llm",
+            "rationale": "This is a standard brute-force or credential stuffing probe against a public-facing CMS login endpoint, which is a benign security operation rather than an active intrusion given the lack of successful authentication or lateral movement indicators.",
+            "evidence": "Repeated login attempts to /wp-login.php from a single source IP (10.35.35.118) are common reconnaissance patterns for WordPress sites; the signature history shows 3 prior suppressions with no escalations.",
+            "timestamp": "2026-11-19T00:28:49.779087+00:00",
+            "recommended_steps": [
+              "Verify if IP 10.35.35.118 has any other recent activity on the network to rule out coordinated attacks."
+            ],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "suppress",
+              "decision": "suppress",
+              "veto": null
+            },
+            "model_confidence": 0.85,
+            "backend": "ollama",
+            "model": "qwen3.5:4b",
+            "kind": "observation",
+            "correlation": [],
+            "pipeline_final_guardrail": {
+              "decision": "suppress",
+              "veto": null
+            },
+            "responses": [],
+            "guidance": null,
+            "completed_at": "2026-11-19T00:28:49.786697+00:00",
+            "brief": null
+          }
+        },
+        {
+          "event_id": "99ca6543276a7ad1d57732e9935c27835ad212506ea8d70abc444cdc884a340e",
+          "state": "done",
+          "analysis": {
+            "event_id": "99ca6543276a7ad1d57732e9935c27835ad212506ea8d70abc444cdc884a340e",
+            "signature": "wazuh:security_finding:wazuh-client",
+            "decision": "suppress",
+            "score": 5.2,
+            "tier": "llm",
+            "rationale": "This alert is flagged as low priority (3) and explicitly marked as not suspicious; combined with the historical suppression record, it represents a standard operational noise rather than an intrusion attempt.",
+            "evidence": "The event is explicitly classified by the IDS signature as 'Not Suspicious Traffic' and matches a known benign pattern for package management User-Agent activity.",
+            "timestamp": "2026-11-19T00:28:44.920815+00:00",
+            "recommended_steps": [
+              "Verify the destination IP 91.189.95.85 is a legitimate package repository or CDN if required for compliance."
+            ],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "suppress",
+              "decision": "suppress",
+              "veto": null
+            },
+            "model_confidence": 0.95,
+            "backend": "ollama",
+            "model": "qwen3.5:4b",
+            "kind": "observation",
+            "correlation": [],
+            "pipeline_final_guardrail": {
+              "decision": "suppress",
+              "veto": null
+            },
+            "responses": [],
+            "guidance": null,
+            "completed_at": "2026-11-19T00:28:44.931371+00:00",
+            "brief": null
+          }
+        },
+        {
+          "event_id": "f9dcf36cfe68cbd46c1bdbb2294904e0ab30e2a1faf14e329cba98e3eb785869",
+          "state": "done",
+          "analysis": {
+            "event_id": "f9dcf36cfe68cbd46c1bdbb2294904e0ab30e2a1faf14e329cba98e3eb785869",
+            "signature": "wazuh:security_finding:wazuh-client",
+            "decision": "suppress",
+            "score": 4.333333333333334,
+            "tier": "llm",
+            "rationale": "This alert represents a benign application error on a public-facing web server and does not indicate intrusion, credential abuse, or compromise.",
+            "evidence": "The event is a standard HTTP 500 Internal Server Error from a web server responding to a legitimate GET request for a document file; no malicious indicators such as unusual user agents, path traversal attempts, or lateral movement are present.",
+            "timestamp": "2026-11-19T00:28:46.963583+00:00",
+            "recommended_steps": [],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "suppress",
+              "decision": "suppress",
+              "veto": null
+            },
+            "model_confidence": 0.95,
+            "backend": "ollama",
+            "model": "qwen3.5:4b",
+            "kind": "observation",
+            "correlation": [],
+            "pipeline_final_guardrail": {
+              "decision": "suppress",
+              "veto": null
+            },
+            "responses": [],
+            "guidance": null,
+            "completed_at": "2026-11-19T00:28:46.974694+00:00",
+            "brief": null
+          }
+        }
+      ]
+    },
+    {
+      "purpose": "Compatibility only: four seen public records, no accuracy or throughput estimate",
+      "elapsed_seconds": 132.9276472000638,
+      "source_checkpoint": "58e30ea5d23813396f53dab2deb6757df330b508",
+      "provenance": [
+        {
+          "record": 246,
+          "raw_sha256": "db928d7763e51dfda9783f50c6a81ca1f28296d3119f46a208d675d96595e729",
+          "event_id": "99993bfdd0fab9ae4193cee95c501f56d2b285a64c71c4146f8bfd06ea1da3ed"
+        },
+        {
+          "record": 247,
+          "raw_sha256": "f2869a679689d763ee49d6d5bf8ca30b6aaff8d658956de050ef004fb0fb56c7",
+          "event_id": "4abbb17edc287e573673b5b40077ba548089ad40f1fb017c299a02a37772da1b"
+        },
+        {
+          "record": 2996,
+          "raw_sha256": "c97d6d73bf924858511dfc3caacd68024b09039d293863869b4dfb4ed43307d1",
+          "event_id": "f05c23e1065728b3482b2519855afaed41b43f15bdc0c8c47170b5adaa6ea1be"
+        },
+        {
+          "record": 2997,
+          "raw_sha256": "84982ced481aa1ad31fd375f8aa5ea4e400f21e878896e8cdccb69d927fc597a",
+          "event_id": "1ac412f321cd5ea45f1e6d03bbb4be127c4259ec96fe4ddceb82b2ecfeb2bdbe"
+        }
+      ],
+      "model_usage": [
+        {
+          "prompt_eval_count": 2435,
+          "eval_count": 519,
+          "load_duration": 9309553700,
+          "prompt_eval_duration": 3540052000,
+          "eval_duration": 31920220000,
+          "done_reason": "stop"
+        },
+        {
+          "prompt_eval_count": 2748,
+          "eval_count": 18,
+          "load_duration": 18089100,
+          "prompt_eval_duration": 1722514000,
+          "eval_duration": 638455000,
+          "done_reason": "stop"
+        },
+        {
+          "prompt_eval_count": 2416,
+          "eval_count": 523,
+          "load_duration": 20049400,
+          "prompt_eval_duration": 1521911000,
+          "eval_duration": 24707532000,
+          "done_reason": "stop"
+        },
+        {
+          "prompt_eval_count": 2740,
+          "eval_count": 18,
+          "load_duration": 19056200,
+          "prompt_eval_duration": 1744579000,
+          "eval_duration": 641159000,
+          "done_reason": "stop"
+        },
+        {
+          "prompt_eval_count": 1635,
+          "eval_count": 425,
+          "load_duration": 7835100,
+          "prompt_eval_duration": 1087041000,
+          "eval_duration": 20752647000,
+          "done_reason": "stop"
+        },
+        {
+          "prompt_eval_count": 1862,
+          "eval_count": 18,
+          "load_duration": 19193400,
+          "prompt_eval_duration": 1209334000,
+          "eval_duration": 648028000,
+          "done_reason": "stop"
+        },
+        {
+          "prompt_eval_count": 1432,
+          "eval_count": 436,
+          "load_duration": 9074800,
+          "prompt_eval_duration": 968363000,
+          "eval_duration": 17975039000,
+          "done_reason": "stop"
+        },
+        {
+          "prompt_eval_count": 1660,
+          "eval_count": 18,
+          "load_duration": 17316900,
+          "prompt_eval_duration": 2571470000,
+          "eval_duration": 1776052000,
+          "done_reason": "stop"
+        }
+      ],
+      "name": "handoff-probe",
+      "workers": {
+        "gateway": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 10327.037299983203,
+          "queue_wait_ms": 0.0,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 10000
+        },
+        "l1": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 22864.21950010117,
+          "queue_wait_ms": 25141.47529983893,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 1
+        },
+        "l2_prefilter": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 4.206100129522383,
+          "queue_wait_ms": 0.1993998885154724,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 32
+        },
+        "l2": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 127810.81420008559,
+          "queue_wait_ms": 196110.92359991744,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 32
+        },
+        "final_guardrail": {
+          "busy": false,
+          "completed": 4,
+          "errors": 0,
+          "occupied_ms": 43.15009992569685,
+          "queue_wait_ms": 0.9376000380143523,
+          "alive": true,
+          "queued": 0,
+          "queue_capacity": 32
+        }
+      },
+      "events": [
+        {
+          "event_id": "99993bfdd0fab9ae4193cee95c501f56d2b285a64c71c4146f8bfd06ea1da3ed",
+          "state": "done",
+          "analysis": {
+            "event_id": "99993bfdd0fab9ae4193cee95c501f56d2b285a64c71c4146f8bfd06ea1da3ed",
+            "signature": "wazuh:auth_success:wazuh-client",
+            "decision": "suppress",
+            "score": 2.6,
+            "tier": "llm",
+            "rationale": "The event is a single successful SSH login with no preceding failures or indicators of brute force.",
+            "evidence": "The log confirms a successful login (F1) with no preceding failed attempts or suspicious patterns.",
+            "timestamp": "2026-11-19T00:29:48.567004+00:00",
+            "recommended_steps": [],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "escalate",
+              "decision": "escalate",
+              "veto": null
+            },
+            "model_confidence": 0.85,
+            "backend": "ollama",
+            "model": "gemma4:12b",
+            "kind": "observation",
+            "correlation": [],
+            "responses": [],
+            "completed_at": "2026-11-19T00:31:21.996477+00:00",
+            "first_stage": {
+              "event_id": "99993bfdd0fab9ae4193cee95c501f56d2b285a64c71c4146f8bfd06ea1da3ed",
+              "signature": "wazuh:auth_success:wazuh-client",
+              "decision": "escalate",
+              "score": 2.6,
+              "tier": "llm",
+              "rationale": "This is the first occurrence of this signature; while the event itself (successful login) is benign, the lack of historical context and the association with MITRE ATT&CK techniques T1021 (Initial Access) and T1078 (Valid Accounts) require verification to rule out a compromised credential or unauthorized access.",
+              "evidence": "Successful SSH public key authentication for user 'phopkins' from IP 10.35.35.202 on host 'wazuh-client'.",
+              "timestamp": "2026-11-19T00:29:48.567004+00:00",
+              "recommended_steps": [
+                "Verify if user 'phopkins' exists in Active Directory and confirm their expected login times and locations.",
+                "Check the IP address 10.35.35.202 against known internal asset lists to ensure it is not an external attacker.",
+                "Review the SSH authorized_keys file on 'wazuh-client' to confirm the public key fingerprint matches the one in the event log.",
+                "Determine if this host has any unusual processes running after the login time."
+              ],
+              "context_signature": "",
+              "final_guardrail": {
+                "version": "shared-final-v1",
+                "proposal": "escalate",
+                "decision": "escalate",
+                "veto": null
+              },
+              "model_confidence": 0.85,
+              "backend": "ollama",
+              "model": "qwen3.5:4b",
+              "kind": "alert",
+              "correlation": [],
+              "responses": [],
+              "guidance": {
+                "source": "model",
+                "steps": [
+                  "Verify if user 'phopkins' exists in Active Directory and confirm their expected login times and locations.",
+                  "Check the IP address 10.35.35.202 against known internal asset lists to ensure it is not an external attacker.",
+                  "Review the SSH authorized_keys file on 'wazuh-client' to confirm the public key fingerprint matches the one in the event log.",
+                  "Determine if this host has any unusual processes running after the login time."
+                ],
+                "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+              },
+              "completed_at": "2026-11-19T00:31:21.996477+00:00",
+              "brief": {
+                "observed": "sshd: authentication success. | {\"data\": {\"dstuser\": \"phopkins\", \"srcip\": \"10.35.35.202\", \"srcport\": \"55218\"}, \"syscheck\": {}} | Jan 15 06:53:50 mail sshd[9296]: Accepted publickey for phopkins from 10.35.35.202 port 55218 ssh2: RSA SHA256:8wFbiaYPevKS/wYKnePO20v0iymTcrRh4Kr+1uRS1UM",
+                "why": "The AI requested review of this authentication event: This is the first occurrence of this signature; while the event itself (successful login) is benign, the lack of historical context and the association with MITRE ATT&CK techniques T1021 (Initial Access) and T1078 (Valid Accounts) require verification to rule out a compromised credential or unauthorized access.",
+                "decision_basis": "This is the first occurrence of this signature; while the event itself (successful login) is benign, the lack of historical context and the association with MITRE ATT&CK techniques T1021 (Initial Access) and T1078 (Valid Accounts) require verification to rule out a compromised credential or unauthorized access.",
+                "origin": {
+                  "Affected device": "wazuh-client",
+                  "Source address": "10.35.35.202",
+                  "Detection rule": "sshd: authentication success.",
+                  "Account": "phopkins"
+                },
+                "uncertainty": "A successful or unfamiliar login, missing baseline, or unrelated environment fact does not prove stolen credentials or lateral movement. Verify the result, source, logon type and authorization; these details may be absent from this record.",
+                "guidance": {
+                  "source": "model",
+                  "steps": [
+                    "Verify if user 'phopkins' exists in Active Directory and confirm their expected login times and locations.",
+                    "Check the IP address 10.35.35.202 against known internal asset lists to ensure it is not an external attacker.",
+                    "Review the SSH authorized_keys file on 'wazuh-client' to confirm the public key fingerprint matches the one in the event log.",
+                    "Determine if this host has any unusual processes running after the login time."
+                  ],
+                  "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+                }
+              }
+            },
+            "second_stage": {
+              "decision": "suppress",
+              "decision_reason": "The event is a single successful SSH login with no preceding failures or indicators of brute force.",
+              "confidence": 0.95,
+              "action": "human_review",
+              "target": null,
+              "assessment": "The record shows a single successful public key authentication for user phopkins from a private IP range.",
+              "evidence": "The log confirms a successful login (F1) with no preceding failed attempts or suspicious patterns.",
+              "gaps": "There is no historical context for this specific peer or account to confirm if this is a routine login.",
+              "recommendation": "The alert is suppressed as it represents a standard successful authentication without evidence of malicious activity.",
+              "alternatives": "The malicious hypothesis is not supported because there are no repeated failures or anomalies in the record.",
+              "recovery": "No recovery actions are required as no compromise is evidenced.",
+              "urgency": "low",
+              "hypotheses": [
+                {
+                  "kind": "benign",
+                  "summary": "Standard successful SSH login using a public key.",
+                  "supports": [
+                    "F1"
+                  ],
+                  "against": []
+                },
+                {
+                  "kind": "malicious",
+                  "summary": "Unauthorized access via a compromised account.",
+                  "supports": [],
+                  "against": [
+                    "F1"
+                  ]
+                }
+              ],
+              "assertions": [
+                {
+                  "fact_id": "F1",
+                  "field": "username",
+                  "value": "phopkins"
+                },
+                {
+                  "fact_id": "F1",
+                  "field": "src_ip",
+                  "value": "10.35.35.202"
+                }
+              ],
+              "outlook": "routine_looking",
+              "outlook_derived_from_decision": true,
+              "engine": "l2-final-review-v2",
+              "model": "gemma4:12b",
+              "mode": "final_alert_review",
+              "alert_decision": "suppress",
+              "action_authority": false,
+              "proposed_outlook": "routine_looking",
+              "challenge": {
+                "accept": true,
+                "objections": [],
+                "citations": [
+                  "F1"
+                ]
+              },
+              "review_status": "accepted",
+              "guardrail": {
+                "version": "shared-final-v1",
+                "packet_digest": "c403b23ff1a562bfdb6adc364d0b52e70ef581731e72f77b5c4c17df9bb3e55e",
+                "exact_assertions_checked": true,
+                "critic_accepted": true,
+                "action_authority": false,
+                "suppression_threshold": 0.9,
+                "decision": "suppress",
+                "veto": null
+              },
+              "review_ms": 25209.98,
+              "backend": "ollama",
+              "proposed_decision": "suppress",
+              "prefilter": {
+                "route": "model",
+                "reason": "Insufficient context for a supported routine suppression; escalate to Gemma for its own investigation.",
+                "rule": "L2_CONTEXT_REQUIRED"
+              },
+              "security_context": {
+                "version": "l2-context-v1",
+                "event_id": "99993bfdd0fab9ae4193cee95c501f56d2b285a64c71c4146f8bfd06ea1da3ed",
+                "observed": {
+                  "reported_techniques": [
+                    "T1021",
+                    "T1078"
+                  ]
+                },
+                "related_auth_events": [],
+                "auth_failures_same_peer_5m": 0,
+                "has_conversation_context": false,
+                "has_related_auth_context": false,
+                "reference_catalog": {},
+                "attack_reference": [
+                  {
+                    "id": "T1078",
+                    "name": "Valid Accounts",
+                    "guidance": "A successful login can be ordinary or abusive; look for account, peer and surrounding activity rather than treating success as permission.",
+                    "source": "https://attack.mitre.org/techniques/T1078/"
+                  },
+                  {
+                    "id": "T1110",
+                    "name": "Brute Force",
+                    "guidance": "Check repeated failures, the exact account, peer and time window; one failed login does not establish password guessing.",
+                    "source": "https://attack.mitre.org/techniques/T1110/"
+                  }
+                ],
+                "cve_reference": [],
+                "knowledge_limit": "Reference knowledge and repeated activity do not certify this event as malicious or harmless; absent CVE matches do not imply safety."
+              },
+              "reviewed_event_id": "99993bfdd0fab9ae4193cee95c501f56d2b285a64c71c4146f8bfd06ea1da3ed",
+              "decision_overridden": false,
+              "learned_pattern_key": "ac6985507c05ef0fb0cbd47d5c606e2a9bf174c48b9c9559ada767e57ae6a4f4"
+            },
+            "second_stage_status": "complete",
+            "second_stage_case_id": "6c8d6f93434706f91df50e68"
+          }
+        },
+        {
+          "event_id": "4abbb17edc287e573673b5b40077ba548089ad40f1fb017c299a02a37772da1b",
+          "state": "done",
+          "analysis": {
+            "event_id": "4abbb17edc287e573673b5b40077ba548089ad40f1fb017c299a02a37772da1b",
+            "signature": "wazuh:auth_success:wazuh-client",
+            "decision": "suppress",
+            "score": 2.6,
+            "tier": "llm",
+            "rationale": "The record shows a successful login for user phopkins, but lacks any surrounding evidence of abuse or unauthorized access.",
+            "evidence": "The event is a successful login for user phopkins (F1).",
+            "timestamp": "2026-11-19T00:29:56.609299+00:00",
+            "recommended_steps": [],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "escalate",
+              "decision": "escalate",
+              "veto": null
+            },
+            "model_confidence": 0.85,
+            "backend": "ollama",
+            "model": "gemma4:12b",
+            "kind": "observation",
+            "correlation": [],
+            "responses": [],
+            "completed_at": "2026-11-19T00:31:46.559537+00:00",
+            "first_stage": {
+              "event_id": "4abbb17edc287e573673b5b40077ba548089ad40f1fb017c299a02a37772da1b",
+              "signature": "wazuh:auth_success:wazuh-client",
+              "decision": "escalate",
+              "score": 2.6,
+              "tier": "llm",
+              "rationale": "A root login session is a high-risk event that contradicts the benign fact of a standard user named 'phopkins'; this requires immediate verification to rule out privilege escalation or credential abuse.",
+              "evidence": "Login session opened for user 'phopkins' with UID 0 (root) via SSH on host 'wazuh-client'.",
+              "timestamp": "2026-11-19T00:29:56.609299+00:00",
+              "recommended_steps": [
+                "Verify if user 'phopkins' has sudo/root privileges and check their last known activity.",
+                "Confirm the source IP address of the SSH connection (ssh -s) to identify the attacker or legitimate admin.",
+                "Check if UID 0 was used for a non-root account in this specific session context.",
+                "Review Wazuh logs for any preceding failed login attempts or unusual command execution by 'phopkins'."
+              ],
+              "context_signature": "",
+              "final_guardrail": {
+                "version": "shared-final-v1",
+                "proposal": "escalate",
+                "decision": "escalate",
+                "veto": null
+              },
+              "model_confidence": 0.85,
+              "backend": "ollama",
+              "model": "qwen3.5:4b",
+              "kind": "alert",
+              "correlation": [],
+              "responses": [],
+              "guidance": {
+                "source": "model",
+                "steps": [
+                  "Verify if user 'phopkins' has sudo/root privileges and check their last known activity.",
+                  "Confirm the source IP address of the SSH connection (ssh -s) to identify the attacker or legitimate admin.",
+                  "Check if UID 0 was used for a non-root account in this specific session context.",
+                  "Review Wazuh logs for any preceding failed login attempts or unusual command execution by 'phopkins'."
+                ],
+                "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+              },
+              "completed_at": "2026-11-19T00:31:46.559537+00:00",
+              "brief": {
+                "observed": "PAM: Login session opened. | {\"data\": {\"dstuser\": \"phopkins\", \"uid\": \"0\"}, \"syscheck\": {}} | Jan 15 06:53:50 mail sshd[9296]: pam_unix(sshd:session): session opened for user phopkins by (uid=0)",
+                "why": "The AI requested review of this authentication event: A root login session is a high-risk event that contradicts the benign fact of a standard user named 'phopkins'; this requires immediate verification to rule out privilege escalation or credential abuse.",
+                "decision_basis": "A root login session is a high-risk event that contradicts the benign fact of a standard user named 'phopkins'; this requires immediate verification to rule out privilege escalation or credential abuse.",
+                "origin": {
+                  "Affected device": "wazuh-client",
+                  "Detection rule": "PAM: Login session opened.",
+                  "Account": "phopkins"
+                },
+                "uncertainty": "A successful or unfamiliar login, missing baseline, or unrelated environment fact does not prove stolen credentials or lateral movement. Verify the result, source, logon type and authorization; these details may be absent from this record.",
+                "guidance": {
+                  "source": "model",
+                  "steps": [
+                    "Verify if user 'phopkins' has sudo/root privileges and check their last known activity.",
+                    "Confirm the source IP address of the SSH connection (ssh -s) to identify the attacker or legitimate admin.",
+                    "Check if UID 0 was used for a non-root account in this specific session context.",
+                    "Review Wazuh logs for any preceding failed login attempts or unusual command execution by 'phopkins'."
+                  ],
+                  "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+                }
+              }
+            },
+            "second_stage": {
+              "decision": "suppress",
+              "decision_reason": "The record shows a successful login for user phopkins, but lacks any surrounding evidence of abuse or unauthorized access.",
+              "confidence": 0.9,
+              "action": "human_review",
+              "target": null,
+              "assessment": "The alert is triggered by a successful login (T1078), but the log shows a standard PAM session opening without preceding failures or anomalous behavior.",
+              "evidence": "The event is a successful login for user phopkins (F1).",
+              "gaps": "There is no peer history or concurrent failed attempts to indicate a brute force or unauthorized access attempt.",
+              "recommendation": "The alert is suppressed as the recorded activity is a standard successful authentication without indicators of compromise.",
+              "alternatives": "The malicious hypothesis is not supported because there is no evidence of unauthorized access or credential misuse.",
+              "recovery": "No recovery actions are required as no compromise was confirmed.",
+              "urgency": "low",
+              "hypotheses": [
+                {
+                  "kind": "benign",
+                  "summary": "Standard user login.",
+                  "supports": [
+                    "F1"
+                  ],
+                  "against": []
+                },
+                {
+                  "kind": "malicious",
+                  "summary": "Unauthorized access via valid credentials.",
+                  "supports": [
+                    "F1"
+                  ],
+                  "against": [
+                    "F1"
+                  ]
+                }
+              ],
+              "assertions": [
+                {
+                  "fact_id": "F1",
+                  "field": "username",
+                  "value": "phopkins"
+                },
+                {
+                  "fact_id": "F1",
+                  "field": "rule_id",
+                  "value": "5501"
+                }
+              ],
+              "outlook": "routine_looking",
+              "outlook_derived_from_decision": true,
+              "engine": "l2-final-review-v2",
+              "model": "gemma4:12b",
+              "mode": "final_alert_review",
+              "alert_decision": "suppress",
+              "action_authority": false,
+              "proposed_outlook": "routine_looking",
+              "challenge": {
+                "accept": true,
+                "objections": [],
+                "citations": [
+                  "F1"
+                ]
+              },
+              "review_status": "accepted",
+              "guardrail": {
+                "version": "shared-final-v1",
+                "packet_digest": "5d989bffe8fe1d8894bd98d058343b39d2d8b6580415f5662abcc792ed9f476c",
+                "exact_assertions_checked": true,
+                "critic_accepted": true,
+                "action_authority": false,
+                "suppression_threshold": 0.9,
+                "decision": "suppress",
+                "veto": null
+              },
+              "review_ms": 24563.6,
+              "backend": "ollama",
+              "proposed_decision": "suppress",
+              "prefilter": {
+                "route": "model",
+                "reason": "Insufficient context for a supported routine suppression; escalate to Gemma for its own investigation.",
+                "rule": "L2_CONTEXT_REQUIRED"
+              },
+              "security_context": {
+                "version": "l2-context-v1",
+                "event_id": "4abbb17edc287e573673b5b40077ba548089ad40f1fb017c299a02a37772da1b",
+                "observed": {
+                  "reported_techniques": [
+                    "T1078"
+                  ]
+                },
+                "related_auth_events": [],
+                "auth_failures_same_peer_5m": 0,
+                "has_conversation_context": false,
+                "has_related_auth_context": false,
+                "reference_catalog": {},
+                "attack_reference": [
+                  {
+                    "id": "T1078",
+                    "name": "Valid Accounts",
+                    "guidance": "A successful login can be ordinary or abusive; look for account, peer and surrounding activity rather than treating success as permission.",
+                    "source": "https://attack.mitre.org/techniques/T1078/"
+                  },
+                  {
+                    "id": "T1110",
+                    "name": "Brute Force",
+                    "guidance": "Check repeated failures, the exact account, peer and time window; one failed login does not establish password guessing.",
+                    "source": "https://attack.mitre.org/techniques/T1110/"
+                  }
+                ],
+                "cve_reference": [],
+                "knowledge_limit": "Reference knowledge and repeated activity do not certify this event as malicious or harmless; absent CVE matches do not imply safety."
+              },
+              "reviewed_event_id": "4abbb17edc287e573673b5b40077ba548089ad40f1fb017c299a02a37772da1b",
+              "decision_overridden": false,
+              "learned_pattern_key": "e21dd5422254366c12bc5a5ca0185723c46b64c087e942e2ebe04a53cf09c387"
+            },
+            "second_stage_status": "complete",
+            "second_stage_case_id": "faa84859ccd62d77c963fa54"
+          }
+        },
+        {
+          "event_id": "f05c23e1065728b3482b2519855afaed41b43f15bdc0c8c47170b5adaa6ea1be",
+          "state": "done",
+          "analysis": {
+            "event_id": "f05c23e1065728b3482b2519855afaed41b43f15bdc0c8c47170b5adaa6ea1be",
+            "signature": "wazuh:network_alert:wazuh-client",
+            "decision": "suppress",
+            "score": 6.5,
+            "tier": "llm",
+            "rationale": "The alert is for a .cloud TLD DNS query, which is a common occurrence and not sufficient evidence of malicious activity without further context.",
+            "evidence": "The record shows a single DNS query for 'real.rotation.guce.aws.oath.cloud' (F1).",
+            "timestamp": "2026-11-19T00:29:38.726124+00:00",
+            "recommended_steps": [],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "escalate",
+              "decision": "escalate",
+              "veto": null
+            },
+            "model_confidence": 0.85,
+            "backend": "ollama",
+            "model": "gemma4:12b",
+            "kind": "observation",
+            "correlation": [],
+            "responses": [],
+            "completed_at": "2026-11-19T00:30:26.648851+00:00",
+            "first_stage": {
+              "event_id": "f05c23e1065728b3482b2519855afaed41b43f15bdc0c8c47170b5adaa6ea1be",
+              "signature": "wazuh:network_alert:wazuh-client",
+              "decision": "escalate",
+              "score": 6.5,
+              "tier": "llm",
+              "rationale": "While the signature is labeled 'INFO', it flags traffic to a suspicious domain pattern ('guce.aws.oath.cloud') which does not match known benign patterns; without environment facts confirming this specific query is legitimate, the risk of credential abuse or lateral movement cannot be dismissed.",
+              "evidence": "DNS query to 'real.rotation.guce.aws.oath.cloud' from internal IP 172.17.130.196 to external DNS server 172.17.128.1 (likely a misconfigured internal resolver or cloud provider endpoint).",
+              "timestamp": "2026-11-19T00:29:38.726124+00:00",
+              "recommended_steps": [
+                "Verify if IP 172.17.128.1 is an authorized internal DNS resolver or a cloud provider endpoint for the organization.",
+                "Check if user associated with source IP 172.17.130.196 has legitimate access to AWS/Oath services.",
+                "Review DNS logs for other queries from this host to similar suspicious domains.",
+                "Confirm if the domain 'real.rotation.guce.aws.oath.cloud' is part of a known internal service or if it indicates a potential phishing/credential harvesting attempt."
+              ],
+              "context_signature": "",
+              "final_guardrail": {
+                "version": "shared-final-v1",
+                "proposal": "escalate",
+                "decision": "escalate",
+                "veto": null
+              },
+              "model_confidence": 0.85,
+              "backend": "ollama",
+              "model": "qwen3.5:4b",
+              "kind": "alert",
+              "correlation": [],
+              "responses": [],
+              "guidance": {
+                "source": "model",
+                "steps": [
+                  "Verify if IP 172.17.128.1 is an authorized internal DNS resolver or a cloud provider endpoint for the organization.",
+                  "Check if user associated with source IP 172.17.130.196 has legitimate access to AWS/Oath services.",
+                  "Review DNS logs for other queries from this host to similar suspicious domains.",
+                  "Confirm if the domain 'real.rotation.guce.aws.oath.cloud' is part of a known internal service or if it indicates a potential phishing/credential harvesting attempt."
+                ],
+                "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+              },
+              "completed_at": "2026-11-19T00:30:26.648851+00:00",
+              "brief": {
+                "observed": "Suricata: Alert - ET INFO Observed DNS Query to .cloud TLD | {\"data\": {\"alert\": {\"action\": \"allowed\", \"category\": \"Potentially Bad Traffic\", \"gid\": \"1\", \"metadata\": {\"affected_product\": [\"Any\"], \"attack_target\": [\"Client_Endpoint\"], \"created_at\": [\"2019_08_13\"], \"deployment\": [\"Perimeter\"], \"former_category\": [\"INFO\"], \"signature_severity\": [\"Major\"], \"updated_at\": [\"2020_09_17\"]}, \"rev\": \"4\", \"severity\": \"2\", \"signature\": \"ET INFO Observed DNS Query to .cloud TLD\", \"signature_id\": \"2027865\"}, \"app_proto\": \"dns\", \"dest_ip\": \"172.17.128.1\", \"dest_port\": \"53\", \"dns\": {\"query\": [{\"id\": 23914, \"rrname\": \"real.rotation.guce.aws.oath.cloud\", \"rrtype\": \"A\", \"tx_id\": 0, \"type\": \"query\"}]}, \"event_type\": \"alert\", \"flow\": {\"bytes_toclient\": \"0\", \"bytes_toserver\": \"104\", \"pkts_toclient\": \"0\", \"pkts_toserver\": \"1\", \"start\": \"2022-01-15T11:17:28.506996+0000\"}, \"flow_id\": \"1129536356400244.000000\", \"in_iface\": \"ens3\", \"proto\": \"UDP\", \"src_ip\": \"172.17.130.196\", \"src_port\": \"35311\", \"timestamp\": \"2022-01-15T11:17:28.506996+0000\", \"tx_id\": \"0\"}, \"syscheck\": {}}",
+                "why": "While the signature is labeled 'INFO', it flags traffic to a suspicious domain pattern ('guce.aws.oath.cloud') which does not match known benign patterns; without environment facts confirming this specific query is legitimate, the risk of credential abuse or lateral movement cannot be dismissed.",
+                "decision_basis": "While the signature is labeled 'INFO', it flags traffic to a suspicious domain pattern ('guce.aws.oath.cloud') which does not match known benign patterns; without environment facts confirming this specific query is legitimate, the risk of credential abuse or lateral movement cannot be dismissed.",
+                "origin": {
+                  "Affected device": "wazuh-client",
+                  "Source address": "172.17.130.196",
+                  "Destination address": "172.17.128.1",
+                  "Destination port": "53",
+                  "Detection rule": "Suricata: Alert - ET INFO Observed DNS Query to .cloud TLD"
+                },
+                "uncertainty": "The record alone does not establish the cause or whether the activity was authorized. Verify the original event and related records.",
+                "guidance": {
+                  "source": "model",
+                  "steps": [
+                    "Verify if IP 172.17.128.1 is an authorized internal DNS resolver or a cloud provider endpoint for the organization.",
+                    "Check if user associated with source IP 172.17.130.196 has legitimate access to AWS/Oath services.",
+                    "Review DNS logs for other queries from this host to similar suspicious domains.",
+                    "Confirm if the domain 'real.rotation.guce.aws.oath.cloud' is part of a known internal service or if it indicates a potential phishing/credential harvesting attempt."
+                  ],
+                  "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+                }
+              }
+            },
+            "second_stage": {
+              "decision": "suppress",
+              "decision_reason": "The alert is for a .cloud TLD DNS query, which is a common occurrence and not sufficient evidence of malicious activity without further context.",
+              "confidence": 0.9,
+              "action": "human_review",
+              "target": null,
+              "assessment": "The alert is triggered by a generic signature for a .cloud TLD, which is a common top-level domain and not inherently malicious.",
+              "evidence": "The record shows a single DNS query for 'real.rotation.guce.aws.oath.cloud' (F1).",
+              "gaps": "There is no evidence of a high-frequency query or a known malicious domain associated with this specific TLD.",
+              "recommendation": "The alert is suppressed as the .cloud TLD is a common domain and the single query does not indicate a confirmed threat.",
+              "alternatives": "The malicious hypothesis is that the .cloud TLD indicates a command and control (C2) domain, but the record only shows a single query to a complex but non-specific subdomain.",
+              "recovery": "No recovery actions are required as no confirmed compromise was identified.",
+              "urgency": "low",
+              "hypotheses": [
+                {
+                  "kind": "benign",
+                  "summary": "The DNS query is a standard request to a cloud-hosted service.",
+                  "supports": [
+                    "F1"
+                  ],
+                  "against": []
+                },
+                {
+                  "kind": "malicious",
+                  "summary": "The .cloud TLD is used as a domain for command and control (C2) infrastructure.",
+                  "supports": [
+                    "F1"
+                  ],
+                  "against": [
+                    "F1"
+                  ]
+                }
+              ],
+              "assertions": [
+                {
+                  "fact_id": "F1",
+                  "field": "dns_query",
+                  "value": "real.rotation.guce.aws.oath.cloud"
+                },
+                {
+                  "fact_id": "F1",
+                  "field": "signature",
+                  "value": "ET INFO Observed DNS Query to .cloud TLD"
+                }
+              ],
+              "outlook": "routine_looking",
+              "outlook_derived_from_decision": true,
+              "engine": "l2-final-review-v2",
+              "model": "gemma4:12b",
+              "mode": "final_alert_review",
+              "alert_decision": "suppress",
+              "action_authority": false,
+              "proposed_outlook": "routine_looking",
+              "challenge": {
+                "accept": true,
+                "objections": [],
+                "citations": [
+                  "F1"
+                ]
+              },
+              "review_status": "accepted",
+              "guardrail": {
+                "version": "shared-final-v1",
+                "packet_digest": "e2695dfd1d95e03ff19c1e3e2ffab63930fd83b9128b1f4f08503ebac216ea56",
+                "exact_assertions_checked": true,
+                "critic_accepted": true,
+                "action_authority": false,
+                "suppression_threshold": 0.9,
+                "decision": "suppress",
+                "veto": null
+              },
+              "review_ms": 47899.51,
+              "backend": "ollama",
+              "proposed_decision": "suppress",
+              "prefilter": {
+                "route": "model",
+                "reason": "No independent rule settles this alert; obtain an independent L2 assessment.",
+                "rule": null
+              },
+              "security_context": {
+                "version": "l2-context-v1",
+                "event_id": "f05c23e1065728b3482b2519855afaed41b43f15bdc0c8c47170b5adaa6ea1be",
+                "observed": {
+                  "network": {
+                    "flow_id": "1129536356400244.000000",
+                    "app_proto": "dns",
+                    "flow": {
+                      "pkts_toserver": "1",
+                      "pkts_toclient": "0",
+                      "bytes_toserver": "104",
+                      "bytes_toclient": "0"
+                    }
+                  }
+                },
+                "related_auth_events": [],
+                "auth_failures_same_peer_5m": 0,
+                "has_conversation_context": false,
+                "has_related_auth_context": false,
+                "reference_catalog": {},
+                "attack_reference": [
+                  {
+                    "id": "T1071.004",
+                    "name": "Application Layer Protocol: DNS",
+                    "guidance": "Inspect the actual DNS question and surrounding traffic; DNS use or a domain suffix alone does not establish tunneling.",
+                    "source": "https://attack.mitre.org/techniques/T1071/004/"
+                  }
+                ],
+                "cve_reference": [],
+                "knowledge_limit": "Reference knowledge and repeated activity do not certify this event as malicious or harmless; absent CVE matches do not imply safety."
+              },
+              "reviewed_event_id": "f05c23e1065728b3482b2519855afaed41b43f15bdc0c8c47170b5adaa6ea1be",
+              "decision_overridden": false,
+              "learned_pattern_key": "5b516d338b6982d1c44ce794f0eba87809069d2e65c259c11f2b72244d094730"
+            },
+            "second_stage_status": "complete",
+            "second_stage_case_id": "f14fdc0209b520c029d457aa"
+          }
+        },
+        {
+          "event_id": "1ac412f321cd5ea45f1e6d03bbb4be127c4259ec96fe4ddceb82b2ecfeb2bdbe",
+          "state": "done",
+          "analysis": {
+            "event_id": "1ac412f321cd5ea45f1e6d03bbb4be127c4259ec96fe4ddceb82b2ecfeb2bdbe",
+            "signature": "wazuh:network_alert:wazuh-client",
+            "decision": "suppress",
+            "score": 6.5,
+            "tier": "llm",
+            "rationale": "The alert is triggered by a generic informational signature for a .cloud TLD, which is not sufficient evidence of malicious activity without further context.",
+            "evidence": "The alert is triggered by a general information signature (F1: signature: \"ET INFO Observed DNS Query to .cloud TLD\").",
+            "timestamp": "2026-11-19T00:29:44.072243+00:00",
+            "recommended_steps": [],
+            "context_signature": "",
+            "final_guardrail": {
+              "version": "shared-final-v1",
+              "proposal": "escalate",
+              "decision": "escalate",
+              "veto": null
+            },
+            "model_confidence": 0.85,
+            "backend": "ollama",
+            "model": "gemma4:12b",
+            "kind": "observation",
+            "correlation": [],
+            "responses": [],
+            "completed_at": "2026-11-19T00:30:56.783822+00:00",
+            "first_stage": {
+              "event_id": "1ac412f321cd5ea45f1e6d03bbb4be127c4259ec96fe4ddceb82b2ecfeb2bdbe",
+              "signature": "wazuh:network_alert:wazuh-client",
+              "decision": "escalate",
+              "score": 6.5,
+              "tier": "llm",
+              "rationale": "The query targets a suspicious domain name pattern ('guce.aws.oath') which deviates from standard AWS naming conventions, and the destination IP 192.168.255.254 is not a valid public internet address, suggesting potential C2 or misconfigured internal infrastructure; without benign context to explain this specific traffic, the risk of credential abuse or lateral movement cannot be ruled out.",
+              "evidence": "DNS query to 'real.rotation.guce.aws.oath.cloud' from internal host 192.168.128.4 to external IP 192.168.255.254 (non-standard public IP range) flagged as 'Potentially Bad Traffic' by Suricata.",
+              "timestamp": "2026-11-19T00:29:44.072243+00:00",
+              "recommended_steps": [
+                "Verify if host 192.168.128.4 has legitimate business justification for querying 'oath.cloud' domains.",
+                "Check DNS logs on the Wazuh client to confirm if this is a one-time anomaly or part of a larger query pattern.",
+                "Inspect network flow details for any data exfiltration indicators beyond the single DNS packet.",
+                "Determine if the destination IP 192.168.255.254 corresponds to a known internal service or if it indicates spoofed traffic."
+              ],
+              "context_signature": "",
+              "final_guardrail": {
+                "version": "shared-final-v1",
+                "proposal": "escalate",
+                "decision": "escalate",
+                "veto": null
+              },
+              "model_confidence": 0.85,
+              "backend": "ollama",
+              "model": "qwen3.5:4b",
+              "kind": "alert",
+              "correlation": [],
+              "responses": [],
+              "guidance": {
+                "source": "model",
+                "steps": [
+                  "Verify if host 192.168.128.4 has legitimate business justification for querying 'oath.cloud' domains.",
+                  "Check DNS logs on the Wazuh client to confirm if this is a one-time anomaly or part of a larger query pattern.",
+                  "Inspect network flow details for any data exfiltration indicators beyond the single DNS packet.",
+                  "Determine if the destination IP 192.168.255.254 corresponds to a known internal service or if it indicates spoofed traffic."
+                ],
+                "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+              },
+              "completed_at": "2026-11-19T00:30:56.783822+00:00",
+              "brief": {
+                "observed": "Suricata: Alert - ET INFO Observed DNS Query to .cloud TLD | {\"data\": {\"alert\": {\"action\": \"allowed\", \"category\": \"Potentially Bad Traffic\", \"gid\": \"1\", \"metadata\": {\"affected_product\": [\"Any\"], \"attack_target\": [\"Client_Endpoint\"], \"created_at\": [\"2019_08_13\"], \"deployment\": [\"Perimeter\"], \"former_category\": [\"INFO\"], \"signature_severity\": [\"Major\"], \"updated_at\": [\"2020_09_17\"]}, \"rev\": \"4\", \"severity\": \"2\", \"signature\": \"ET INFO Observed DNS Query to .cloud TLD\", \"signature_id\": \"2027865\"}, \"app_proto\": \"dns\", \"dest_ip\": \"192.168.255.254\", \"dest_port\": \"53\", \"dns\": {\"query\": [{\"id\": 48779, \"rrname\": \"real.rotation.guce.aws.oath.cloud\", \"rrtype\": \"A\", \"tx_id\": 0, \"type\": \"query\"}]}, \"event_type\": \"alert\", \"flow\": {\"bytes_toclient\": \"0\", \"bytes_toserver\": \"104\", \"pkts_toclient\": \"0\", \"pkts_toserver\": \"1\", \"start\": \"2022-01-15T11:17:28.507601+0000\"}, \"flow_id\": \"475739254734545.000000\", \"in_iface\": \"ens3\", \"proto\": \"UDP\", \"src_ip\": \"192.168.128.4\", \"src_port\": \"13351\", \"timestamp\": \"2022-01-15T11:17:28.507601+0000\", \"tx_id\": \"0\"}, \"syscheck\": {}}",
+                "why": "The query targets a suspicious domain name pattern ('guce.aws.oath') which deviates from standard AWS naming conventions, and the destination IP 192.168.255.254 is not a valid public internet address, suggesting potential C2 or misconfigured internal infrastructure; without benign context to explain this specific traffic, the risk of credential abuse or lateral movement cannot be ruled out.",
+                "decision_basis": "The query targets a suspicious domain name pattern ('guce.aws.oath') which deviates from standard AWS naming conventions, and the destination IP 192.168.255.254 is not a valid public internet address, suggesting potential C2 or misconfigured internal infrastructure; without benign context to explain this specific traffic, the risk of credential abuse or lateral movement cannot be ruled out.",
+                "origin": {
+                  "Affected device": "wazuh-client",
+                  "Source address": "192.168.128.4",
+                  "Destination address": "192.168.255.254",
+                  "Destination port": "53",
+                  "Detection rule": "Suricata: Alert - ET INFO Observed DNS Query to .cloud TLD"
+                },
+                "uncertainty": "The record alone does not establish the cause or whether the activity was authorized. Verify the original event and related records.",
+                "guidance": {
+                  "source": "model",
+                  "steps": [
+                    "Verify if host 192.168.128.4 has legitimate business justification for querying 'oath.cloud' domains.",
+                    "Check DNS logs on the Wazuh client to confirm if this is a one-time anomaly or part of a larger query pattern.",
+                    "Inspect network flow details for any data exfiltration indicators beyond the single DNS packet.",
+                    "Determine if the destination IP 192.168.255.254 corresponds to a known internal service or if it indicates spoofed traffic."
+                  ],
+                  "caution": "AI-suggested investigation steps; verify them against the original evidence. Advice does not authorize execution."
+                }
+              }
+            },
+            "second_stage": {
+              "decision": "suppress",
+              "decision_reason": "The alert is triggered by a generic informational signature for a .cloud TLD, which is not sufficient evidence of malicious activity without further context.",
+              "confidence": 0.95,
+              "action": "human_review",
+              "target": null,
+              "assessment": "The alert is based on a broad 'ET INFO' signature for a .cloud TLD, which is a common naming convention and not an indicator of a specific attack. The record shows a single DNS query for a specific subdomain, but there is no evidence of tunneling, data exfiltration, or other malicious behavior. A .cloud TLD alone does not constitute a security risk.",
+              "evidence": "The alert is triggered by a general information signature (F1: signature: \"ET INFO Observed DNS Query to .cloud TLD\").",
+              "gaps": "There is no evidence of repeated queries or non-standard DNS behavior to suggest a tunnel or C2 activity.",
+              "recommendation": "The alert is suppressed as it is a low-fidelity informational alert with no supporting evidence of exploitation.",
+              "alternatives": "The malicious hypothesis is not supported because the .cloud TLD is a common convention and the query is a single instance. The benign hypothesis is supported because the alert is an 'INFO' level signature and the query is a standard DNS request.",
+              "recovery": "N/A",
+              "urgency": "low",
+              "hypotheses": [
+                {
+                  "kind": "benign",
+                  "summary": "The DNS query is a standard request to a valid domain using a common TLD.",
+                  "supports": [
+                    "F1",
+                    "F1"
+                  ],
+                  "against": []
+                },
+                {
+                  "kind": "malicious",
+                  "summary": "The DNS query represents a potential tunnel or C2 communication.",
+                  "supports": [
+                    "F1"
+                  ],
+                  "against": [
+                    "F1"
+                  ]
+                }
+              ],
+              "assertions": [
+                {
+                  "fact_id": "F1",
+                  "field": "signature",
+                  "value": "ET INFO Observed DNS Query to .cloud TLD"
+                }
+              ],
+              "outlook": "routine_looking",
+              "outlook_derived_from_decision": true,
+              "engine": "l2-final-review-v2",
+              "model": "gemma4:12b",
+              "mode": "final_alert_review",
+              "alert_decision": "suppress",
+              "action_authority": false,
+              "proposed_outlook": "routine_looking",
+              "challenge": {
+                "accept": true,
+                "objections": [],
+                "citations": [
+                  "F1"
+                ]
+              },
+              "review_status": "accepted",
+              "guardrail": {
+                "version": "shared-final-v1",
+                "packet_digest": "77fdddaf449ac5a2a28134c2b44a67b253ebb89f9a91cde9cc336ee4f4bf6115",
+                "exact_assertions_checked": true,
+                "critic_accepted": true,
+                "action_authority": false,
+                "suppression_threshold": 0.9,
+                "decision": "suppress",
+                "veto": null
+              },
+              "review_ms": 30137.57,
+              "backend": "ollama",
+              "proposed_decision": "suppress",
+              "prefilter": {
+                "route": "model",
+                "reason": "No independent rule settles this alert; obtain an independent L2 assessment.",
+                "rule": null
+              },
+              "security_context": {
+                "version": "l2-context-v1",
+                "event_id": "1ac412f321cd5ea45f1e6d03bbb4be127c4259ec96fe4ddceb82b2ecfeb2bdbe",
+                "observed": {
+                  "network": {
+                    "flow_id": "475739254734545.000000",
+                    "app_proto": "dns",
+                    "flow": {
+                      "pkts_toserver": "1",
+                      "pkts_toclient": "0",
+                      "bytes_toserver": "104",
+                      "bytes_toclient": "0"
+                    }
+                  }
+                },
+                "related_auth_events": [],
+                "auth_failures_same_peer_5m": 0,
+                "has_conversation_context": false,
+                "has_related_auth_context": false,
+                "reference_catalog": {},
+                "attack_reference": [
+                  {
+                    "id": "T1071.004",
+                    "name": "Application Layer Protocol: DNS",
+                    "guidance": "Inspect the actual DNS question and surrounding traffic; DNS use or a domain suffix alone does not establish tunneling.",
+                    "source": "https://attack.mitre.org/techniques/T1071/004/"
+                  }
+                ],
+                "cve_reference": [],
+                "knowledge_limit": "Reference knowledge and repeated activity do not certify this event as malicious or harmless; absent CVE matches do not imply safety."
+              },
+              "reviewed_event_id": "1ac412f321cd5ea45f1e6d03bbb4be127c4259ec96fe4ddceb82b2ecfeb2bdbe",
+              "decision_overridden": false,
+              "learned_pattern_key": "4cfe21c79d590788ec4ae31d7e0700a6534e2bcd58c2352de93399a3a405ca4c"
+            },
+            "second_stage_status": "complete",
+            "second_stage_case_id": "c583627113d6be464b72e7ef"
+          }
+        }
+      ]
+    }
+  ]
+}

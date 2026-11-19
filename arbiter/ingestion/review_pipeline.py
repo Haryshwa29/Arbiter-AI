@@ -158,6 +158,18 @@ class ReviewPipeline(Pipeline):
             if context: event.fields['_context_signature'] = context
             job['prepared'] = self.workflow.brain.prepare_review(event, job['analysis'],
                 replay=job['row']['connector'] in {'file','replay','demo'}, related=row['_l2_related'])
+            from ..learned_patterns import pattern_key
+            prepared=job['prepared']
+            key=pattern_key(job['event'],job['row']['connector'],self.engine.memory,
+                self.workflow.brain.backend.model,self.simulation)
+            if prepared['security_context'].get('has_related_auth_context'):key=None
+            job['learned_l2_key']=key
+            if prepared['assessment']['route']=='model' and not prepared['assessment'].get('must_retain'):
+                learned=self.engine.memory.match_pattern('l2',key)
+                if learned:
+                    prepared['assessment']={'route':'suppress','rule':'L2_LEARNED_EXACT_PATTERN',
+                        'reason':f"Exact Gemma-reviewed routine pattern {key[:12]}, origin {learned['origin_event']}; "
+                            f"repeat {learned['hit']}/25 within one hour. Prior reason: {learned['reason'][:1200]}"}
             if case.get('brief'):
                 project_final(job['analysis'], case['brief'], event_id=job['event'].event_id)
                 job['candidate'] = dict(case['brief'])
@@ -190,11 +202,18 @@ class ReviewPipeline(Pipeline):
                         case.update(review_failed=True, review_error=job['l2_error'], state='needs_review', brief=None)
                         notice = 'L2 unavailable or invalid output; alert retained for human review'
                     else:
+                        brief['learned_pattern_key']=job.get('learned_l2_key')
                         case['brief'] = brief
                         notice = 'Final guardrail checked the L2 decision; inspect l2-cases'
                     # Rejection wins even if it arrived during model inference.
                     if rejected: case['state'] = 'rejected'
                     self.workflow.save(case, notice)
+                    key=job.get('learned_l2_key')
+                    if brief and not rejected and brief['alert_decision']=='suppress' and brief['review_status']=='accepted' and not job.get('reused_case'):
+                        self.engine.memory.learn_pattern('l2',key,job['event'].to_event(),
+                            self.workflow.brain.backend.model,brief['decision_reason'])
+                    elif rejected or (brief and brief['alert_decision']=='escalate'):
+                        self.engine.memory.revoke_pattern('l2',key)
                 elif case.get('brief'):
                     project_final(first, case['brief'], event_id=job['event'].event_id)
         else:

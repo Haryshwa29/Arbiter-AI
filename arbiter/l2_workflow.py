@@ -94,6 +94,27 @@ class L2Workflow:
             counts['pending'] += n if brief_type in (None,'null') and not failed and state!='rejected' else 0
         return counts
 
+    def project(self, rows):
+        from .l2_final_review import eligible, project_final
+        cases={case['event_id']:case for case in reversed(self.cases(event_ids=[row['event_id'] for row in rows]))}
+        result=[]
+        for row in rows:
+            first=row.get('analysis')
+            if first and eligible(first):
+                case=cases.get(row['event_id'],{})
+                rejected=case.get('state')=='rejected'
+                brief=case.get('brief') if not rejected else None
+                status=('human-rejected-alert-retained' if rejected else 'failed-alert-retained' if case.get('review_failed')
+                    else 'complete' if brief else 'pending-alert-visible' if row['state'] in {'pending','processing'}
+                    else 'not-reviewed-alert-visible')
+                try: analysis=project_final(first,brief,event_id=row['event_id'])
+                except ValueError:
+                    analysis=project_final(first);status='invalid-review-alert-retained'
+                analysis.update(second_stage_status=status,second_stage_case_id=case.get('id'))
+                row={**row,'analysis':analysis}
+            result.append(row)
+        return result
+
     def notices(self, after=0):
         b = self.agent.service.buffer
         with b.lock:
@@ -131,7 +152,9 @@ class L2Workflow:
                 case['state'] = 'reverted'
             else:
                 if case['state'] not in {'waiting', 'needs_review'}: raise ValueError('case is not awaiting review')
-                if command == 'reject': case['state'] = 'rejected'
+                if command == 'reject':
+                    case['state'] = 'rejected'
+                    self.agent.memory.revoke_pattern('l2',(case.get('brief') or {}).get('learned_pattern_key'))
                 elif command in {'ack', 'defer'}:
                     # One bounded extension; duplicates cannot extend it again.
                     if case.get('acknowledged'): raise ValueError('review extension already used')
@@ -270,15 +293,18 @@ class L2Workflow:
             with buffer.lock, buffer.conn:
                 buffer.conn.executemany('INSERT OR IGNORE INTO l2_seen VALUES (?)', [(event_id,) for event_id in unseen])
 
+    def attach(self):
+        from .ingestion.review_pipeline import ReviewPipeline
+        previous=self.agent.service.pipeline
+        previous.stop()
+        pipeline=ReviewPipeline(previous.buffer,previous.engine,previous.audit,self)
+        pipeline.simulation=previous.simulation
+        self.agent.service.pipeline=pipeline
+        return pipeline
+
     def start(self):
         if getattr(self.brain,'final_review',False) is True:
-            from .ingestion.review_pipeline import ReviewPipeline
-            previous = self.agent.service.pipeline
-            previous.stop()
-            pipeline = ReviewPipeline(previous.buffer, previous.engine, previous.audit, self)
-            pipeline.simulation = previous.simulation
-            self.agent.service.pipeline = pipeline
-            pipeline.start()
+            self.attach().start()
             return
         def reviewer():
             while not self.stop.is_set():

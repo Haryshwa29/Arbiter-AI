@@ -11,7 +11,7 @@ route through the software; they are not live traffic or measured speed.
 alerts Qwen escalates. Both can be replaced with compatible local models.**
 Gemma never receives the incoming stream directly. Separate L2 guardrails and a
 pre-filter settle supported routine cases; unresolved cases in the five-worker
-terminal preset reach Gemma even when context is missing. The earlier sequential
+pipeline (terminal or L2-enabled local dashboard) reach Gemma even when context is missing. The earlier sequential
 replay instead retained those context-poor cases without Gemma, a routing
 limitation recorded separately. Gemma reads original facts without Qwen's opinion text and can keep
 or suppress an alert with a written reason. Pending, uncertain or failed reviews keep the
@@ -25,10 +25,12 @@ needed to view this document on GitHub.
 For the public-data results, read [what failed, what improved and what we plan
 to test next](FINDINGS-IN-PLAIN-ENGLISH.md).
 
-The final-review terminal preset also has a [five-worker pipeline diagram](FIVE-WORKER-PIPELINE.md):
+The final-review pipeline also has a [five-worker diagram](FIVE-WORKER-PIPELINE.md):
 gateway → L1 → L2 prefilter → L2 → final guardrail, with bypasses for cases
-that do not need Gemma. These workers overlap different records. The ongoing
-26,000-record replay remains sequential and does not measure this upgrade.
+that do not need Gemma. These workers overlap different records. Each brain can
+teach its own pre-filter [exact routine repeats](LEARNED-PATTERNS.md), without
+exempting a whole host. The stopped 26,002-record replay was sequential and did
+not measure either upgrade.
 
 ## The complete flow: intake and triage together
 

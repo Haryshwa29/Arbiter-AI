@@ -78,19 +78,23 @@ class Pipeline:
             analysis["model"] = reasoning.get("model", "")
         else:
             legacy = event.to_event()
+            from ..learned_patterns import pattern_key
+            key=pattern_key(event,row['connector'],self.engine.memory,model,self.simulation) if backend=='ollama' else None
+            job['learned_l1_key']=key
             if not own_query: legacy.fields["asset_context"] = self.buffer.asset_summary(event)
             from .evidence import process_context, own_log_query
             if own_query: legacy.fields["_collector_activity"] = True
             context = process_context(event, legacy, self.engine, row["connector"])
             if context: legacy.fields["_context_signature"] = context
             legacy.fields["_analysis_backend"] = {"backend": backend, "model": model}
-            verdict = self.engine.triage(legacy)
+            verdict = self.engine.triage(legacy,learned_key=key) if key else self.engine.triage(legacy)
             legacy.fields['_final_guardrail']=getattr(verdict,'final_guardrail',{})
             self.audit.record_verdict(legacy, verdict)
             analysis = safe_json(verdict.to_json())
             analysis["recommended_steps"] = getattr(verdict, "recommended_steps", [])
             analysis['context_signature']=legacy.fields.get('_context_signature','')
             analysis['final_guardrail']=getattr(verdict,'final_guardrail',{})
+            analysis['model_confidence']=getattr(verdict,'model_confidence',0)
             analysis["backend"] = backend if analysis["tier"] == "llm" else "deterministic"
             analysis["model"] = model if analysis["backend"] in {"ollama", "ollama-cloud"} else ""
         if analysis["tier"] == "llm" and analysis["rationale"].startswith("LLM tier failed ("):
@@ -104,6 +108,11 @@ class Pipeline:
     def finish(self, job, analysis):
         row, event, started = job['row'], job['event'], job['started']
         related, correlations = job['related'], job['correlations']
+        key=job.get('learned_l1_key')
+        if key and analysis['decision']=='suppress' and analysis['tier']=='llm' and analysis.get('model_confidence',0)>=.9:
+            self.engine.memory.learn_pattern('l1',key,event.to_event(),job['model'],analysis['rationale'])
+        elif key and analysis['decision']=='escalate':
+            self.engine.memory.revoke_pattern('l1',key)
         # Planning is pure. Neither simulated nor live ingestion executes commands.
         from ..respond import plan
         from ..schema import Verdict, Decision, Tier

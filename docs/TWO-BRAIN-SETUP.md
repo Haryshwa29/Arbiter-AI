@@ -24,8 +24,10 @@ permitted local collection; do not point two agents at the same state directory.
 Enter `status`, `events`, `l2-cases`, or `l2-notices` to inspect the setup and
 `quit` to stop. No containment flags are included.
 
-The preset does not replace an installed or portable application, or enable L2
-in the dashboard. In the terminal, `events` shows the final classification while
+The preset does not replace an installed or portable application. The dashboard
+can enable the same pipeline with `serve --l2-model gemma4:12b`; see
+[dashboard configuration](FIVE-WORKER-PIPELINE.md#local-dashboard). In the terminal,
+`events` shows the final classification while
 preserving `first_stage` and `second_stage`. The durable `l2-cases` records hold
 L2 decisions and reasons. Original ingestion/audit totals remain L1 evidence;
 `status` reports L2 classifications separately. Nothing rewrites the original
@@ -80,7 +82,8 @@ The separate [L2 security-context upgrade](L2-CONTEXT.md) preserves native CVE,
 technique and conversation details and adds bounded matching login history and
 an offline CISA reference. Its guards keep unknown applicability and unexplained
 protocol anomalies visible. This upgrade is not applied to the already-running
-full public replay.
+stopped public replay. [Scoped repeat memory](LEARNED-PATTERNS.md) is a subsequent
+upgrade and is also excluded from those frozen measurements.
 
 The selected L2 route requests an 8,192-token context, at most 1,536 generated
 tokens per call, temperature 0.1 and internal thinking off. Assessment and challenge
