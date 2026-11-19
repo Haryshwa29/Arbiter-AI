@@ -44,9 +44,17 @@ class IngestionService:
         if not isinstance(model, str) or model not in available_models(self.ollama_url)["models"]:
             raise ValueError("model is not installed on the local inference service")
         with self.lock:
+            workflow = getattr(self.pipeline, 'workflow', None)
+            if workflow and model == workflow.brain.backend.model:
+                raise ValueError('L1 and L2 must use distinct local models')
             self.pipeline.stop()
             old = self.pipeline.engine
-            self.pipeline = Pipeline(self.buffer, TriageEngine(old.memory, OllamaBackend(model, self.ollama_url), os.devnull, shadow=True), self.pipeline.audit)
+            engine = TriageEngine(old.memory, OllamaBackend(model, self.ollama_url), os.devnull, shadow=True)
+            if workflow:
+                from .review_pipeline import ReviewPipeline
+                self.pipeline = ReviewPipeline(self.buffer, engine, self.pipeline.audit, workflow)
+            else:
+                self.pipeline = Pipeline(self.buffer, engine, self.pipeline.audit)
             self.backend, self.model = "ollama", model
             with self.buffer.lock, self.buffer.conn:
                 self.buffer.conn.execute("INSERT OR REPLACE INTO analysis_configuration VALUES (1,?,?)", (self.backend, model))
@@ -129,11 +137,13 @@ class IngestionService:
                 **(self.buffer.connector_stats(name) if include_metrics else {})})
         metrics = self.buffer.metrics("live") if include_metrics else {}
         metrics["connector_errors"] = sum(c["errors"] for c in connectors)
+        workers = self.pipeline.status() if hasattr(self.pipeline, 'status') else {
+            'l1': {'alive': bool(self.pipeline.thread and self.pipeline.thread.is_alive())}}
         return {"device": socket.gethostname(), "backend": self.backend, "model": self.model,
                 "elevated": is_elevated(), "protection_enabled": False,
                 "coverage": "This device and explicitly configured sources; other network devices require sensors",
                 "connectors": connectors, "metrics": metrics,
-                "worker_alive": bool(self.pipeline.thread and self.pipeline.thread.is_alive())}
+                "worker_alive": all(w['alive'] for w in workers.values()), "pipeline_workers": workers}
 
     def submit(self, data, source="auto", connector="api"):
         try:

@@ -33,18 +33,27 @@ Qwen verdict. A pending or failed review keeps the warning visible.
 
 ## How the handoff works
 
+The terminal final-review preset now has [five bounded worker stages](FIVE-WORKER-PIPELINE.md):
+gateway, L1, L2 prefilter, L2, and final guardrail. L1 can continue while L2
+investigates another event. The current public checkpoint remains the original
+sequential replay; installed dashboard builds are unchanged. `status` exposes
+the five workers and their waiting lines. Real-GPU speedup is not yet measured.
+
 1. Existing rules handle clear cases. Mandatory safety warnings remain flagged;
    they do not enter Gemma's queue. Quiet observations also do not enter it.
 2. Qwen reviews unclear events. Only its successful local-model escalations go
    to Gemma. A failed Qwen call remains flagged by policy and bypasses L2.
-3. An independent **L2 pre-filter and safety check** runs first. It retains known
-   risky evidence and DNS alerts missing the actual question without inference.
-   It also retains isolated protocol/login
-   warnings that lack the context needed to settle them, avoiding a paid repeat
-   of the same evidence. Exact, human-corrected process history can resolve a
+3. An independent **L2 pre-filter** runs first. In the five-worker terminal
+   preset it quiets only supported routine cases; unresolved warnings pass to
+   Gemma even when useful context is missing. Known risk remains protected by
+   the final guardrail after model review. Exact, human-corrected process history can resolve a
    routine case: at least five explicit corrections, no unresolved risk, and the
    same process hash, command, user, parent and environment. Broad host history
    and the model's own previous opinions cannot authorize this shortcut.
+   A narrow native Wazuh resolved-CVE notification can also be quieted with
+   checked rule/status/package/version evidence. This does not certify the asset
+   safe. The old sequential evaluation's context-required bypass remains a
+   historical routing limitation; it is not the upgraded terminal behavior.
 4. When a model review is useful, Gemma receives bounded original facts **without
    Qwen's rationale or conclusion text**. Benchmark scoring labels are excluded.
    It considers ordinary and malicious explanations and proposes one final
@@ -66,6 +75,12 @@ native-response L2 mode remains separate, with its stricter fresh native evidenc
 and independent executor gates. Its defaults were not relaxed for public data.
 
 ## Local inference settings
+
+The separate [L2 security-context upgrade](L2-CONTEXT.md) preserves native CVE,
+technique and conversation details and adds bounded matching login history and
+an offline CISA reference. Its guards keep unknown applicability and unexplained
+protocol anomalies visible. This upgrade is not applied to the already-running
+full public replay.
 
 The selected L2 route requests an 8,192-token context, at most 1,536 generated
 tokens per call, temperature 0.1 and internal thinking off. Assessment and challenge

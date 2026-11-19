@@ -4,6 +4,44 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 18 separate five-worker final-review development: the terminal preset
+now uses bounded gateway/L1/L2-prefilter/L2/final-guardrail queues and five
+threads. Shared preparation/analysis/persistence helpers retain the ordinary
+single-worker mode. L2 preparation, model review and final checking are split
+without removing format/evidence/confidence/challenge checks. L1 progresses
+while L2 waits; pending alerts, human rejection and exact-event bindings remain.
+Status exposes stage activity, queues and errors. Shutdown joins writers before
+closing stores; restart reuses durable L1 and rechecks saved L2 exits. Model
+changes retain the pipeline and require distinct L1/L2 models. No new dependency
+or actuation authority. Real-GPU speedup is unmeasured.
+The running public checkpoint and installed app remain unchanged. Changes stay
+local pending the owner's requested review/explicit GitHub push approval.
+The terminal now uses suppress-or-pass L2 routing: insufficient context no longer
+skips Gemma. Known risk still vetoes suppression at the final gate. A narrow
+Wazuh 23502 Solved-CVE notification rule and exact human-corrected process history
+can independently quiet supported routine cases; neither promises a suppression
+rate. Legacy sequential comparison callers keep their earlier routing protocol.
+Final local validation: 555 tests passed, 2 skipped and 25 subtests passed;
+28 focused queue/routing/noise-lookalike checks passed. The packaged stdlib agent
+contains the new pipeline and offline catalog and passed the 22-event mock CLI
+smoke. No extra real-model inference was run alongside the frozen checkpoint.
+See docs/FIVE-WORKER-PIPELINE.md.
+
+November 18 separate L2 context upgrade: native Wazuh/Suricata extraction now
+preserves bounded explicit CVE/MITRE IDs, scanner package/version/status and
+conversation details. L2 adds at most eight same-host/account/peer native login
+events within five minutes, plus relevant offline reference cards (seven
+ATT&CK families; CISA KEV 2026.11.17, 1,782 factual entries). Knowledge is not
+incident evidence or a product/version applicability verdict. Later KEV listings
+are excluded from positive as-of-event claims. No runtime network lookup or new
+dependency. Shared final/L2 guards cover repeated failures, active source-reported
+vulnerabilities and protocol anomalies not explained by conversation metadata.
+The real synthetic development probe exposed two unsupported Gemma suppressions
+accepted by its own critic; the protocol-context veto blocks them. No new public
+accuracy claim. JSON knowledge is packaged and included in evaluation identity
+checks. This branch/worktree is separate: the ongoing full replay and installed
+dashboard remain unchanged. See docs/L2-CONTEXT.md and its development evidence.
+
 November 18 full-data replay tooling: `tools/full_public_eval.py` streams all
 2,600,263 supported AIT-ADS records through the unchanged Qwen L1/Gemma L2 route,
 with independent empty history per record. It uses an isolated SQLite journal,

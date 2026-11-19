@@ -4,6 +4,7 @@ from .l2_advisory import AdvisoryL2Brain
 from .guardrails import final_guardrail_check
 from .l2_prefilter import prefilter
 from .ingestion.schema import SecurityEvent
+from .l2_context import context_for
 
 
 def object_schema(properties):
@@ -45,6 +46,13 @@ assertions copied exactly from allowed_assertions. Both malicious and benign
 hypotheses must have kind, summary, supports and against; cite only F1. Device
 action is always human_review and target null; decision is separate alert
 classification. Explain evidence and gaps, not hidden chain-of-thought.
+security_context distinguishes native observations, bounded same-host/account/peer
+login history and offline attack/CVE references. Reference knowledge does not
+prove applicability or exploitation. Absence from KEV does not prove safety.
+Use observed package/version/status when present; never invent a version match
+or authorization. A repeated normal-looking login alone cannot establish safety.
+Bidirectional traffic, a familiar server name and TLS alone do not explain a
+protocol anomaly. Additional fields are useful context, not a benign diagnosis.
 """
 
 FINAL_CRITIC = CRITIC + """
@@ -56,6 +64,9 @@ missing evidence of an attack is not evidence of ordinary behavior. Check the
 decision_reason as well as the assessment. If evidence is insufficient, reject.
 If no actual objection exists, return accept:true and objections:[]; never place
 agreement or summaries in objections. Use at most two short genuine objections.
+Do not accept quieting an unexplained protocol anomaly merely because packets
+went both ways or TLS was used. A CVE reference is not a verified product/version
+match or evidence that exploitation occurred; no KEV match is not evidence of safety.
 Always cite known fact IDs and return only the three requested JSON fields."""
 
 
@@ -99,21 +110,34 @@ class FinalReviewL2Brain(AdvisoryL2Brain):
     assessment_format = REVIEW_FORMAT
     critic_format = CRITIC_FORMAT
     memory = None
+    routing_only = False  # Legacy sequential comparison runners keep their frozen routing protocol.
 
     def review(self,row,proposal=None):
         event=SecurityEvent(**row['event']).to_event()
         context=row['analysis'].get('context_signature','')
         if context: event.fields['_context_signature']=context
-        return self.review_event(event,row['analysis'],replay=row.get('connector') in {'file','replay','demo'})
+        return self.review_event(event,row['analysis'],replay=row.get('connector') in {'file','replay','demo'},
+            related=row.get('_l2_related',()))
 
-    def review_event(self, event, first_review, replay=False):
+    def review_event(self, event, first_review, replay=False, related=()):
+        prepared=self.prepare_review(event,first_review,replay,related)
+        return self.finish_review(prepared,self.review_prepared(prepared))
+
+    def prepare_review(self, event, first_review, replay=False, related=()):
         if not eligible(first_review):
             raise ValueError('Gemma receives only successful first-model escalations')
         if first_review['model'] == self.backend.model:
             raise ValueError('final reviewer must be a distinct local model')
-        assessment=prefilter(event,self.memory,first_review)
+        security_context=context_for(event,related)
+        assessment=prefilter(event,self.memory,first_review,security_context,routing_only=self.routing_only)
+        return dict(event=event,first_review=first_review,replay=replay,
+                    security_context=security_context,assessment=assessment)
+
+    def review_prepared(self, prepared):
+        event, first_review = prepared['event'], prepared['first_review']
+        assessment, security_context = prepared['assessment'], prepared['security_context']
         if assessment['route']=='model':
-            data = super().review_event(event, first_review, replay)
+            data = super().review_event(event, first_review, prepared['replay'], security_context=security_context)
             data['backend']='ollama'
         else:
             data={'decision':assessment['route'],'decision_reason':assessment['reason'],
@@ -121,6 +145,11 @@ class FinalReviewL2Brain(AdvisoryL2Brain):
                 'outlook':'routine_looking' if assessment['route']=='suppress' else 'suspicious',
                 'review_status':'prefilter','backend':'deterministic','model':'',
                 'guardrail':{},'action':'human_review','target':None,'action_authority':False}
+        return data
+
+    def finish_review(self, prepared, data):
+        event, replay = prepared['event'], prepared['replay']
+        assessment, security_context = prepared['assessment'], prepared['security_context']
         proposed = data.get('decision')
         reason = data.get('decision_reason')
         if proposed not in {'escalate', 'suppress'}:
@@ -131,11 +160,11 @@ class FinalReviewL2Brain(AdvisoryL2Brain):
         allowed = (proposed == 'suppress' and accepted and data['confidence'] >= .9
                    and data['outlook'] == 'routine_looking')
         final = 'suppress' if allowed else 'escalate'
-        veto=final_guardrail_check(event,final)
+        veto=final_guardrail_check(event,final,security_context=security_context)
         if veto: final='escalate'
         data.update(engine='l2-final-review-v2', proposed_decision=proposed,
                     decision=final, alert_decision=final,
-                    prefilter=assessment,
+                    prefilter=assessment,security_context=security_context,
                     reviewed_event_id=event.id,
                     decision_overridden=(final != proposed),
                     mode='historical_final_review' if replay else 'final_alert_review')

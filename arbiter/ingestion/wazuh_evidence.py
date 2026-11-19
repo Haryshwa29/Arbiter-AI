@@ -3,6 +3,61 @@ import ipaddress
 import re
 
 
+def security_details(raw):
+    """Keep native rule/CVE and conversation fields; prose is not a CVE finding."""
+    data, rule = raw.get('data', {}), raw.get('rule', {})
+    if not isinstance(data, dict) or not isinstance(rule, dict):
+        return {}
+    alert = data.get('alert', {})
+    metadata = alert.get('metadata', {}) if isinstance(alert, dict) else {}
+    metadata = metadata if isinstance(metadata, dict) else {}
+    mitre = rule.get('mitre', {})
+    mitre = mitre if isinstance(mitre, dict) else {}
+    vulnerability = data.get('vulnerability', {})
+    vulnerability = vulnerability if isinstance(vulnerability, dict) else {}
+    def identifiers(values, pattern):
+        found = set()
+        for value in values:
+            for entry in (value if isinstance(value, list) else [value])[:16]:
+                if isinstance(entry, str) and len(entry)<=32:
+                    entry = entry.upper().replace('_','-')
+                    if re.fullmatch(pattern, entry):
+                        found.add(entry)
+        return sorted(found)[:8]
+    security = {}
+    cves = identifiers([rule.get('cve'),metadata.get('cve'),metadata.get('cve_id'),
+        vulnerability.get('cve')], r'CVE-\d{4}-\d{4,12}')
+    techniques = identifiers([mitre.get('id'),metadata.get('mitre_technique_id')],
+        r'T\d{4}(?:\.\d{3})?')
+    if cves: security['reported_cves'] = cves
+    if techniques: security['reported_techniques'] = techniques
+    package = vulnerability.get('package', {})
+    if isinstance(package, dict):
+        observed = {}
+        direct=identifiers([vulnerability.get('cve')],r'CVE-\d{4}-\d{4,12}')
+        if direct: observed['cve']=direct[0]
+        for key,value in [('package',package.get('name')),('version',package.get('version')),
+                          ('status',vulnerability.get('status'))]:
+            if isinstance(value, str) and 0<len(value)<=256:
+                observed[key] = value
+        if observed: security['vulnerability'] = observed
+    network = {}
+    for key in ('flow_id','app_proto','direction'):
+        value = data.get(key)
+        if type(value) is int and 0<=value<2**64 or isinstance(value,str) and 0<len(value)<=128:
+            network[key] = value
+    selections = {'flow':('pkts_toserver','pkts_toclient','bytes_toserver','bytes_toclient','state'),
+        'http':('http_method','hostname','status'), 'tls':('sni','version')}
+    for section,keys in selections.items():
+        source = data.get(section, {})
+        if not isinstance(source, dict): continue
+        values = {k:v for k in keys if (v:=source.get(k)) is not None
+            and ((type(v) is int and 0<=v<2**63) or (isinstance(v,str) and 0<len(v)<=256))}
+        if values: network[section] = values
+    if network: security['network'] = network
+    return {'security':security} if security else {}
+
+
 def network_tuple(text):
     """Read the endpoint tuple from an older IDS text record without guessing roles."""
     match=re.search(r'\{(TCP|UDP)\}\s+\[?([\da-fA-F:.]+)\]?:(\d{1,5})\s+->\s+\[?([\da-fA-F:.]+)\]?:(\d{1,5})\s*$',text)
@@ -24,7 +79,7 @@ def observations(raw: dict, groups: list[str]) -> dict:
     predecoder = raw.get("predecoder") or {}
     if not all(isinstance(x, dict) for x in (data, rule, decoder, predecoder)):
         return {}
-    result = {}
+    result = security_details(raw)
     group_set = set(groups)
     decoder_name = decoder.get("name", "")
     text = str(raw.get("full_log", ""))

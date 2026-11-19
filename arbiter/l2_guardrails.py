@@ -3,10 +3,14 @@ import math
 import re
 
 
-def review_floor(event):
+def review_floor(event, security_context=None):
     """L2 evidence rules also protect decisions made without the second model."""
     from .guardrails import GuardrailHit
     from .tool_policy import verified_finding, source_observations
+    if (security_context and security_context.get('event_id')==event.id
+            and security_context.get('auth_failures_same_peer_5m',0)>=5):
+        return GuardrailHit('L2_REPEATED_AUTH_FAILURES','l2_repeated_auth_failures',
+            'at least five native authentication failures match this host, account and peer within five minutes; a later successful login does not resolve them')
     if not verified_finding(event,'wazuh'):
         return None
     from .ingestion.wazuh_evidence import network_tuple
@@ -18,6 +22,16 @@ def review_floor(event):
         return GuardrailHit('L2_PRIVILEGED_SESSION','l2_privileged_session',
             'a recorded sudo session for root requires review, including its closure; a normal-looking closing log does not explain the privileged action')
     observed=source_observations(event,'wazuh')
+    security=observed.get('security',{})
+    vulnerability=security.get('vulnerability',{})
+    if (vulnerability.get('cve') and vulnerability.get('package') and vulnerability.get('version')
+            and vulnerability.get('status','').casefold()=='active'):
+        return GuardrailHit('L2_REPORTED_VULNERABILITY','l2_reported_vulnerability',
+            'the native scanner reports an active CVE for a named package and version; retain for applicability and patch review, without claiming exploitation')
+    from .l2_context import conversation_for, protocol_anomaly
+    if protocol_anomaly(event) and conversation_for(event):
+        return GuardrailHit('L2_PROTOCOL_CONTEXT_ONLY','l2_protocol_context_only',
+            'conversation metadata does not explain the recorded protocol anomaly; TLS, packet counts and absence of exploit proof cannot justify quieting it')
     category=observed.get('suricata',{}).get('category','').casefold()
     if category in {'web application attack','attempted administrator privilege gain',
                      'attempted user privilege gain','a network trojan was detected'}:

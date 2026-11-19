@@ -32,7 +32,7 @@ problem. Use at most two short objections when rejecting. Always cite known
 fact IDs. Return only the three requested JSON fields."""
 
 
-def packet_for(event, first_review, replay=False, final_review=False):
+def packet_for(event, first_review, replay=False, final_review=False, security_context=None):
     if first_review.get('decision') != 'escalate':
         raise ValueError('second opinion requires an existing visible alert')
     fact = {'id':'F1', 'event_id':event.id, 'source':event.source,
@@ -68,9 +68,31 @@ def packet_for(event, first_review, replay=False, final_review=False):
                                   if key not in {'id','message','source_details'}]
     if final_review:
         packet.pop('first_review')
+        from .l2_context import context_for
+        context=security_context if security_context is not None else context_for(event)
+        packet['security_context']=context
+        observed=context['observed']
+        for name in ('reported_cves','reported_techniques'):
+            if observed.get(name): fact[name]=','.join(observed[name])
+        for name,value in observed.get('vulnerability',{}).items():
+            fact['reported_'+name]=value
+        network=observed.get('network',{})
+        for name in ('flow_id','app_proto','direction'):
+            if name in network: fact[name]=network[name]
+        for section in ('flow','http','tls'):
+            for name,value in network.get(section,{}).items():
+                fact[section+'_'+name]=value
+        if context['related_auth_events']:
+            fact['auth_failures_same_peer_5m']=context['auth_failures_same_peer_5m']
+            fact['related_auth_event_ids']=','.join(r['event_id'] for r in context['related_auth_events'])
+        packet['allowed_assertions']=[{'fact_id':'F1','field':key,'value':value} for key,value in fact.items()
+            if key not in {'id','message','source_details'}]
         packet['mode']='historical_final_review' if replay else 'final_alert_review'
         packet['review_policy']='Confirm or suppress a successful first-model escalation; no device action authority'
-        preferred=('dns_query','signature','rule_id','command_line','process_name','file_path','username','src_ip','dst_ip','src_port','dst_port')
+        preferred=('reported_cves','reported_package','reported_version','reported_techniques',
+            'auth_failures_same_peer_5m','dns_query','signature','flow_pkts_toserver','flow_pkts_toclient',
+            'http_status','tls_sni','rule_id','command_line','process_name','file_path','username',
+            'src_ip','dst_ip','src_port','dst_port')
         selected=[a for key in preferred for a in packet['allowed_assertions'] if a['field']==key][:10]
         packet['allowed_assertions']=selected or [a for a in packet['allowed_assertions'] if a['field']=='event_type']
     packet['digest'] = hashlib.sha256(json.dumps(packet,sort_keys=True).encode()).hexdigest()
@@ -105,9 +127,10 @@ class AdvisoryL2Brain(L2Brain):
         replay = row.get('connector') in {'file','replay','demo'} or bool({'replay','demo'}.intersection(row['event'].get('tags',[])))
         return self.review_event(event,row['analysis'],replay=replay)
 
-    def review_event(self, event, first_review, replay=False):
+    def review_event(self, event, first_review, replay=False, security_context=None):
         started = time.monotonic()
-        packet = packet_for(event,first_review,replay,final_review=getattr(self,'final_review',False) is True)
+        packet = packet_for(event,first_review,replay,final_review=getattr(self,'final_review',False) is True,
+            security_context=security_context)
         assessment = {'route':self.assessment_route,'rule':None,'required_facts':[],
             'reason':self.assessment_reason}
         prompt = {'evidence_packet':packet,'independent_assessment':assessment,'supported_proposal':None}

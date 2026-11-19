@@ -249,7 +249,8 @@ def run(args):
     model = next((m for m in tags.get("models", []) if m["name"] == args.model), None)
     if args.backend == "ollama" and (not model or model.get("remote_host") or model.get("remote_model")):
         raise ValueError("A verified local model must be available")
-    code = {str(p.relative_to(ROOT)).replace("\\", "/"): digest(p) for p in sorted((ROOT / "arbiter").rglob("*.py"))}
+    code = {str(p.relative_to(ROOT)).replace("\\", "/"): digest(p)
+            for p in sorted((ROOT / "arbiter").rglob("*")) if p.suffix in {".py",".json"}}
     meta = {"backend": args.backend, "model": model, "sample_sha256": manifest["sample_sha256"],
         "git_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
         "python": platform.python_version(), "os": platform.platform(), "processor": platform.processor(),

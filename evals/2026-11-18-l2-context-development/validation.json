@@ -1,0 +1,27 @@
+{
+  "pytest": {
+    "passed": 527,
+    "skipped": 2,
+    "subtests_passed": 25,
+    "duration_s": 48.26
+  },
+  "mock_cli": {
+    "events": 22,
+    "escalated": 14,
+    "suppressed": 8
+  },
+  "hosted_demo_export_check": "passed",
+  "synthetic_controls": 3,
+  "original_unsupported_gemma_suppressions": 2,
+  "guard_retest_retained": 3,
+  "guard_retest_new_model_calls": 0,
+  "public_dataset_accuracy_measured": false,
+  "original_full_replay_modified": false,
+  "installed_dashboard_upgraded": false,
+  "knowledge": {
+    "cisa_kev_entries": 1782,
+    "catalog_version": "2026.11.17",
+    "technique_cards": 7,
+    "runtime_network_requests": 0
+  }
+}
