@@ -39,6 +39,8 @@ CREATE INDEX IF NOT EXISTS idx_telemetry_due ON telemetry(state, due_at, id);
 CREATE INDEX IF NOT EXISTS idx_telemetry_received ON telemetry(received_at);
 CREATE INDEX IF NOT EXISTS idx_telemetry_source ON telemetry(source, host);
 CREATE INDEX IF NOT EXISTS idx_telemetry_recent ON telemetry(state, timestamp, id);
+CREATE INDEX IF NOT EXISTS idx_telemetry_review_context ON telemetry(timestamp,id)
+ WHERE state='done' OR (state='processing' AND analysis IS NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_telemetry_connector_received ON telemetry(connector, received_at);
 CREATE TABLE IF NOT EXISTS connectors (
  name TEXT PRIMARY KEY, enabled INTEGER NOT NULL, config TEXT NOT NULL,
@@ -202,7 +204,8 @@ class EventBuffer:
         with self.lock:
             source_clause = " AND source IN (" + ",".join("?" for _ in sources) + ")" if sources else ""
             state = "(state='done' OR (state='processing' AND analysis IS NOT NULL))" if review_pending else "state='done'"
-            rows = self.conn.execute("SELECT payload,connector FROM telemetry WHERE " + state + " AND timestamp>=? AND timestamp<=? "
+            index=" INDEXED BY idx_telemetry_review_context" if review_pending else ""
+            rows = self.conn.execute("SELECT payload,connector FROM telemetry" + index + " WHERE " + state + " AND timestamp>=? AND timestamp<=? "
                 "AND event_id!=? AND (host=? OR (src_ip!='' AND (src_ip=? OR dst_ip=?)) OR "
                 "(cloud_account!='' AND cloud_account=?))" + source_clause + " ORDER BY timestamp DESC,id DESC LIMIT ?",
                 (cutoff, event.timestamp, event.event_id, event.hostname, event.src_ip,

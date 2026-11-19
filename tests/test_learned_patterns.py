@@ -134,3 +134,16 @@ def test_a_maintenance_window_does_not_cover_the_same_pattern_at_another_time(tm
         event.timestamp='2026-11-18T18:15:00Z'
         assert within!=pattern_key(event,'wazuh',memory,'qwen')
     finally:memory.close()
+
+
+def test_parallel_context_uses_ordered_time_index_without_sorting_history(tmp_path):
+    buffer=EventBuffer(tmp_path/'events.db');queries=[]
+    try:
+        buffer.conn.set_trace_callback(queries.append)
+        buffer.recent(native(),review_pending=True)
+        sql=next(q for q in queries if q.startswith('SELECT payload,connector FROM telemetry'))
+        buffer.conn.set_trace_callback(None)
+        plan=' '.join(str(tuple(row)) for row in buffer.conn.execute('EXPLAIN QUERY PLAN '+sql))
+        assert 'idx_telemetry_review_context' in plan
+        assert 'TEMP B-TREE' not in plan and 'SCAN telemetry' not in plan
+    finally:buffer.close()

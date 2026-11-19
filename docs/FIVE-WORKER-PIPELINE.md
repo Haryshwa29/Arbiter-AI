@@ -83,6 +83,11 @@ may bypass stages, so completed counts need not be equal. Existing queue totals
 include unfinished records; first-stage audit totals and L2 classifications
 remain distinct.
 
+Nearby-context lookup reads an ordered time index across completed and
+L1-completed/pending-L2 records. It can stop at the bounded context limit rather
+than sorting the whole matching history. This corrects a database wait exposed
+by a large installed history; it is not a measured model-throughput improvement.
+
 `l2-cases` shows the latest 100 cases; the complete records remain in SQLite.
 Status totals cover all cases using a small indexed classification scan, and
 the event view fetches reviews only for its displayed records. Control actions
