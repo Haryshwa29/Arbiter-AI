@@ -19,6 +19,13 @@ The stopped run took 14 hours 31 minutes 28 seconds: 57.52% were quieted and
 so these percentages do not measure attack-detection accuracy. The report explains
 the L2 routing failure, latency, limitations and next evaluation.
 
+The [arrival-capacity simulation](evals/2026-11-18-arrival-simulation/README.md)
+shows the burst limit behind that average: one hour of source arrivals required
+2.10 hours of measured work, producing about 104 minutes of simulated FIFO
+waiting. This was a Qwen-dominated hour with no Gemma reviews; five pipeline
+stages alone cannot remove that bottleneck. The records cover 57h00m50s of source
+time. Simulated waiting and measured per-record processing are reported separately.
+
 The subsequent [five-worker upgrade](docs/FIVE-WORKER-PIPELINE.md) supports the
 terminal and local dashboard. [Scoped repeat-pattern memory](docs/LEARNED-PATTERNS.md)
 lets each model teach its own pre-filter exact routine repeats, with expiry,

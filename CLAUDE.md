@@ -33,7 +33,7 @@ these subsequent upgrades. The shared normalized host label covers 11 raw agent
 identities and 22 native rule IDs, not proof of one machine. 57.52% label agreement
 is not attack accuracy. Models and cold-start/original-order limits are explicit.
 
-Validation: 579 tests passed, 2 skipped, 25 subtests; frontend build/type check,
+Validation: 586 tests passed, 2 skipped, 25 subtests; frontend build/type check,
 lint (two existing Fast Refresh warnings), 17 frontend checks and source/packaged
 22-event mock CLI smoke passed. Four seen-record handoffs exercised real Qwen,
 four Gemma assessments and four challenges with no worker errors; an earlier
@@ -46,6 +46,23 @@ release hash, fresh-process readiness, five workers and retained history, with
 protected backups and rollback on failure. Existing 30-day telemetry retention
 is distinguished from lost unexpired records. Real attack quality and GPU
 speedup of the new architecture and learning remain unmeasured.
+
+November 18 follow-up: source hostname precedes Wazuh's generic agent label.
+Wrapped network records use an endpoint matching the recorded agent address;
+unmatched passive-sensor conversations retain both endpoints with unverified
+ownership. Agent address, then name/ID are fallbacks. Raw identity remains intact;
+old stored/frozen rows are not rewritten. New keys invalidate earlier host scopes.
+Startup decision backfill explicitly uses its existing missing-decision index,
+avoiding a full historical scan exposed by installed startup diagnostics.
+
+The owner's arrival-hour capacity calculation is reproduced without inference
+in evals/2026-11-18-arrival-simulation. Source span is 57h00m50s. The Jan 16 17:00
+hour has 1,683 records, 1,402 Qwen reviews and zero Gemma reviews, costing 125.83
+minutes. A virtual single FIFO worker peaks at 103.63 minutes of waiting (record
+20,495), 103.73 minutes arrival-to-completion. These are simulated, not observed
+queue times or upgraded throughput. The frozen run's largest service cost was
+57.07s. No new accuracy claim. The legacy full_public_eval runner does not
+benchmark the five-stage live pipeline or warmed learned-pattern memory.
 
 ## Earlier checkpoints (historical state at the date written)
 

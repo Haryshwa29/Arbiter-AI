@@ -44,6 +44,7 @@ def auth(when,kind='auth_failure',user='alice',peer='10.0.0.2',host='lab'):
     data=raw()
     data.update(timestamp=when.isoformat(),id=when.isoformat())
     data['agent']['name']=host
+    data['predecoder']={'hostname':host}
     data['rule'].update(description='Recorded login',groups=[
         'authentication_failed' if kind=='auth_failure' else 'authentication_success'])
     data['data']={'dstuser':user,'srcip':peer}

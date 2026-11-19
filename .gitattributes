@@ -9,3 +9,4 @@
 /evals/2026-11-18-26k-checkpoint/** -text whitespace=cr-at-eol
 /evals/2026-11-18-l2-context-development/** -text whitespace=cr-at-eol
 evals/2026-11-18-upgrade-compatibility/** -text
+/evals/2026-11-18-arrival-simulation/** -text whitespace=cr-at-eol

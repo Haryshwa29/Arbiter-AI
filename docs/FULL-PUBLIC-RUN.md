@@ -1,5 +1,13 @@
 # Running the full public dataset overnight
 
+**Historical sequential comparison protocol.** The stopped 26,002-record
+checkpoint used this runner. It retains the legacy L2 routing for comparison;
+it does not benchmark the subsequent five-worker live pipeline or warmed pattern
+memory. Do not resume its old ledger with changed source. A new chronological
+five-worker/learning comparison needs a separate run and frozen protocol. See
+[the current pipeline](FIVE-WORKER-PIPELINE.md) and the
+[arrival-capacity simulation](../evals/2026-11-18-arrival-simulation/README.md).
+
 The source version can run **Qwen3.5:4b as L1** and **Gemma4:12b as L2**, entirely
 on this PC. Gemma receives only successful Qwen escalations, through the separate
 L2 rules. It can keep or quiet a warning. A shared final safety check covers

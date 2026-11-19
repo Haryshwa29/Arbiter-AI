@@ -62,6 +62,25 @@ but we have no measured percentage improvement or new attack-accuracy claim.
 
 ## Next test
 
+New Wazuh normalization uses the source `predecoder.hostname` first. Wrapped
+Suricata uses an endpoint matching the recorded agent IP when available; a
+passive sensor's unmatched flow retains both endpoints and marks asset ownership
+unverified. Other records use a valid agent IP, then the agent name/ID fallback.
+Choosing every DNS destination would merge clients under the resolver, so a
+destination is never automatically declared the affected computer. Raw agent
+identity and both endpoints remain available. Existing stored rows and frozen
+results retain their historical mapping; new normalized events use the corrected
+scope. Existing host-specific facts require reconciliation rather than broad
+automatic inheritance. No host name alone establishes benign behavior.
+The stopped checkpoint reset memory for every record, so cross-record host
+history did not accumulate there. Its unwanted-warning rate cannot be attributed
+to the shared host label without a controlled retest.
+
+The [arrival simulation](../evals/2026-11-18-arrival-simulation/README.md) shows why
+mean time per record is insufficient: one arrival hour required 2.10 hours of
+L1-dominated work and a FIFO replay reached 103.63 minutes of simulated waiting.
+The five-stage design alone cannot eliminate a Qwen-only burst.
+
 Measure cold-start and warmed memory separately on a chronological stream with
 attack annotations and multiple real agent identities. Learn only from earlier
 records; never use future records or labels as context. Compare identical

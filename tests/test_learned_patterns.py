@@ -147,3 +147,19 @@ def test_parallel_context_uses_ordered_time_index_without_sorting_history(tmp_pa
         assert 'idx_telemetry_review_context' in plan
         assert 'TEMP B-TREE' not in plan and 'SCAN telemetry' not in plan
     finally:buffer.close()
+
+
+def test_restart_backfill_only_reads_the_missing_decision_index(tmp_path,monkeypatch):
+    import sqlite3
+    original=sqlite3.connect;queries=[]
+    def connect(*args,**kwargs):
+        conn=original(*args,**kwargs);conn.set_trace_callback(queries.append);return conn
+    monkeypatch.setattr(sqlite3,'connect',connect)
+    buffer=EventBuffer(tmp_path/'events.db')
+    try:
+        sql=next(q for q in queries if q.startswith('UPDATE telemetry') and 'json_extract' in q)
+        buffer.conn.set_trace_callback(None)
+        plan=' '.join(str(tuple(row)) for row in buffer.conn.execute('EXPLAIN QUERY PLAN '+sql))
+        assert 'idx_telemetry_missing_decision' in plan
+        assert 'idx_telemetry_priority' not in plan
+    finally:buffer.close()

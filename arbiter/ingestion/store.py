@@ -76,7 +76,7 @@ class EventBuffer:
                 if name not in columns:
                     self.conn.execute(f"ALTER TABLE telemetry ADD COLUMN {name} {'REAL' if name == 'priority' else 'TEXT'}")
             self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_missing_decision ON telemetry(id) WHERE state='done' AND decision IS NULL")
-            self.conn.execute("UPDATE telemetry SET decision=json_extract(analysis,'$.decision'), "
+            self.conn.execute("UPDATE telemetry INDEXED BY idx_telemetry_missing_decision SET decision=json_extract(analysis,'$.decision'), "
                               "tier=json_extract(analysis,'$.tier') WHERE state='done' AND decision IS NULL AND analysis IS NOT NULL")
             self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_metrics ON telemetry(connector,state,decision,tier,latency_ms)")
             if "priority" not in columns:

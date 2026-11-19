@@ -424,7 +424,7 @@ export interface ImportSummary {
   valid_events: number; invalid_events: number; import_status: string;
   accepted_events: number; errors: string[];
 }
-export const getIngestionStatus = () => apiFetch<IngestionStatus>("/api/ingestion/status");
+export const getIngestionStatus = () => apiFetch<IngestionStatus>("/api/ingestion/status", {timeoutMs: 60_000});
 export const rejectL2Review = (event_id: string, reason: string) => apiFetch('/api/l2/reject', {method:'POST',body:{event_id,reason}});
 export const configureConnector = (name: string, enabled: boolean, configuration: Record<string, unknown>) =>
   apiFetch("/api/ingestion/configure", {method: "POST", body: {name, enabled, configuration}, timeoutMs: 40_000});
