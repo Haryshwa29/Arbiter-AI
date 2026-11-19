@@ -20,7 +20,9 @@ def pattern_key(event, connector, memory, model, simulation=False):
         if isinstance(raw.get('rule'),dict):
             raw['rule']=dict(raw['rule']);raw['rule'].pop('firedtimes',None)
     data['raw_event']=raw
-    facts=[vars(fact) for fact in memory.facts_for(event.hostname,event.source_type)]
-    scope={'version':1,'model':model,'connector':connector,'event':data,
+    from .facts import render_all
+    scoped=memory.facts_for(event.hostname,event.source_type)
+    facts={'constraints':[vars(fact) for fact in scoped],'applicability':render_all(scoped,event.to_event())}
+    scope={'version':2,'model':model,'connector':connector,'event':data,
         'criticality':memory.asset_criticality(event.hostname),'facts':facts}
     return hashlib.sha256(json.dumps(scope,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()

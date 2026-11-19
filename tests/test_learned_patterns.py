@@ -105,3 +105,32 @@ def test_l2_repeats_use_its_own_prefilter_and_human_rejection_revokes(tmp_path,m
         assert agent.memory.learned_counts().get('l2',{}).get('patterns',0)==0
         assert not agent.memory.learned_counts().get('l1')
     finally:agent.close()
+
+
+def test_recovered_l2_brief_cannot_reteach_an_expired_pattern(tmp_path,monkeypatch):
+    agent,brain=setup_agent(tmp_path,monkeypatch)
+    try:
+        event=native();service=agent.service
+        service.buffer.enqueue(event,'wazuh');wait_for(lambda:done(agent,event.event_id))
+        service.pipeline.stop()
+        with agent.memory._lock,agent.memory.conn:
+            agent.memory.conn.execute('DELETE FROM learned_patterns')
+        with service.buffer.lock,service.buffer.conn:
+            service.buffer.conn.execute("UPDATE telemetry SET state='pending' WHERE event_id=?",(event.event_id,))
+        from arbiter.ingestion.review_pipeline import ReviewPipeline
+        service.pipeline=ReviewPipeline(service.buffer,service.pipeline.engine,agent.audit,agent.l2)
+        service.pipeline.start();wait_for(lambda:done(agent,event.event_id))
+        assert brain.backend.generate.call_count==2
+        assert agent.memory.learned_counts()=={}
+    finally:agent.close()
+
+
+def test_a_maintenance_window_does_not_cover_the_same_pattern_at_another_time(tmp_path):
+    memory=Memory(tmp_path/'memory.db')
+    try:
+        event=native();event.timestamp='2026-11-18T10:15:00Z'
+        memory.add_fact('Approved inventory window',event.hostname,window='10:00-11:00')
+        within=pattern_key(event,'wazuh',memory,'qwen')
+        event.timestamp='2026-11-18T18:15:00Z'
+        assert within!=pattern_key(event,'wazuh',memory,'qwen')
+    finally:memory.close()

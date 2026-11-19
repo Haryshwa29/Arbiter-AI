@@ -164,13 +164,15 @@ class ReviewPipeline(Pipeline):
                 self.workflow.brain.backend.model,self.simulation)
             if prepared['security_context'].get('has_related_auth_context'):key=None
             job['learned_l2_key']=key
-            if prepared['assessment']['route']=='model' and not prepared['assessment'].get('must_retain'):
+            if (prepared['assessment']['route']=='model' and not prepared['assessment'].get('must_retain')
+                    and self.engine.memory.history(event.signature).overruled==0):
                 learned=self.engine.memory.match_pattern('l2',key)
                 if learned:
                     prepared['assessment']={'route':'suppress','rule':'L2_LEARNED_EXACT_PATTERN',
                         'reason':f"Exact Gemma-reviewed routine pattern {key[:12]}, origin {learned['origin_event']}; "
                             f"repeat {learned['hit']}/25 within one hour. Prior reason: {learned['reason'][:1200]}"}
             if case.get('brief'):
+                job['reused_brief']=True
                 project_final(job['analysis'], case['brief'], event_id=job['event'].event_id)
                 job['candidate'] = dict(case['brief'])
                 self._put('final_guardrail', job, stage)
@@ -209,7 +211,8 @@ class ReviewPipeline(Pipeline):
                     if rejected: case['state'] = 'rejected'
                     self.workflow.save(case, notice)
                     key=job.get('learned_l2_key')
-                    if brief and not rejected and brief['alert_decision']=='suppress' and brief['review_status']=='accepted' and not job.get('reused_case'):
+                    if (brief and not rejected and brief['alert_decision']=='suppress' and brief['review_status']=='accepted'
+                            and not job.get('reused_brief') and self.engine.memory.history(job['event'].to_event().signature).overruled==0):
                         self.engine.memory.learn_pattern('l2',key,job['event'].to_event(),
                             self.workflow.brain.backend.model,brief['decision_reason'])
                     elif rejected or (brief and brief['alert_decision']=='escalate'):

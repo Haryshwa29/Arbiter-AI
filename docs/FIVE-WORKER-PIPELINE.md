@@ -19,12 +19,18 @@ flowchart TD
     B[Worker 4 - L2: Gemma4:12b assesses and challenges its decision]
     F[Worker 5 - Final guardrail: check the proposed outcome and preserve both stages]
     V[Show the result: retain uncertainty for review, or quiet a supported ordinary case]
+    M1[Remember exact Qwen-approved routine repeats for L1]
+    M2[Remember exact Gemma-approved routine repeats for L2]
     Q --> G --> A
     A -->|Successful Qwen escalation only| P
     A -->|Quiet, mandatory rule, or failed Qwen| F
     P -->|Model review is useful| B
     P -->|Supported routine suppression only| F
     B --> F --> V
+    F -.->|Qualifying Qwen suppression| M1
+    F -.->|Qualifying Gemma suppression| M2
+    M1 -.->|Future exact match, within limits| A
+    M2 -.->|Future exact match, within limits| P
 ```
 
 | Worker | What it does in everyday terms |

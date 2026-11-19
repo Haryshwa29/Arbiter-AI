@@ -33,7 +33,7 @@ these subsequent upgrades. The shared normalized host label covers 11 raw agent
 identities and 22 native rule IDs, not proof of one machine. 57.52% label agreement
 is not attack accuracy. Models and cold-start/original-order limits are explicit.
 
-Validation: 576 tests passed, 2 skipped, 25 subtests; frontend build/type check,
+Validation: 578 tests passed, 2 skipped, 25 subtests; frontend build/type check,
 lint (two existing Fast Refresh warnings), 17 frontend checks and source/packaged
 22-event mock CLI smoke passed. Four seen-record handoffs exercised real Qwen,
 four Gemma assessments and four challenges with no worker errors; an earlier
