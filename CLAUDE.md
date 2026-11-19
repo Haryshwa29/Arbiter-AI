@@ -71,6 +71,8 @@ window. The older native-response/advisory query retains its existing behavior.
 A regression checks the query plan and exclusion of stale records. Overview
 totals explicitly say first review; Data Sources tolerates slower large-history
 aggregate responses without aggressive repeated requests. No new dependency.
+Queue-full collection retries are identified separately from Windows permission
+errors in Data Sources; existing backlog and collector settings are preserved.
 
 ## Earlier checkpoints (historical state at the date written)
 
