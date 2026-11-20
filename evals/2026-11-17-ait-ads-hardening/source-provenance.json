@@ -1,0 +1,575 @@
+{
+  "note": "Measured code_sha256 values hash working-tree bytes. Canonical hashes normalize CRLF to LF only; frozen evaluation artifacts retain exact original bytes.",
+  "original": {
+    "arbiter/__init__.py": {
+      "measured_raw_sha256": "507e0168d96e3adbeaa0428a7871d7304f2bcbb8c4df4aa4b8ae803b9632bbf8",
+      "canonical_lf_sha256": "507e0168d96e3adbeaa0428a7871d7304f2bcbb8c4df4aa4b8ae803b9632bbf8"
+    },
+    "arbiter/__main__.py": {
+      "measured_raw_sha256": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+      "canonical_lf_sha256": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279"
+    },
+    "arbiter/agent.py": {
+      "measured_raw_sha256": "5ee811721ab41e11104bbb8ea12287b2765309415153f512b8a8a3badb50595c",
+      "canonical_lf_sha256": "5ee811721ab41e11104bbb8ea12287b2765309415153f512b8a8a3badb50595c"
+    },
+    "arbiter/api/__init__.py": {
+      "measured_raw_sha256": "a9b4409ebdc508e5f068045db91666a0ea52ffbd60cce5c01bb2e079389642ce",
+      "canonical_lf_sha256": "a9b4409ebdc508e5f068045db91666a0ea52ffbd60cce5c01bb2e079389642ce"
+    },
+    "arbiter/api/server.py": {
+      "measured_raw_sha256": "a52cb91dbc93c729e6c14faccfa9695d5880d8617cd48ad1e12aa89778c1124f",
+      "canonical_lf_sha256": "a52cb91dbc93c729e6c14faccfa9695d5880d8617cd48ad1e12aa89778c1124f"
+    },
+    "arbiter/api/static.py": {
+      "measured_raw_sha256": "64d90322ee9a3f9fc168219839ae52dee76eb877e4adeb00d31430ea44edaf09",
+      "canonical_lf_sha256": "64d90322ee9a3f9fc168219839ae52dee76eb877e4adeb00d31430ea44edaf09"
+    },
+    "arbiter/bench.py": {
+      "measured_raw_sha256": "39247bfb3c99a0b769484d4007f3f9fe8ac67bf066b6454080a24b76596cafa1",
+      "canonical_lf_sha256": "39247bfb3c99a0b769484d4007f3f9fe8ac67bf066b6454080a24b76596cafa1"
+    },
+    "arbiter/briefing.py": {
+      "measured_raw_sha256": "08c27b517314a49c6ccc68d3686c5745b023a1e910db1d0e91f6a01d633975fb",
+      "canonical_lf_sha256": "08c27b517314a49c6ccc68d3686c5745b023a1e910db1d0e91f6a01d633975fb"
+    },
+    "arbiter/cli.py": {
+      "measured_raw_sha256": "d9097ec83a70cb6d268e82b395900a855cc1e3e82b234e5e263b637c834a033f",
+      "canonical_lf_sha256": "d9097ec83a70cb6d268e82b395900a855cc1e3e82b234e5e263b637c834a033f"
+    },
+    "arbiter/eval.py": {
+      "measured_raw_sha256": "aeaa7aa925c5271bf0b217396a0d33f4da98db3405dcddf66f1abcb047bccf59",
+      "canonical_lf_sha256": "aeaa7aa925c5271bf0b217396a0d33f4da98db3405dcddf66f1abcb047bccf59"
+    },
+    "arbiter/facts.py": {
+      "measured_raw_sha256": "4ad0e51ff4690c9314ce764de178a534d2f18c4e5dddc63ea5c68e1b9aca24cc",
+      "canonical_lf_sha256": "4ad0e51ff4690c9314ce764de178a534d2f18c4e5dddc63ea5c68e1b9aca24cc"
+    },
+    "arbiter/guardrails.py": {
+      "measured_raw_sha256": "e0271dd54a9b33b76c1ee6be326748c64c0c5e7b76bb809b6f50100e19eed301",
+      "canonical_lf_sha256": "e0271dd54a9b33b76c1ee6be326748c64c0c5e7b76bb809b6f50100e19eed301"
+    },
+    "arbiter/iam.py": {
+      "measured_raw_sha256": "93cad2677abcf4983d718f35158b37a8c7eab75c94345c1e7bb04241a46a170f",
+      "canonical_lf_sha256": "93cad2677abcf4983d718f35158b37a8c7eab75c94345c1e7bb04241a46a170f"
+    },
+    "arbiter/ingestion/__init__.py": {
+      "measured_raw_sha256": "36e396545c58851d0d9aa992f5b28341b4a0e4801d5fb3c8fb5a5f211077d386",
+      "canonical_lf_sha256": "36e396545c58851d0d9aa992f5b28341b4a0e4801d5fb3c8fb5a5f211077d386"
+    },
+    "arbiter/ingestion/base.py": {
+      "measured_raw_sha256": "feeb128d839bf6e72b409619d5e1cbabe0a335c3b84c1605a9d8f136cbb8f441",
+      "canonical_lf_sha256": "feeb128d839bf6e72b409619d5e1cbabe0a335c3b84c1605a9d8f136cbb8f441"
+    },
+    "arbiter/ingestion/collectors/__init__.py": {
+      "measured_raw_sha256": "33ae46c93cc13fe6ee58d657b396a047092dbb371853afd39ab2c0e6ef12502e",
+      "canonical_lf_sha256": "33ae46c93cc13fe6ee58d657b396a047092dbb371853afd39ab2c0e6ef12502e"
+    },
+    "arbiter/ingestion/collectors/attachments.py": {
+      "measured_raw_sha256": "c558ccec4946cd4330fcf49d3f9db669da8b0bc7e0aa09fb410bda08ed780379",
+      "canonical_lf_sha256": "c558ccec4946cd4330fcf49d3f9db669da8b0bc7e0aa09fb410bda08ed780379"
+    },
+    "arbiter/ingestion/collectors/aws.py": {
+      "measured_raw_sha256": "b22006c9f5fcc95879beef31e3a472028e26b2658c239cccc3ebf7ce330e551f",
+      "canonical_lf_sha256": "b22006c9f5fcc95879beef31e3a472028e26b2658c239cccc3ebf7ce330e551f"
+    },
+    "arbiter/ingestion/collectors/defender.py": {
+      "measured_raw_sha256": "07eb9320f9e27271dc5e6d292392bb1dcb0f924754879816d2dd08c67992cf6a",
+      "canonical_lf_sha256": "07eb9320f9e27271dc5e6d292392bb1dcb0f924754879816d2dd08c67992cf6a"
+    },
+    "arbiter/ingestion/collectors/future.py": {
+      "measured_raw_sha256": "73cd0d807549d9a6599e58391467fd34ea56ef5d18e820e357cfddff025993df",
+      "canonical_lf_sha256": "73cd0d807549d9a6599e58391467fd34ea56ef5d18e820e357cfddff025993df"
+    },
+    "arbiter/ingestion/collectors/linux_auth.py": {
+      "measured_raw_sha256": "821fbdd19cc115f421c728b79b914af529b92df3b7b70984d6d49a30a63b2411",
+      "canonical_lf_sha256": "821fbdd19cc115f421c728b79b914af529b92df3b7b70984d6d49a30a63b2411"
+    },
+    "arbiter/ingestion/collectors/local_process.py": {
+      "measured_raw_sha256": "ebada66c4cae8081836914e074062ce1479c819839d5d52f7e63348e2b453ea5",
+      "canonical_lf_sha256": "ebada66c4cae8081836914e074062ce1479c819839d5d52f7e63348e2b453ea5"
+    },
+    "arbiter/ingestion/collectors/osquery.py": {
+      "measured_raw_sha256": "49481d533ba553741e63548475da1d947274e6b7fecdc7200bfa55b2ce29f365",
+      "canonical_lf_sha256": "49481d533ba553741e63548475da1d947274e6b7fecdc7200bfa55b2ce29f365"
+    },
+    "arbiter/ingestion/collectors/security.py": {
+      "measured_raw_sha256": "6b29eafb4572cdb5debd1e012689f14dc6bd5c25d88fad58732dfce51f8c9b88",
+      "canonical_lf_sha256": "6b29eafb4572cdb5debd1e012689f14dc6bd5c25d88fad58732dfce51f8c9b88"
+    },
+    "arbiter/ingestion/collectors/suricata.py": {
+      "measured_raw_sha256": "de01c325db0b7523685affcf8fbb97ae38bdfd8f5afbee27a3382e274c23e92c",
+      "canonical_lf_sha256": "de01c325db0b7523685affcf8fbb97ae38bdfd8f5afbee27a3382e274c23e92c"
+    },
+    "arbiter/ingestion/collectors/syslog.py": {
+      "measured_raw_sha256": "d1fee528186b47aeb2e1c519f24c10745d0ec66b0bf70f86cc5779ad685e13ac",
+      "canonical_lf_sha256": "d1fee528186b47aeb2e1c519f24c10745d0ec66b0bf70f86cc5779ad685e13ac"
+    },
+    "arbiter/ingestion/collectors/wazuh.py": {
+      "measured_raw_sha256": "733c9cc02f1fa90ef8fa95ba2791d6525e4030f1b097675d17a637ef71300ed3",
+      "canonical_lf_sha256": "733c9cc02f1fa90ef8fa95ba2791d6525e4030f1b097675d17a637ef71300ed3"
+    },
+    "arbiter/ingestion/collectors/windows.py": {
+      "measured_raw_sha256": "8aadf5aa22f91b678d2a1e42aeb66ecf3fc89936c982107fd141ad153fb0d57a",
+      "canonical_lf_sha256": "8aadf5aa22f91b678d2a1e42aeb66ecf3fc89936c982107fd141ad153fb0d57a"
+    },
+    "arbiter/ingestion/containment.py": {
+      "measured_raw_sha256": "48c354c9900052998f4b5742a675174a522e87e68bb9a533c61a355e511c5a91",
+      "canonical_lf_sha256": "48c354c9900052998f4b5742a675174a522e87e68bb9a533c61a355e511c5a91"
+    },
+    "arbiter/ingestion/correlation.py": {
+      "measured_raw_sha256": "d04b9d4ebc3df11d98c917a83b67ba7123898fe3d1be30c0a0598dd6c908de91",
+      "canonical_lf_sha256": "d04b9d4ebc3df11d98c917a83b67ba7123898fe3d1be30c0a0598dd6c908de91"
+    },
+    "arbiter/ingestion/demo.py": {
+      "measured_raw_sha256": "85fd00cde001021279c523c5b1277bf67080bba59c35bc8d872d7e5e2640fbc6",
+      "canonical_lf_sha256": "85fd00cde001021279c523c5b1277bf67080bba59c35bc8d872d7e5e2640fbc6"
+    },
+    "arbiter/ingestion/discovery.py": {
+      "measured_raw_sha256": "e4d1bd482e1bc6a39335e92aa794a6b302e5cc995162f8550e6a5e58874089df",
+      "canonical_lf_sha256": "e4d1bd482e1bc6a39335e92aa794a6b302e5cc995162f8550e6a5e58874089df"
+    },
+    "arbiter/ingestion/evidence.py": {
+      "measured_raw_sha256": "2e84b0c7c2ff87fa8205caa84a304bdc85affc8e65dea79e05769d9d50c5bb9a",
+      "canonical_lf_sha256": "2e84b0c7c2ff87fa8205caa84a304bdc85affc8e65dea79e05769d9d50c5bb9a"
+    },
+    "arbiter/ingestion/files.py": {
+      "measured_raw_sha256": "cc071ab53f4c7b7a16fcd203b365eb365013df8d654fc824037e48bb64ad0410",
+      "canonical_lf_sha256": "cc071ab53f4c7b7a16fcd203b365eb365013df8d654fc824037e48bb64ad0410"
+    },
+    "arbiter/ingestion/models.py": {
+      "measured_raw_sha256": "14b34259ee8f2fcf66b7c55f435b1bdb62c98ce2dbb56d78b11dccbd2237c5ef",
+      "canonical_lf_sha256": "14b34259ee8f2fcf66b7c55f435b1bdb62c98ce2dbb56d78b11dccbd2237c5ef"
+    },
+    "arbiter/ingestion/normalization.py": {
+      "measured_raw_sha256": "ef82d9fea0feadcb8752f187910933346260f340629d6a451cb3eb71d047d13a",
+      "canonical_lf_sha256": "ef82d9fea0feadcb8752f187910933346260f340629d6a451cb3eb71d047d13a"
+    },
+    "arbiter/ingestion/permissions.py": {
+      "measured_raw_sha256": "b8c5b9929412a942c71bdfd6961ba3bd8fe345017e54eef11ddcd9207934588d",
+      "canonical_lf_sha256": "b8c5b9929412a942c71bdfd6961ba3bd8fe345017e54eef11ddcd9207934588d"
+    },
+    "arbiter/ingestion/pipeline.py": {
+      "measured_raw_sha256": "ba9f8e712165320c3fe146118535bb041363ed31f5da02bf9e789ea8403a77c7",
+      "canonical_lf_sha256": "ba9f8e712165320c3fe146118535bb041363ed31f5da02bf9e789ea8403a77c7"
+    },
+    "arbiter/ingestion/protection.py": {
+      "measured_raw_sha256": "28a3247b87501edb2ff0598fa8e74185fb0576c1fac0fe3ab408750c7d49926a",
+      "canonical_lf_sha256": "28a3247b87501edb2ff0598fa8e74185fb0576c1fac0fe3ab408750c7d49926a"
+    },
+    "arbiter/ingestion/recommendations.py": {
+      "measured_raw_sha256": "c11c6a8c64c0a6628213a3c0273212cf0b9047b4973cdca769a99f22487d49ef",
+      "canonical_lf_sha256": "2221f43493ba83e9618f399c8bef41d5a681249b360125c0093e319aaa326c6a"
+    },
+    "arbiter/ingestion/registry.py": {
+      "measured_raw_sha256": "ff7dc1da2b9a4b61bf789453212cf905e2960709d8225d7a863a1219859b00d8",
+      "canonical_lf_sha256": "ff7dc1da2b9a4b61bf789453212cf905e2960709d8225d7a863a1219859b00d8"
+    },
+    "arbiter/ingestion/response_workflow.py": {
+      "measured_raw_sha256": "696df48eee15eba72ebef627e05011f44c6692b6fd6302ea99949be494460850",
+      "canonical_lf_sha256": "696df48eee15eba72ebef627e05011f44c6692b6fd6302ea99949be494460850"
+    },
+    "arbiter/ingestion/schema.py": {
+      "measured_raw_sha256": "32668f61dbe8dfbd17ac8c50bb76aa0cfe6346578af441885eb842830b80b929",
+      "canonical_lf_sha256": "32668f61dbe8dfbd17ac8c50bb76aa0cfe6346578af441885eb842830b80b929"
+    },
+    "arbiter/ingestion/service.py": {
+      "measured_raw_sha256": "4d9c6a5989bdc30f60eea2cb09f631c7f60aa30db0117e9043ccbaaf2ebaf0b8",
+      "canonical_lf_sha256": "4d9c6a5989bdc30f60eea2cb09f631c7f60aa30db0117e9043ccbaaf2ebaf0b8"
+    },
+    "arbiter/ingestion/store.py": {
+      "measured_raw_sha256": "a0df5880d13be727b7e53998c8433bf32c13777e2719f4ffc3287e2217fd4871",
+      "canonical_lf_sha256": "a0df5880d13be727b7e53998c8433bf32c13777e2719f4ffc3287e2217fd4871"
+    },
+    "arbiter/install/__init__.py": {
+      "measured_raw_sha256": "71c4d9614120ae6651060a2aaf79433f28b8eba39adbbb4f8d11fcac5ba72ae3",
+      "canonical_lf_sha256": "71c4d9614120ae6651060a2aaf79433f28b8eba39adbbb4f8d11fcac5ba72ae3"
+    },
+    "arbiter/install/cli.py": {
+      "measured_raw_sha256": "ed42b630faa19ad424db1b272c4dbc1d01463d96fdd55294f14d5c767f107919",
+      "canonical_lf_sha256": "ed42b630faa19ad424db1b272c4dbc1d01463d96fdd55294f14d5c767f107919"
+    },
+    "arbiter/install/lifecycle.py": {
+      "measured_raw_sha256": "f7083368e4ebb848304e3497777c13f3752b3797a9e37e6dcaf696567b9d147a",
+      "canonical_lf_sha256": "f7083368e4ebb848304e3497777c13f3752b3797a9e37e6dcaf696567b9d147a"
+    },
+    "arbiter/install/monitoring.py": {
+      "measured_raw_sha256": "dd3cdf738b54456f121ef70b456e38ee7dc45d288d441606f6fbee11e89d3094",
+      "canonical_lf_sha256": "dd3cdf738b54456f121ef70b456e38ee7dc45d288d441606f6fbee11e89d3094"
+    },
+    "arbiter/install/plan.py": {
+      "measured_raw_sha256": "57c26672a063f078013e052bf116d2bbedead1b60b847aeedfec7ff5d9343ec4",
+      "canonical_lf_sha256": "57c26672a063f078013e052bf116d2bbedead1b60b847aeedfec7ff5d9343ec4"
+    },
+    "arbiter/install/preflight.py": {
+      "measured_raw_sha256": "b9c9f8fff181cb6deefd97d4e1cd0a143725b08e49610b85a9ca9670cf98cfe7",
+      "canonical_lf_sha256": "b9c9f8fff181cb6deefd97d4e1cd0a143725b08e49610b85a9ca9670cf98cfe7"
+    },
+    "arbiter/install/runtime.py": {
+      "measured_raw_sha256": "de3ca8d9ae82ce9292e0436328af6dace63d751f3e09f2da295fdfa1928c6175",
+      "canonical_lf_sha256": "de3ca8d9ae82ce9292e0436328af6dace63d751f3e09f2da295fdfa1928c6175"
+    },
+    "arbiter/install/service.py": {
+      "measured_raw_sha256": "5f86dd40d18ba925f7b4fa95809934f23d972c08f76ee23792f84b9ee80cc7f3",
+      "canonical_lf_sha256": "5f86dd40d18ba925f7b4fa95809934f23d972c08f76ee23792f84b9ee80cc7f3"
+    },
+    "arbiter/l2.py": {
+      "measured_raw_sha256": "c77006d15a709da64b70b0bf1f4ed6aaf0283dad3eba1c92812fb6b4d70fc8a2",
+      "canonical_lf_sha256": "c77006d15a709da64b70b0bf1f4ed6aaf0283dad3eba1c92812fb6b4d70fc8a2"
+    },
+    "arbiter/l2_evidence.py": {
+      "measured_raw_sha256": "473dafc7ebfcd12892023b81786752ec8b23aeb663c4d5333956510d5aa3f9fa",
+      "canonical_lf_sha256": "473dafc7ebfcd12892023b81786752ec8b23aeb663c4d5333956510d5aa3f9fa"
+    },
+    "arbiter/l2_guardrails.py": {
+      "measured_raw_sha256": "f210beea46784857f77ecbc81e0874318a8f1ece4272c9781d40236019033dff",
+      "canonical_lf_sha256": "f210beea46784857f77ecbc81e0874318a8f1ece4272c9781d40236019033dff"
+    },
+    "arbiter/l2_transport.py": {
+      "measured_raw_sha256": "7d397f4f9a162addce338e2eb2b0d98809d82a7060a52cc96afeaf2da8c4680b",
+      "canonical_lf_sha256": "7d397f4f9a162addce338e2eb2b0d98809d82a7060a52cc96afeaf2da8c4680b"
+    },
+    "arbiter/l2_workflow.py": {
+      "measured_raw_sha256": "989899d4c816524d95ce2b2a4bf1e7db487d131c7dbc6d60489e848a40122c98",
+      "canonical_lf_sha256": "989899d4c816524d95ce2b2a4bf1e7db487d131c7dbc6d60489e848a40122c98"
+    },
+    "arbiter/llm.py": {
+      "measured_raw_sha256": "764801e059221dfc30d6ef58702de0d5edfbe0f82cd603a7986c190ff6b4049f",
+      "canonical_lf_sha256": "4fead6a31702616831cb5c419e25a69df2acd5a45bb65a5ee0e966be9db3b6f3"
+    },
+    "arbiter/memory.py": {
+      "measured_raw_sha256": "f4d5c94d02b84faf026cdb0fa93af30aed3101059b94fae3e4e0649354befe3b",
+      "canonical_lf_sha256": "f4d5c94d02b84faf026cdb0fa93af30aed3101059b94fae3e4e0649354befe3b"
+    },
+    "arbiter/portable.py": {
+      "measured_raw_sha256": "f14cddff5099819afc20e3fa273cbee0f3e9eec17ce04d36735cd6ae3f3acde1",
+      "canonical_lf_sha256": "f14cddff5099819afc20e3fa273cbee0f3e9eec17ce04d36735cd6ae3f3acde1"
+    },
+    "arbiter/prefilter.py": {
+      "measured_raw_sha256": "71c83a5604c7bfcfe932e508f6491315d942a5869148c861ee1653897668de1e",
+      "canonical_lf_sha256": "71c83a5604c7bfcfe932e508f6491315d942a5869148c861ee1653897668de1e"
+    },
+    "arbiter/readiness.py": {
+      "measured_raw_sha256": "a031c24efe4996c7258c97895f381a1ab71280e29803ef35780f005f6ba8f2ea",
+      "canonical_lf_sha256": "a031c24efe4996c7258c97895f381a1ab71280e29803ef35780f005f6ba8f2ea"
+    },
+    "arbiter/respond.py": {
+      "measured_raw_sha256": "76c6493af57deaf4d4b54cc33a0b4feb98c6fb27bedb947e3af8f68c32016762",
+      "canonical_lf_sha256": "76c6493af57deaf4d4b54cc33a0b4feb98c6fb27bedb947e3af8f68c32016762"
+    },
+    "arbiter/review.py": {
+      "measured_raw_sha256": "c149b57b9bd96302f6a97b0f0d524e8d64b151606459f7b1911ce106a4f8ccde",
+      "canonical_lf_sha256": "c149b57b9bd96302f6a97b0f0d524e8d64b151606459f7b1911ce106a4f8ccde"
+    },
+    "arbiter/schema.py": {
+      "measured_raw_sha256": "9c4c2fd5824cdb9e751f88e0f3286de6f4308166da2b841aa8fb5525f7cad7e2",
+      "canonical_lf_sha256": "9c4c2fd5824cdb9e751f88e0f3286de6f4308166da2b841aa8fb5525f7cad7e2"
+    },
+    "arbiter/site_cloud.py": {
+      "measured_raw_sha256": "025622468778cd182260b6bec4dbf3870b49ac58514b5c23a5e71e3b713b115c",
+      "canonical_lf_sha256": "025622468778cd182260b6bec4dbf3870b49ac58514b5c23a5e71e3b713b115c"
+    },
+    "arbiter/site_demo.py": {
+      "measured_raw_sha256": "517dc945be8c057ce1ca95a09817f6e322ec38ae77d35ecf83b46dd562633a88",
+      "canonical_lf_sha256": "517dc945be8c057ce1ca95a09817f6e322ec38ae77d35ecf83b46dd562633a88"
+    },
+    "arbiter/store.py": {
+      "measured_raw_sha256": "758b4fe4c682feb6b1d126d66933ab748a3658cd0b268e9fd0c641bfd2cf9779",
+      "canonical_lf_sha256": "758b4fe4c682feb6b1d126d66933ab748a3658cd0b268e9fd0c641bfd2cf9779"
+    },
+    "arbiter/triage.py": {
+      "measured_raw_sha256": "777b8b4869e4811b6ebfd5b6246465a4a71418e5484ffb207eec13a0abdf27f2",
+      "canonical_lf_sha256": "777b8b4869e4811b6ebfd5b6246465a4a71418e5484ffb207eec13a0abdf27f2"
+    }
+  },
+  "hardened": {
+    "arbiter/__init__.py": {
+      "measured_raw_sha256": "507e0168d96e3adbeaa0428a7871d7304f2bcbb8c4df4aa4b8ae803b9632bbf8",
+      "canonical_lf_sha256": "507e0168d96e3adbeaa0428a7871d7304f2bcbb8c4df4aa4b8ae803b9632bbf8"
+    },
+    "arbiter/__main__.py": {
+      "measured_raw_sha256": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279",
+      "canonical_lf_sha256": "6d8b7d7846a845059d7a3107143f11131f63c5511d669b44085b15ec5e3d2279"
+    },
+    "arbiter/agent.py": {
+      "measured_raw_sha256": "5ee811721ab41e11104bbb8ea12287b2765309415153f512b8a8a3badb50595c",
+      "canonical_lf_sha256": "5ee811721ab41e11104bbb8ea12287b2765309415153f512b8a8a3badb50595c"
+    },
+    "arbiter/api/__init__.py": {
+      "measured_raw_sha256": "a9b4409ebdc508e5f068045db91666a0ea52ffbd60cce5c01bb2e079389642ce",
+      "canonical_lf_sha256": "a9b4409ebdc508e5f068045db91666a0ea52ffbd60cce5c01bb2e079389642ce"
+    },
+    "arbiter/api/server.py": {
+      "measured_raw_sha256": "a52cb91dbc93c729e6c14faccfa9695d5880d8617cd48ad1e12aa89778c1124f",
+      "canonical_lf_sha256": "a52cb91dbc93c729e6c14faccfa9695d5880d8617cd48ad1e12aa89778c1124f"
+    },
+    "arbiter/api/static.py": {
+      "measured_raw_sha256": "64d90322ee9a3f9fc168219839ae52dee76eb877e4adeb00d31430ea44edaf09",
+      "canonical_lf_sha256": "64d90322ee9a3f9fc168219839ae52dee76eb877e4adeb00d31430ea44edaf09"
+    },
+    "arbiter/bench.py": {
+      "measured_raw_sha256": "39247bfb3c99a0b769484d4007f3f9fe8ac67bf066b6454080a24b76596cafa1",
+      "canonical_lf_sha256": "39247bfb3c99a0b769484d4007f3f9fe8ac67bf066b6454080a24b76596cafa1"
+    },
+    "arbiter/briefing.py": {
+      "measured_raw_sha256": "08c27b517314a49c6ccc68d3686c5745b023a1e910db1d0e91f6a01d633975fb",
+      "canonical_lf_sha256": "08c27b517314a49c6ccc68d3686c5745b023a1e910db1d0e91f6a01d633975fb"
+    },
+    "arbiter/cli.py": {
+      "measured_raw_sha256": "d9097ec83a70cb6d268e82b395900a855cc1e3e82b234e5e263b637c834a033f",
+      "canonical_lf_sha256": "d9097ec83a70cb6d268e82b395900a855cc1e3e82b234e5e263b637c834a033f"
+    },
+    "arbiter/eval.py": {
+      "measured_raw_sha256": "aeaa7aa925c5271bf0b217396a0d33f4da98db3405dcddf66f1abcb047bccf59",
+      "canonical_lf_sha256": "aeaa7aa925c5271bf0b217396a0d33f4da98db3405dcddf66f1abcb047bccf59"
+    },
+    "arbiter/facts.py": {
+      "measured_raw_sha256": "4ad0e51ff4690c9314ce764de178a534d2f18c4e5dddc63ea5c68e1b9aca24cc",
+      "canonical_lf_sha256": "4ad0e51ff4690c9314ce764de178a534d2f18c4e5dddc63ea5c68e1b9aca24cc"
+    },
+    "arbiter/guardrails.py": {
+      "measured_raw_sha256": "49a674877c1e838fbde9400d8eeebe9b63569fd0f05b04d1880d01fe5d2fc3a7",
+      "canonical_lf_sha256": "49a674877c1e838fbde9400d8eeebe9b63569fd0f05b04d1880d01fe5d2fc3a7"
+    },
+    "arbiter/iam.py": {
+      "measured_raw_sha256": "93cad2677abcf4983d718f35158b37a8c7eab75c94345c1e7bb04241a46a170f",
+      "canonical_lf_sha256": "93cad2677abcf4983d718f35158b37a8c7eab75c94345c1e7bb04241a46a170f"
+    },
+    "arbiter/ingestion/__init__.py": {
+      "measured_raw_sha256": "36e396545c58851d0d9aa992f5b28341b4a0e4801d5fb3c8fb5a5f211077d386",
+      "canonical_lf_sha256": "36e396545c58851d0d9aa992f5b28341b4a0e4801d5fb3c8fb5a5f211077d386"
+    },
+    "arbiter/ingestion/base.py": {
+      "measured_raw_sha256": "feeb128d839bf6e72b409619d5e1cbabe0a335c3b84c1605a9d8f136cbb8f441",
+      "canonical_lf_sha256": "feeb128d839bf6e72b409619d5e1cbabe0a335c3b84c1605a9d8f136cbb8f441"
+    },
+    "arbiter/ingestion/collectors/__init__.py": {
+      "measured_raw_sha256": "33ae46c93cc13fe6ee58d657b396a047092dbb371853afd39ab2c0e6ef12502e",
+      "canonical_lf_sha256": "33ae46c93cc13fe6ee58d657b396a047092dbb371853afd39ab2c0e6ef12502e"
+    },
+    "arbiter/ingestion/collectors/attachments.py": {
+      "measured_raw_sha256": "c558ccec4946cd4330fcf49d3f9db669da8b0bc7e0aa09fb410bda08ed780379",
+      "canonical_lf_sha256": "c558ccec4946cd4330fcf49d3f9db669da8b0bc7e0aa09fb410bda08ed780379"
+    },
+    "arbiter/ingestion/collectors/aws.py": {
+      "measured_raw_sha256": "b22006c9f5fcc95879beef31e3a472028e26b2658c239cccc3ebf7ce330e551f",
+      "canonical_lf_sha256": "b22006c9f5fcc95879beef31e3a472028e26b2658c239cccc3ebf7ce330e551f"
+    },
+    "arbiter/ingestion/collectors/defender.py": {
+      "measured_raw_sha256": "07eb9320f9e27271dc5e6d292392bb1dcb0f924754879816d2dd08c67992cf6a",
+      "canonical_lf_sha256": "07eb9320f9e27271dc5e6d292392bb1dcb0f924754879816d2dd08c67992cf6a"
+    },
+    "arbiter/ingestion/collectors/future.py": {
+      "measured_raw_sha256": "73cd0d807549d9a6599e58391467fd34ea56ef5d18e820e357cfddff025993df",
+      "canonical_lf_sha256": "73cd0d807549d9a6599e58391467fd34ea56ef5d18e820e357cfddff025993df"
+    },
+    "arbiter/ingestion/collectors/linux_auth.py": {
+      "measured_raw_sha256": "821fbdd19cc115f421c728b79b914af529b92df3b7b70984d6d49a30a63b2411",
+      "canonical_lf_sha256": "821fbdd19cc115f421c728b79b914af529b92df3b7b70984d6d49a30a63b2411"
+    },
+    "arbiter/ingestion/collectors/local_process.py": {
+      "measured_raw_sha256": "ebada66c4cae8081836914e074062ce1479c819839d5d52f7e63348e2b453ea5",
+      "canonical_lf_sha256": "ebada66c4cae8081836914e074062ce1479c819839d5d52f7e63348e2b453ea5"
+    },
+    "arbiter/ingestion/collectors/osquery.py": {
+      "measured_raw_sha256": "49481d533ba553741e63548475da1d947274e6b7fecdc7200bfa55b2ce29f365",
+      "canonical_lf_sha256": "49481d533ba553741e63548475da1d947274e6b7fecdc7200bfa55b2ce29f365"
+    },
+    "arbiter/ingestion/collectors/security.py": {
+      "measured_raw_sha256": "6b29eafb4572cdb5debd1e012689f14dc6bd5c25d88fad58732dfce51f8c9b88",
+      "canonical_lf_sha256": "6b29eafb4572cdb5debd1e012689f14dc6bd5c25d88fad58732dfce51f8c9b88"
+    },
+    "arbiter/ingestion/collectors/suricata.py": {
+      "measured_raw_sha256": "de01c325db0b7523685affcf8fbb97ae38bdfd8f5afbee27a3382e274c23e92c",
+      "canonical_lf_sha256": "de01c325db0b7523685affcf8fbb97ae38bdfd8f5afbee27a3382e274c23e92c"
+    },
+    "arbiter/ingestion/collectors/syslog.py": {
+      "measured_raw_sha256": "d1fee528186b47aeb2e1c519f24c10745d0ec66b0bf70f86cc5779ad685e13ac",
+      "canonical_lf_sha256": "d1fee528186b47aeb2e1c519f24c10745d0ec66b0bf70f86cc5779ad685e13ac"
+    },
+    "arbiter/ingestion/collectors/wazuh.py": {
+      "measured_raw_sha256": "733c9cc02f1fa90ef8fa95ba2791d6525e4030f1b097675d17a637ef71300ed3",
+      "canonical_lf_sha256": "733c9cc02f1fa90ef8fa95ba2791d6525e4030f1b097675d17a637ef71300ed3"
+    },
+    "arbiter/ingestion/collectors/windows.py": {
+      "measured_raw_sha256": "8aadf5aa22f91b678d2a1e42aeb66ecf3fc89936c982107fd141ad153fb0d57a",
+      "canonical_lf_sha256": "8aadf5aa22f91b678d2a1e42aeb66ecf3fc89936c982107fd141ad153fb0d57a"
+    },
+    "arbiter/ingestion/containment.py": {
+      "measured_raw_sha256": "48c354c9900052998f4b5742a675174a522e87e68bb9a533c61a355e511c5a91",
+      "canonical_lf_sha256": "48c354c9900052998f4b5742a675174a522e87e68bb9a533c61a355e511c5a91"
+    },
+    "arbiter/ingestion/correlation.py": {
+      "measured_raw_sha256": "8543eab19a41a4db5a0841d97cfedb4c641791e7dbc3047e6c958274ad209375",
+      "canonical_lf_sha256": "8543eab19a41a4db5a0841d97cfedb4c641791e7dbc3047e6c958274ad209375"
+    },
+    "arbiter/ingestion/demo.py": {
+      "measured_raw_sha256": "85fd00cde001021279c523c5b1277bf67080bba59c35bc8d872d7e5e2640fbc6",
+      "canonical_lf_sha256": "85fd00cde001021279c523c5b1277bf67080bba59c35bc8d872d7e5e2640fbc6"
+    },
+    "arbiter/ingestion/discovery.py": {
+      "measured_raw_sha256": "e4d1bd482e1bc6a39335e92aa794a6b302e5cc995162f8550e6a5e58874089df",
+      "canonical_lf_sha256": "e4d1bd482e1bc6a39335e92aa794a6b302e5cc995162f8550e6a5e58874089df"
+    },
+    "arbiter/ingestion/evidence.py": {
+      "measured_raw_sha256": "753b1e0bcadf897e300dfe24fe61155fd1997cd20cb9d97c6cbd80fab62607d5",
+      "canonical_lf_sha256": "753b1e0bcadf897e300dfe24fe61155fd1997cd20cb9d97c6cbd80fab62607d5"
+    },
+    "arbiter/ingestion/files.py": {
+      "measured_raw_sha256": "cc071ab53f4c7b7a16fcd203b365eb365013df8d654fc824037e48bb64ad0410",
+      "canonical_lf_sha256": "cc071ab53f4c7b7a16fcd203b365eb365013df8d654fc824037e48bb64ad0410"
+    },
+    "arbiter/ingestion/models.py": {
+      "measured_raw_sha256": "14b34259ee8f2fcf66b7c55f435b1bdb62c98ce2dbb56d78b11dccbd2237c5ef",
+      "canonical_lf_sha256": "14b34259ee8f2fcf66b7c55f435b1bdb62c98ce2dbb56d78b11dccbd2237c5ef"
+    },
+    "arbiter/ingestion/normalization.py": {
+      "measured_raw_sha256": "942ad1daeab086f9440f7cb6832de60457d023d43420ac78ca67c5fa96beee93",
+      "canonical_lf_sha256": "942ad1daeab086f9440f7cb6832de60457d023d43420ac78ca67c5fa96beee93"
+    },
+    "arbiter/ingestion/permissions.py": {
+      "measured_raw_sha256": "b8c5b9929412a942c71bdfd6961ba3bd8fe345017e54eef11ddcd9207934588d",
+      "canonical_lf_sha256": "b8c5b9929412a942c71bdfd6961ba3bd8fe345017e54eef11ddcd9207934588d"
+    },
+    "arbiter/ingestion/pipeline.py": {
+      "measured_raw_sha256": "ba9f8e712165320c3fe146118535bb041363ed31f5da02bf9e789ea8403a77c7",
+      "canonical_lf_sha256": "ba9f8e712165320c3fe146118535bb041363ed31f5da02bf9e789ea8403a77c7"
+    },
+    "arbiter/ingestion/protection.py": {
+      "measured_raw_sha256": "28a3247b87501edb2ff0598fa8e74185fb0576c1fac0fe3ab408750c7d49926a",
+      "canonical_lf_sha256": "28a3247b87501edb2ff0598fa8e74185fb0576c1fac0fe3ab408750c7d49926a"
+    },
+    "arbiter/ingestion/recommendations.py": {
+      "measured_raw_sha256": "c11c6a8c64c0a6628213a3c0273212cf0b9047b4973cdca769a99f22487d49ef",
+      "canonical_lf_sha256": "2221f43493ba83e9618f399c8bef41d5a681249b360125c0093e319aaa326c6a"
+    },
+    "arbiter/ingestion/registry.py": {
+      "measured_raw_sha256": "ff7dc1da2b9a4b61bf789453212cf905e2960709d8225d7a863a1219859b00d8",
+      "canonical_lf_sha256": "ff7dc1da2b9a4b61bf789453212cf905e2960709d8225d7a863a1219859b00d8"
+    },
+    "arbiter/ingestion/response_workflow.py": {
+      "measured_raw_sha256": "696df48eee15eba72ebef627e05011f44c6692b6fd6302ea99949be494460850",
+      "canonical_lf_sha256": "696df48eee15eba72ebef627e05011f44c6692b6fd6302ea99949be494460850"
+    },
+    "arbiter/ingestion/schema.py": {
+      "measured_raw_sha256": "32668f61dbe8dfbd17ac8c50bb76aa0cfe6346578af441885eb842830b80b929",
+      "canonical_lf_sha256": "32668f61dbe8dfbd17ac8c50bb76aa0cfe6346578af441885eb842830b80b929"
+    },
+    "arbiter/ingestion/service.py": {
+      "measured_raw_sha256": "4d9c6a5989bdc30f60eea2cb09f631c7f60aa30db0117e9043ccbaaf2ebaf0b8",
+      "canonical_lf_sha256": "4d9c6a5989bdc30f60eea2cb09f631c7f60aa30db0117e9043ccbaaf2ebaf0b8"
+    },
+    "arbiter/ingestion/store.py": {
+      "measured_raw_sha256": "a0df5880d13be727b7e53998c8433bf32c13777e2719f4ffc3287e2217fd4871",
+      "canonical_lf_sha256": "a0df5880d13be727b7e53998c8433bf32c13777e2719f4ffc3287e2217fd4871"
+    },
+    "arbiter/ingestion/wazuh_evidence.py": {
+      "measured_raw_sha256": "ad3c3ac66776a69dab859023d2b1b8bda0b6e045702b8482eb3e140a0b0fc93d",
+      "canonical_lf_sha256": "ad3c3ac66776a69dab859023d2b1b8bda0b6e045702b8482eb3e140a0b0fc93d"
+    },
+    "arbiter/install/__init__.py": {
+      "measured_raw_sha256": "71c4d9614120ae6651060a2aaf79433f28b8eba39adbbb4f8d11fcac5ba72ae3",
+      "canonical_lf_sha256": "71c4d9614120ae6651060a2aaf79433f28b8eba39adbbb4f8d11fcac5ba72ae3"
+    },
+    "arbiter/install/cli.py": {
+      "measured_raw_sha256": "ed42b630faa19ad424db1b272c4dbc1d01463d96fdd55294f14d5c767f107919",
+      "canonical_lf_sha256": "ed42b630faa19ad424db1b272c4dbc1d01463d96fdd55294f14d5c767f107919"
+    },
+    "arbiter/install/lifecycle.py": {
+      "measured_raw_sha256": "f7083368e4ebb848304e3497777c13f3752b3797a9e37e6dcaf696567b9d147a",
+      "canonical_lf_sha256": "f7083368e4ebb848304e3497777c13f3752b3797a9e37e6dcaf696567b9d147a"
+    },
+    "arbiter/install/monitoring.py": {
+      "measured_raw_sha256": "dd3cdf738b54456f121ef70b456e38ee7dc45d288d441606f6fbee11e89d3094",
+      "canonical_lf_sha256": "dd3cdf738b54456f121ef70b456e38ee7dc45d288d441606f6fbee11e89d3094"
+    },
+    "arbiter/install/plan.py": {
+      "measured_raw_sha256": "57c26672a063f078013e052bf116d2bbedead1b60b847aeedfec7ff5d9343ec4",
+      "canonical_lf_sha256": "57c26672a063f078013e052bf116d2bbedead1b60b847aeedfec7ff5d9343ec4"
+    },
+    "arbiter/install/preflight.py": {
+      "measured_raw_sha256": "b9c9f8fff181cb6deefd97d4e1cd0a143725b08e49610b85a9ca9670cf98cfe7",
+      "canonical_lf_sha256": "b9c9f8fff181cb6deefd97d4e1cd0a143725b08e49610b85a9ca9670cf98cfe7"
+    },
+    "arbiter/install/runtime.py": {
+      "measured_raw_sha256": "de3ca8d9ae82ce9292e0436328af6dace63d751f3e09f2da295fdfa1928c6175",
+      "canonical_lf_sha256": "de3ca8d9ae82ce9292e0436328af6dace63d751f3e09f2da295fdfa1928c6175"
+    },
+    "arbiter/install/service.py": {
+      "measured_raw_sha256": "5f86dd40d18ba925f7b4fa95809934f23d972c08f76ee23792f84b9ee80cc7f3",
+      "canonical_lf_sha256": "5f86dd40d18ba925f7b4fa95809934f23d972c08f76ee23792f84b9ee80cc7f3"
+    },
+    "arbiter/l2.py": {
+      "measured_raw_sha256": "c77006d15a709da64b70b0bf1f4ed6aaf0283dad3eba1c92812fb6b4d70fc8a2",
+      "canonical_lf_sha256": "c77006d15a709da64b70b0bf1f4ed6aaf0283dad3eba1c92812fb6b4d70fc8a2"
+    },
+    "arbiter/l2_evidence.py": {
+      "measured_raw_sha256": "473dafc7ebfcd12892023b81786752ec8b23aeb663c4d5333956510d5aa3f9fa",
+      "canonical_lf_sha256": "473dafc7ebfcd12892023b81786752ec8b23aeb663c4d5333956510d5aa3f9fa"
+    },
+    "arbiter/l2_guardrails.py": {
+      "measured_raw_sha256": "f210beea46784857f77ecbc81e0874318a8f1ece4272c9781d40236019033dff",
+      "canonical_lf_sha256": "f210beea46784857f77ecbc81e0874318a8f1ece4272c9781d40236019033dff"
+    },
+    "arbiter/l2_transport.py": {
+      "measured_raw_sha256": "7d397f4f9a162addce338e2eb2b0d98809d82a7060a52cc96afeaf2da8c4680b",
+      "canonical_lf_sha256": "7d397f4f9a162addce338e2eb2b0d98809d82a7060a52cc96afeaf2da8c4680b"
+    },
+    "arbiter/l2_workflow.py": {
+      "measured_raw_sha256": "989899d4c816524d95ce2b2a4bf1e7db487d131c7dbc6d60489e848a40122c98",
+      "canonical_lf_sha256": "989899d4c816524d95ce2b2a4bf1e7db487d131c7dbc6d60489e848a40122c98"
+    },
+    "arbiter/llm.py": {
+      "measured_raw_sha256": "764801e059221dfc30d6ef58702de0d5edfbe0f82cd603a7986c190ff6b4049f",
+      "canonical_lf_sha256": "4fead6a31702616831cb5c419e25a69df2acd5a45bb65a5ee0e966be9db3b6f3"
+    },
+    "arbiter/memory.py": {
+      "measured_raw_sha256": "f4d5c94d02b84faf026cdb0fa93af30aed3101059b94fae3e4e0649354befe3b",
+      "canonical_lf_sha256": "f4d5c94d02b84faf026cdb0fa93af30aed3101059b94fae3e4e0649354befe3b"
+    },
+    "arbiter/portable.py": {
+      "measured_raw_sha256": "f14cddff5099819afc20e3fa273cbee0f3e9eec17ce04d36735cd6ae3f3acde1",
+      "canonical_lf_sha256": "f14cddff5099819afc20e3fa273cbee0f3e9eec17ce04d36735cd6ae3f3acde1"
+    },
+    "arbiter/prefilter.py": {
+      "measured_raw_sha256": "470eac58b053f9b83fd558b087bc61f3800cc6bd592d494fa277758a4da5ef7f",
+      "canonical_lf_sha256": "470eac58b053f9b83fd558b087bc61f3800cc6bd592d494fa277758a4da5ef7f"
+    },
+    "arbiter/readiness.py": {
+      "measured_raw_sha256": "a031c24efe4996c7258c97895f381a1ab71280e29803ef35780f005f6ba8f2ea",
+      "canonical_lf_sha256": "a031c24efe4996c7258c97895f381a1ab71280e29803ef35780f005f6ba8f2ea"
+    },
+    "arbiter/respond.py": {
+      "measured_raw_sha256": "76c6493af57deaf4d4b54cc33a0b4feb98c6fb27bedb947e3af8f68c32016762",
+      "canonical_lf_sha256": "76c6493af57deaf4d4b54cc33a0b4feb98c6fb27bedb947e3af8f68c32016762"
+    },
+    "arbiter/review.py": {
+      "measured_raw_sha256": "c149b57b9bd96302f6a97b0f0d524e8d64b151606459f7b1911ce106a4f8ccde",
+      "canonical_lf_sha256": "c149b57b9bd96302f6a97b0f0d524e8d64b151606459f7b1911ce106a4f8ccde"
+    },
+    "arbiter/schema.py": {
+      "measured_raw_sha256": "9c4c2fd5824cdb9e751f88e0f3286de6f4308166da2b841aa8fb5525f7cad7e2",
+      "canonical_lf_sha256": "9c4c2fd5824cdb9e751f88e0f3286de6f4308166da2b841aa8fb5525f7cad7e2"
+    },
+    "arbiter/site_cloud.py": {
+      "measured_raw_sha256": "025622468778cd182260b6bec4dbf3870b49ac58514b5c23a5e71e3b713b115c",
+      "canonical_lf_sha256": "025622468778cd182260b6bec4dbf3870b49ac58514b5c23a5e71e3b713b115c"
+    },
+    "arbiter/site_demo.py": {
+      "measured_raw_sha256": "517dc945be8c057ce1ca95a09817f6e322ec38ae77d35ecf83b46dd562633a88",
+      "canonical_lf_sha256": "517dc945be8c057ce1ca95a09817f6e322ec38ae77d35ecf83b46dd562633a88"
+    },
+    "arbiter/store.py": {
+      "measured_raw_sha256": "758b4fe4c682feb6b1d126d66933ab748a3658cd0b268e9fd0c641bfd2cf9779",
+      "canonical_lf_sha256": "758b4fe4c682feb6b1d126d66933ab748a3658cd0b268e9fd0c641bfd2cf9779"
+    },
+    "arbiter/tool_policy.py": {
+      "measured_raw_sha256": "6448c686d8db34749e139f28cdedd4b4e1165291cde2c9ffe447c2e08d49ec68",
+      "canonical_lf_sha256": "6448c686d8db34749e139f28cdedd4b4e1165291cde2c9ffe447c2e08d49ec68"
+    },
+    "arbiter/triage.py": {
+      "measured_raw_sha256": "777b8b4869e4811b6ebfd5b6246465a4a71418e5484ffb207eec13a0abdf27f2",
+      "canonical_lf_sha256": "777b8b4869e4811b6ebfd5b6246465a4a71418e5484ffb207eec13a0abdf27f2"
+    }
+  }
+}

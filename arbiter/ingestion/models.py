@@ -1,6 +1,9 @@
 """Discover models on the configured local inference service only."""
 import json
-from urllib.request import urlopen
+from urllib.request import build_opener, ProxyHandler
+from ..llm import NoRedirect
+
+urlopen = build_opener(ProxyHandler({}), NoRedirect()).open
 
 
 def available_models(url="http://localhost:11434"):

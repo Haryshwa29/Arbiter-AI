@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getEvent, getRecords, approveProtection, undoProtection } from "../lib/api";
+import { getEvent, getRecords, approveProtection, undoProtection, rejectL2Review } from "../lib/api";
 import { eventStatus, eventProgress } from "../lib/eventStatus";
 import { useOptionalAuth } from "../lib/auth";
 import { publicDemoApi } from "../lib/publicDemo";
@@ -49,7 +49,9 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
     finally {setBusy(false);}
   }
   const analysis = event?.analysis ?? verdict;
-  const reasoningBackend = event?.analysis?.backend ?? "unrecorded";
+  const report = event?.report;
+  const explanation = report && ['ready','partial'].includes(report.state) ? report.body?.brief : event?.analysis?.brief;
+  const reasoningBackend = event?.analysis?.second_stage?.backend ?? event?.analysis?.backend ?? "unrecorded";
   const status = event ? eventStatus(event) : verdict ? verdict.decision === "escalate" ? "Alerted · escalated for review" : "Suppressed" : "Loading…";
   return <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onMouseDown={e => {if (e.target === e.currentTarget) onClose();}}>
     <section role="dialog" aria-modal="true" aria-label="Event details" className="flex h-full w-full max-w-2xl flex-col gap-4 overflow-y-auto border-l border-neutral-700 bg-neutral-950 p-6 text-neutral-100" onKeyDown={e => {
@@ -62,14 +64,29 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
         <h3>{event?.event.event_type ?? verdict?.signature} · {event?.event.hostname ?? verdict?.host}</h3>
         <p className="text-sm text-sky-300">{status}</p>{event && <p className="text-xs text-neutral-400">{eventProgress(event)}</p>}
         {event && <p className="text-xs text-neutral-400">Source: {event.event.source_type}<br/>Occurred: {event.event.timestamp ? new Date(event.event.timestamp).toLocaleString() : "Unknown (not supplied)"}<br/>Received: {new Date(event.event.received_at).toLocaleString()}</p>}
-        {event?.analysis?.brief && <section aria-label="Alert explanation" className="space-y-3 rounded border border-neutral-700 p-4 text-sm">
-          {event.analysis.brief.observed && <><h3 className="font-medium">What was recorded</h3><p className="whitespace-pre-wrap break-words">{event.analysis.brief.observed}</p><p className="text-xs text-neutral-400">Reported by the event source; verify against the original payload below.</p></>}
-          <h3 className="font-medium">Why this triggered</h3><p>{event.analysis.brief.why}</p>
-          <dl className="space-y-2">{Object.entries(event.analysis.brief.origin).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-400">{label}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
-          <h3 className="font-medium">What still needs checking</h3><p>{event.analysis.brief.uncertainty}</p>
+        {report && ['pending','stale'].includes(report.state) && <p role="status" className="text-sm text-neutral-400">Event saved. The explanation is being prepared separately.</p>}
+        {report?.state === 'partial' && <p role="status" className="text-sm text-neutral-400">Review in progress. Recorded facts are available below; the final explanation will follow.</p>}
+        {report?.state === 'failed' && <p role="status" className="text-sm text-amber-300">The explanation could not be prepared. The saved decision and original evidence remain available.</p>}
+        {explanation && <section aria-label="Alert explanation" className="space-y-3 rounded border border-neutral-700 p-4 text-sm">
+          {report?.state === 'ready' && <p className="text-xs text-neutral-400">Saved event report · {report.body?.title} · {report.body?.reviewer}</p>}
+          {explanation.observed && <><h3 className="font-medium">What was recorded</h3><p className="whitespace-pre-wrap break-words">{explanation.observed}</p><p className="text-xs text-neutral-400">Reported by the event source; verify against the original payload below.</p></>}
+          <h3 className="font-medium">Why this decision was made</h3><p>{explanation.why}</p>
+          <dl className="space-y-2">{Object.entries(explanation.origin).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-400">{label}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
+          <h3 className="font-medium">What still needs checking</h3><p>{explanation.uncertainty}</p>
+          {report?.state === 'ready' && report.body?.checks.length ? <><h3 className="font-medium">Suggested checks</h3><ul className="list-disc space-y-1 pl-5">{report.body.checks.map(check => <li key={check}>{check}</li>)}</ul><p className="text-xs text-neutral-400">Standard checks for this event type, prepared from a local template.</p></> : null}
         </section>}
         <h3 className="font-medium">Analysis</h3><p className="text-sm">{analysis?.rationale ?? event?.error ?? "Waiting for analysis."}</p>
-        {analysis && <><p className="text-xs text-neutral-400">{analysis.tier === "llm" ? reasoningBackend === "mock" ? "Test reasoning heuristic" : reasoningBackend === "policy-fallback" ? "AI unavailable · escalated by safety policy" : reasoningBackend === "ollama-cloud" ? `Live cloud AI reasoning (${event?.analysis?.model ?? "recorded model"})` : reasoningBackend === "ollama" ? `Local AI reasoning (${event?.analysis?.model ?? "recorded model"})` : "Reasoning backend was not recorded" : analysis.tier} · Score {analysis.score.toFixed(1)}</p><p className="text-sm">{analysis.evidence}</p></>}
+        {event?.analysis?.first_stage && <details><summary className="cursor-pointer">First review · {event.analysis.first_stage.model ?? 'L1'} · {event.analysis.first_stage.decision === 'escalate' ? 'raised for review' : 'quieted'}</summary><p className="mt-2 text-sm">{event.analysis.first_stage.rationale}</p></details>}
+        {event?.analysis?.second_stage && <p className="text-sm text-neutral-300">Second review: {event.analysis.second_stage.backend === 'deterministic' ? 'L2 quick rules' : event.analysis.second_stage.model}. {event.analysis.second_stage.guardrail?.veto ? `Final safety check retained the warning: ${event.analysis.second_stage.guardrail.veto}.` : 'Final safety check completed.'}</p>}
+        {user?.role === 'admin' && event?.analysis?.second_stage_case_id && event.analysis.second_stage_status === 'complete' && event.analysis.decision === 'suppress' && <button className="rounded border border-neutral-600 px-3 py-2 text-sm" disabled={busy} onClick={async () => {
+          const reason=window.prompt('Why should this warning remain visible for investigation?');
+          if (!reason?.trim()) return;
+          setBusy(true);setActionError('');
+          try {await rejectL2Review(id,reason);setEvent(await getEvent(id));}
+          catch(e) {setActionError(e instanceof Error ? e.message : 'Could not retain this warning.');}
+          finally {setBusy(false);}
+        }}>Keep this warning visible</button>}
+        {analysis && <><p className="text-xs text-neutral-400">{reasoningBackend === "deterministic" ? "L2 quick rules" : analysis.tier === "llm" ? reasoningBackend === "mock" ? "Test reasoning heuristic" : reasoningBackend === "policy-fallback" ? "AI unavailable · escalated by safety policy" : reasoningBackend === "ollama-cloud" ? `Live cloud AI reasoning (${event?.analysis?.model ?? "recorded model"})` : reasoningBackend === "ollama" ? `Local AI reasoning (${event?.analysis?.model ?? "recorded model"})` : "Reasoning backend was not recorded" : analysis.tier} · {event?.analysis?.first_stage ? "First-review score" : "Score"} {analysis.score.toFixed(1)}</p><p className="text-sm">{analysis.evidence}</p></>}
         {event && <RecommendedResponse key={event.event_id} event={event} admin={user?.role === "admin"} demo={demo} publicDemo={publicDemo} onUpdate={setEvent} onApprove={() => void act()} />}
         <h3 className="font-medium">Response history</h3>
         <p className="text-sm text-neutral-400">{demo ? "Simulation only. No changes are made to your device." : event?.protection_actions?.some(a => a.status === "executed") ? "Approved firewall response recorded below." : "An alert is a detection decision. Review response status below."}</p>

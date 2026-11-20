@@ -112,7 +112,8 @@ def cmd_serve(args):
           iam_db=args.iam_db, mem_db=args.db, demo_feed=args.demo_feed,
           events=args.events, backend=args.backend, model=args.model,
           demo_feed_interval=args.demo_feed_interval,
-          dev_accounts=args.dev_accounts, local_access=args.local_access)
+          dev_accounts=args.dev_accounts, local_access=args.local_access,
+          l2_model=args.l2_model,l2_review_seconds=args.l2_review_seconds)
 
 
 def main():
@@ -142,6 +143,9 @@ def main():
     ap.add_argument("--allow-network", action="append", default=[], help="explicit permitted IP or CIDR; repeatable")
     ap.add_argument("--protect-network", action="append", default=[], help="never-block management, DNS or essential service IP/CIDR; repeatable")
     ap.add_argument("--l2-model", help="optional larger installed local Ollama model; no automatic download")
+    l2_mode = ap.add_mutually_exclusive_group()
+    l2_mode.add_argument("--l2-advice-only", action="store_true", help="second opinion on model-escalated alerts; keeps alerts visible")
+    l2_mode.add_argument("--l2-final-review", action="store_true", help="second model confirms or suppresses first-model alerts; never authorizes device actions")
     ap.add_argument("--l2-review-seconds", type=int, default=90, help="L2 reasoning/challenge budget, 10..180 seconds; critical fast path is independent")
     ap.add_argument("--l2-policy", help="local JSON response policy; advice only unless automatic explicitly enabled")
     ap.set_defaults(fn=cmd_agent)
@@ -211,6 +215,8 @@ def main():
     wp.add_argument("--backend", choices=["mock", "ollama"], default="mock",
                     help="backend for --demo-feed's triage engine")
     wp.add_argument("--model", default="qwen3.5:4b")
+    wp.add_argument('--l2-model',default='',help='optional local final reviewer; enables the five-worker pipeline')
+    wp.add_argument('--l2-review-seconds',type=int,default=180,help='L2 review/challenge budget, 10..180 seconds')
     wp.add_argument("--dev-accounts", action="store_true",
                     help="dev only, off by default: force admin/admin123 and "
                          "analyst/analyst123 on every boot, clearing any "

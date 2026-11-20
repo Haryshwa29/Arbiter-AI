@@ -94,22 +94,38 @@ class Agent:
             raise ValueError("agent supports Windows and Linux")
         self.service.pipeline.start()
 
-    def enable_l2(self, model, policy=None, notify=None, review_seconds=90):
+    def enable_l2(self, model, policy=None, notify=None, review_seconds=90, advice_only=False, final_review=False):
         from .l2 import L2Brain
+        from .l2_advisory import AdvisoryL2Brain
+        from .l2_final_review import FinalReviewL2Brain
         from .l2_workflow import L2Workflow, ResponsePolicy
         if policy and policy.get("automatic") and not self.scope:
             raise ValueError("automatic L2 response requires explicit containment scope")
         if self.service.backend == "ollama" and model == self.service.model:
             raise ValueError("L2 must use a distinct model from L1")
-        self.l2 = L2Workflow(self, L2Brain(model, review_seconds), ResponsePolicy(policy), notify=notify)
+        if advice_only and final_review:
+            raise ValueError('choose advice-only or final review, not both')
+        if (advice_only or final_review) and policy and policy.get('automatic'):
+            raise ValueError('alert review cannot enable automatic device response')
+        if final_review and self.service.backend != 'ollama':
+            raise ValueError('final review requires a successful local first model')
+        brain_type = FinalReviewL2Brain if final_review else AdvisoryL2Brain if advice_only else L2Brain
+        brain = brain_type(model,review_seconds)
+        if final_review: brain.memory=self.memory
+        self.l2 = L2Workflow(self, brain, ResponsePolicy(policy), notify=notify)
+        if final_review:
+            self.service.final_review=self.l2
+            self.protection.project=self.service.project
         self.l2_model = model
         self.l2.start()
 
     def events(self):
         rows = self.service.buffer.query({"scope": "live"}, limit=100)
         results = []
+        final_mode = self.l2 and getattr(self.l2.brain,'final_review',False) is True
+        if final_mode: rows=self.l2.project(rows)
         for row in rows:
-            detail = self.service.buffer.detail(row["event_id"])
+            detail = self.service.reports.attach(row)
             results.append({**detail, "proposal": self.protection.proposal(detail) if self.scope else None,
                             "actions": self.protection.actions(row["event_id"])})
         return results
@@ -121,7 +137,7 @@ class Agent:
         self.protection.reconcile()
         if command.startswith("l2-"):
             if not self.l2: raise ValueError("L2 is disabled")
-            if command == "l2-cases" and not values: return {"cases": self.l2.cases()}
+            if command == "l2-cases" and not values: return {"cases": self.l2.cases(limit=100), "limit":100}
             if command == "l2-notices" and len(values) <= 1: return {"notices": self.l2.notices(int(values[0]) if values else 0)}
             operation = command[3:]
             if operation in {"stop", "resume"} and not values: return self.l2.control(operation)
@@ -130,6 +146,10 @@ class Agent:
             raise ValueError("invalid L2 command")
         if command == "status" and not values:
             status = self.service.status()
+            if self.l2 and getattr(self.l2.brain,'final_review',False) is True:
+                status['l2_classification'] = {
+                    **self.l2.classification_counts(),
+                    'note':'Ingestion totals retain first-stage decisions; events and l2-cases show final reviews.'}
             if platform.system() == "Linux":
                 status["elevated"] = os.geteuid() == 0
             if status["backend"] == "rules-only":
@@ -138,6 +158,7 @@ class Agent:
                     "protection_enabled": self.scope is not None,
                     "l2_enabled": self.l2 is not None,
                     "l2_model": self.l2_model,
+                    "l2_mode": "final-alert-review" if self.l2 and getattr(self.l2.brain,'final_review',False) is True else "advice-only" if self.l2 and getattr(self.l2.brain,'advice_only',False) is True else "native-investigation" if self.l2 else "disabled",
                     "l2_automatic_stopped": self.l2.halted() if self.l2 else True,
                     "live_containment_verified": False,
                     "verification_note": "Native rule presence does not establish that an attacker flow stopped."}
@@ -159,12 +180,13 @@ class Agent:
 
     def close(self):
         # No rollback claim on exit: OS-owned expiry remains responsible for TTL.
+        # Workers must release SQLite before ownership or database handles close.
+        if self.l2: self.l2.close()
+        if self.service: self.service.stop()
         try:
-            if self.l2: self.l2.close()
-            if self.service: self.service.stop()
+            if self.audit: self.audit.close()
         finally:
             try:
-                if self.audit: self.audit.close()
                 if self.memory: self.memory.close()
             finally:
                 self.owner.close()
@@ -198,9 +220,14 @@ def cmd_agent(args):
         agent.start(args.auth_log)
         if args.l2_model:
             policy = json.loads(Path(args.l2_policy).read_text()) if args.l2_policy else None
-            agent.enable_l2(args.l2_model, policy, notify=lambda notice: print(json.dumps(notice), flush=True), review_seconds=args.l2_review_seconds)
+            agent.enable_l2(args.l2_model, policy, notify=lambda notice: print(json.dumps(notice), flush=True), review_seconds=args.l2_review_seconds,
+                            advice_only=getattr(args,'l2_advice_only',False), final_review=getattr(args,'l2_final_review',False))
         elif args.l2_policy:
             raise ValueError("--l2-policy requires --l2-model")
+        elif getattr(args,'l2_advice_only',False):
+            raise ValueError('--l2-advice-only requires --l2-model')
+        elif getattr(args,'l2_final_review',False):
+            raise ValueError('--l2-final-review requires --l2-model')
         print(json.dumps({"started": True, "host": socket.gethostname(),
                           "backend": args.backend, "containment_enabled": scope is not None,
                           "commands": "status | events | actions | approve EVENT_ID EXACT_IP | undo ACTION_ID | quit",

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .facts import render_all, texts
-from .guardrails import fact_downgrade, guardrail_check
+from .guardrails import fact_downgrade, guardrail_check, final_guardrail_check
 from .llm import LLMBackend
 from .memory import Memory
 from .prefilter import prefilter
@@ -43,7 +43,7 @@ class TriageEngine:
         self.shadow = shadow
         self.stats = TriageStats()
 
-    def triage(self, event: Event) -> Verdict:
+    def triage(self, event: Event, learned_key=None) -> Verdict:
         # Security guardrail, pre-LLM: non-suppressible signals escalate
         # immediately — no fact, score, or model verdict may silence them.
         # Sole exception: an admin-curated environment fact that names this
@@ -65,13 +65,15 @@ class TriageEngine:
                 self.stats.guardrail_decided += 1
                 self.stats.total += 1
                 self.stats.escalated += 1
+                final_guardrail_check(event,verdict.decision)
                 self.memory.record_verdict(verdict, context_signature=event.fields.get("_context_signature"))
+                verdict.final_guardrail={'version':'shared-final-v1','proposal':'escalate','decision':'escalate','veto':None}
                 self._audit(event, verdict)
                 return verdict
             downgraded = (hit, fact)
             self.stats.guardrail_downgraded += 1
 
-        pre = prefilter(event, self.memory)
+        pre = prefilter(event, self.memory, learned_key)
 
         if downgraded is not None:
             # Rail fired but a standing fact corroborates the exact pattern:
@@ -91,6 +93,14 @@ class TriageEngine:
             verdict = self._llm_triage(event, pre.score)
             self.stats.llm_decided += 1
 
+        proposed=verdict.decision.value
+        hit=final_guardrail_check(event,proposed,downgraded[0].name if downgraded else None)
+        if hit:
+            verdict.decision=Decision.ESCALATE
+            verdict.rationale=f"Security guardrail [{hit.code}] vetoed suppression: {hit.reason}."
+            verdict.evidence=f"Non-suppressible signal: {event.message}"
+        verdict.final_guardrail={'version':'shared-final-v1','proposal':proposed,'decision':verdict.decision.value,
+                                 'veto':hit.code if hit else None}
         self.stats.total += 1
         if verdict.decision is Decision.ESCALATE:
             self.stats.escalated += 1
@@ -106,7 +116,9 @@ class TriageEngine:
         history = self.memory.history(event.signature)
         summary = (
             f"seen {history.total}x before: {history.suppressed} suppressed, "
-            f"{history.escalated} escalated, {history.overruled} human-overruled"
+            f"{history.escalated} escalated, {history.overruled} human-overruled. "
+            "These are aggregate prior decisions for this host/event class, not a verified benign baseline. "
+            "Earlier automatic suppressions do not prove safety, human approval or absence of incidents."
             if history.total else "first occurrence of this signature"
         )
         # Scope-check every fact against THIS event before the model sees
@@ -136,18 +148,7 @@ class TriageEngine:
                          f"{llm.confidence:.2f} < {MIN_SUPPRESS_CONFIDENCE}; "
                          f"upgraded to escalate. LLM said: {llm.rationale}")
 
-        # Post-LLM guardrail veto (second half of the sandwich): a suppress
-        # can never stand against a non-suppressible signal, whatever the
-        # model concluded from the environment facts. A rail downgraded by a
-        # corroborating fact does not veto — but any OTHER rail still does.
-        if decision is Decision.SUPPRESS:
-            hit = guardrail_check(event)
-            if hit is not None and (downgraded is None
-                                    or hit.name != downgraded[0].name):
-                decision = Decision.ESCALATE
-                rationale = (f"Security guardrail [{hit.code}] vetoed LLM "
-                             f"suppress: {hit.reason}.")
-
+        # The shared final gate in triage() checks both model and prefilter exits.
         # Transparency (invariant #2): a downgraded rail is always visible in
         # the verdict, whichever way the model decided.
         if downgraded is not None:
@@ -163,11 +164,14 @@ class TriageEngine:
         # Advisory metadata is deliberately outside the stable Event/Verdict
         # serialization contract and cannot grant execution authority.
         verdict.recommended_steps = getattr(llm, "recommended_steps", [])
+        verdict.model_confidence = llm.confidence
+        if getattr(llm,'decision_receipt',None):verdict.decision_receipt=llm.decision_receipt
         return verdict
 
     def _audit(self, event: Event, verdict: Verdict) -> None:
         entry = json.loads(verdict.to_json())
         entry["shadow"] = self.shadow
+        entry['final_guardrail']=getattr(verdict,'final_guardrail',{})
         entry["event"] = {"source": event.source, "host": event.host,
                           "type": event.event_type, "message": event.message}
         with self.audit_path.open("a", encoding="utf-8") as f:

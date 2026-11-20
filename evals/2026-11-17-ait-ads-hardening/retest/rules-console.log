@@ -1,0 +1,627 @@
+rules-only 1/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 2/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 3/214 fox label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 4/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 5/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 6/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 7/214 fox label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 8/214 fox label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 9/214 fox label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 10/214 fox label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 11/214 fox label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 12/214 fox label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 13/214 fox label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 14/214 fox label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 15/214 fox label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 16/214 fox label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 17/214 fox label=online_cracking -> escalate [llm] 0.00s elapsed=0s
+rules-only 18/214 fox label=online_cracking -> escalate [llm] 0.00s elapsed=0s
+rules-only 19/214 fox label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 20/214 fox label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 21/214 fox label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 22/214 fox label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 23/214 fox label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 24/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 25/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 26/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 27/214 fox label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 28/214 fox label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 29/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 30/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 31/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 32/214 harrison label=dnsteal -> escalate [llm] 0.00s elapsed=0s
+rules-only 33/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 34/214 harrison label=- -> escalate [prefilter] 0.00s elapsed=0s
+rules-only 35/214 harrison label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 36/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 37/214 harrison label=- -> escalate [prefilter] 0.00s elapsed=0s
+rules-only 38/214 harrison label=dnsteal -> escalate [llm] 0.00s elapsed=0s
+rules-only 39/214 harrison label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 40/214 harrison label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 41/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 42/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 43/214 harrison label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 44/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 45/214 harrison label=service_scan -> escalate [llm] 0.00s elapsed=0s
+rules-only 46/214 harrison label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 47/214 harrison label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 48/214 harrison label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 49/214 harrison label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 50/214 harrison label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 51/214 harrison label=attacker_change_user -> escalate [llm] 0.00s elapsed=0s
+rules-only 52/214 harrison label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 53/214 harrison label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 54/214 harrison label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 55/214 harrison label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 56/214 harrison label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 57/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 58/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 59/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 60/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 61/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 62/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 63/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 64/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 65/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 66/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 67/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 68/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 69/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 70/214 russellmitchell label=service_scan -> escalate [llm] 0.00s elapsed=0s
+rules-only 71/214 russellmitchell label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 72/214 russellmitchell label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 73/214 russellmitchell label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 74/214 russellmitchell label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 75/214 russellmitchell label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 76/214 russellmitchell label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 77/214 russellmitchell label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 78/214 russellmitchell label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 79/214 russellmitchell label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 80/214 russellmitchell label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 81/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 82/214 russellmitchell label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 83/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 84/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 85/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 86/214 santos label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 87/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 88/214 santos label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 89/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 90/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 91/214 santos label=dnsteal -> escalate [llm] 0.00s elapsed=0s
+rules-only 92/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 93/214 santos label=dnsteal -> escalate [llm] 0.00s elapsed=0s
+rules-only 94/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 95/214 santos label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 96/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 97/214 santos label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 98/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 99/214 santos label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 100/214 santos label=service_scan -> escalate [llm] 0.00s elapsed=0s
+rules-only 101/214 santos label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 102/214 santos label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 103/214 santos label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 104/214 santos label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 105/214 santos label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 106/214 santos label=online_cracking -> escalate [llm] 0.00s elapsed=0s
+rules-only 107/214 santos label=online_cracking -> escalate [llm] 0.00s elapsed=0s
+rules-only 108/214 santos label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 109/214 santos label=attacker_change_user -> escalate [llm] 0.00s elapsed=0s
+rules-only 110/214 santos label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 111/214 santos label=escalated_sudo_command -> escalate [llm] 0.00s elapsed=0s
+rules-only 112/214 santos label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 113/214 shaw label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 114/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 115/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 116/214 shaw label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 117/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 118/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 119/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 120/214 shaw label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 121/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 122/214 shaw label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 123/214 shaw label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 124/214 shaw label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 125/214 shaw label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 126/214 shaw label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 127/214 shaw label=attacker_change_user -> escalate [llm] 0.00s elapsed=0s
+rules-only 128/214 shaw label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 129/214 shaw label=escalated_sudo_command -> escalate [llm] 0.00s elapsed=0s
+rules-only 130/214 shaw label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 131/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 132/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 133/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 134/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 135/214 shaw label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 136/214 shaw label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 137/214 wardbeck label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 138/214 wardbeck label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 139/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 140/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 141/214 wardbeck label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 142/214 wardbeck label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 143/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 144/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 145/214 wardbeck label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 146/214 wardbeck label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 147/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 148/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 149/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 150/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 151/214 wardbeck label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 152/214 wardbeck label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 153/214 wardbeck label=service_scan -> escalate [llm] 0.00s elapsed=0s
+rules-only 154/214 wardbeck label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 155/214 wardbeck label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 156/214 wardbeck label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 157/214 wardbeck label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 158/214 wardbeck label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 159/214 wardbeck label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 160/214 wardbeck label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 161/214 wardbeck label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 162/214 wardbeck label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 163/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 164/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 165/214 wheeler label=- -> escalate [prefilter] 0.00s elapsed=0s
+rules-only 166/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 167/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 168/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 169/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 170/214 wheeler label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 171/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 172/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 173/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 174/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 175/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 176/214 wheeler label=service_scan -> escalate [llm] 0.00s elapsed=0s
+rules-only 177/214 wheeler label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 178/214 wheeler label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 179/214 wheeler label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 180/214 wheeler label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 181/214 wheeler label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 182/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 183/214 wheeler label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 184/214 wheeler label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 185/214 wheeler label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 186/214 wheeler label=escalated_sudo_command -> escalate [llm] 0.00s elapsed=0s
+rules-only 187/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 188/214 wheeler label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 189/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 190/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 191/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 192/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 193/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 194/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 195/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 196/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 197/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 198/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 199/214 wilson label=service_scan -> escalate [llm] 0.00s elapsed=0s
+rules-only 200/214 wilson label=service_scan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 201/214 wilson label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 202/214 wilson label=dirb -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 203/214 wilson label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 204/214 wilson label=wpscan -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 205/214 wilson label=attacker_change_user -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 206/214 wilson label=attacker_change_user -> escalate [llm] 0.00s elapsed=0s
+rules-only 207/214 wilson label=escalated_sudo_command -> escalate [guardrail] 0.00s elapsed=0s
+rules-only 208/214 wilson label=escalated_sudo_command -> escalate [llm] 0.00s elapsed=0s
+rules-only 209/214 wilson label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 210/214 wilson label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 211/214 wilson label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 212/214 wilson label=- -> suppress [prefilter] 0.00s elapsed=0s
+rules-only 213/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+rules-only 214/214 wilson label=- -> escalate [llm] 0.00s elapsed=0s
+{
+  "n": 214,
+  "tp": 86,
+  "fn": 0,
+  "fp": 84,
+  "tn": 44,
+  "attack_label_recall": 1.0,
+  "negative_label_suppression": 0.34375,
+  "false_escalation_rate": 0.65625,
+  "sample_precision": 0.5058823529411764,
+  "sample_accuracy": 0.6074766355140186,
+  "sample_f1": 0.671875,
+  "suppression_fraction": 0.205607476635514,
+  "recall_wilson95_descriptive": [
+    0.9572418027142576,
+    0.9999999999999999
+  ],
+  "negative_suppression_wilson95_descriptive": [
+    0.2671015766811227,
+    0.4295037221543487
+  ],
+  "backend_errors_escalated_by_policy": 0,
+  "tiers": {
+    "llm": 103,
+    "prefilter": 47,
+    "guardrail": 64
+  },
+  "by_scenario": {
+    "fox": {
+      "n": 28,
+      "tp": 12,
+      "fn": 0,
+      "fp": 9,
+      "tn": 7,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.4375,
+      "false_escalation_rate": 0.5625,
+      "sample_precision": 0.5714285714285714,
+      "sample_accuracy": 0.6785714285714286,
+      "sample_f1": 0.7272727272727273,
+      "suppression_fraction": 0.25,
+      "recall_wilson95_descriptive": [
+        0.7575059933447592,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.23098652405492354,
+        0.6682144360118811
+      ]
+    },
+    "harrison": {
+      "n": 28,
+      "tp": 12,
+      "fn": 0,
+      "fp": 11,
+      "tn": 5,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.3125,
+      "false_escalation_rate": 0.6875,
+      "sample_precision": 0.5217391304347826,
+      "sample_accuracy": 0.6071428571428571,
+      "sample_f1": 0.6857142857142857,
+      "suppression_fraction": 0.17857142857142858,
+      "recall_wilson95_descriptive": [
+        0.7575059933447592,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.14164643854782039,
+        0.5559564416525933
+      ]
+    },
+    "russellmitchell": {
+      "n": 26,
+      "tp": 10,
+      "fn": 0,
+      "fp": 8,
+      "tn": 8,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.5,
+      "false_escalation_rate": 0.5,
+      "sample_precision": 0.5555555555555556,
+      "sample_accuracy": 0.6923076923076923,
+      "sample_f1": 0.7142857142857143,
+      "suppression_fraction": 0.3076923076923077,
+      "recall_wilson95_descriptive": [
+        0.7224672001371107,
+        0.9999999999999999
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.27999563610326017,
+        0.7200043638967398
+      ]
+    },
+    "santos": {
+      "n": 30,
+      "tp": 14,
+      "fn": 0,
+      "fp": 11,
+      "tn": 5,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.3125,
+      "false_escalation_rate": 0.6875,
+      "sample_precision": 0.56,
+      "sample_accuracy": 0.6333333333333333,
+      "sample_f1": 0.717948717948718,
+      "suppression_fraction": 0.16666666666666666,
+      "recall_wilson95_descriptive": [
+        0.7846891972623643,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.14164643854782039,
+        0.5559564416525933
+      ]
+    },
+    "shaw": {
+      "n": 24,
+      "tp": 8,
+      "fn": 0,
+      "fp": 11,
+      "tn": 5,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.3125,
+      "false_escalation_rate": 0.6875,
+      "sample_precision": 0.42105263157894735,
+      "sample_accuracy": 0.5416666666666666,
+      "sample_f1": 0.5925925925925926,
+      "suppression_fraction": 0.20833333333333334,
+      "recall_wilson95_descriptive": [
+        0.6755924351161198,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.14164643854782039,
+        0.5559564416525933
+      ]
+    },
+    "wardbeck": {
+      "n": 26,
+      "tp": 10,
+      "fn": 0,
+      "fp": 7,
+      "tn": 9,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.5625,
+      "false_escalation_rate": 0.4375,
+      "sample_precision": 0.5882352941176471,
+      "sample_accuracy": 0.7307692307692307,
+      "sample_f1": 0.7407407407407407,
+      "suppression_fraction": 0.34615384615384615,
+      "recall_wilson95_descriptive": [
+        0.7224672001371107,
+        0.9999999999999999
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.331785563988119,
+        0.7690134759450765
+      ]
+    },
+    "wheeler": {
+      "n": 26,
+      "tp": 10,
+      "fn": 0,
+      "fp": 15,
+      "tn": 1,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.0625,
+      "false_escalation_rate": 0.9375,
+      "sample_precision": 0.4,
+      "sample_accuracy": 0.4230769230769231,
+      "sample_f1": 0.5714285714285714,
+      "suppression_fraction": 0.038461538461538464,
+      "recall_wilson95_descriptive": [
+        0.7224672001371107,
+        0.9999999999999999
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.01111934476464252,
+        0.28328737570298945
+      ]
+    },
+    "wilson": {
+      "n": 26,
+      "tp": 10,
+      "fn": 0,
+      "fp": 12,
+      "tn": 4,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.25,
+      "false_escalation_rate": 0.75,
+      "sample_precision": 0.45454545454545453,
+      "sample_accuracy": 0.5384615384615384,
+      "sample_f1": 0.625,
+      "suppression_fraction": 0.15384615384615385,
+      "recall_wilson95_descriptive": [
+        0.7224672001371107,
+        0.9999999999999999
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.10182067491213048,
+        0.49498316535508774
+      ]
+    }
+  },
+  "by_label": {
+    "-": {
+      "n": 128,
+      "tp": 0,
+      "fn": 0,
+      "fp": 84,
+      "tn": 44,
+      "attack_label_recall": null,
+      "negative_label_suppression": 0.34375,
+      "false_escalation_rate": 0.65625,
+      "sample_precision": 0.0,
+      "sample_accuracy": 0.34375,
+      "sample_f1": 0.0,
+      "suppression_fraction": 0.34375,
+      "recall_wilson95_descriptive": null,
+      "negative_suppression_wilson95_descriptive": [
+        0.2671015766811227,
+        0.4295037221543487
+      ]
+    },
+    "attacker_change_user": {
+      "n": 16,
+      "tp": 16,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": null,
+      "false_escalation_rate": null,
+      "sample_precision": 1.0,
+      "sample_accuracy": 1.0,
+      "sample_f1": 1.0,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.8063923194655637,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": null
+    },
+    "dirb": {
+      "n": 16,
+      "tp": 16,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": null,
+      "false_escalation_rate": null,
+      "sample_precision": 1.0,
+      "sample_accuracy": 1.0,
+      "sample_f1": 1.0,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.8063923194655637,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": null
+    },
+    "dnsteal": {
+      "n": 4,
+      "tp": 4,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": null,
+      "false_escalation_rate": null,
+      "sample_precision": 1.0,
+      "sample_accuracy": 1.0,
+      "sample_f1": 1.0,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.5101091635454027,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": null
+    },
+    "escalated_sudo_command": {
+      "n": 16,
+      "tp": 16,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": null,
+      "false_escalation_rate": null,
+      "sample_precision": 1.0,
+      "sample_accuracy": 1.0,
+      "sample_f1": 1.0,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.8063923194655637,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": null
+    },
+    "online_cracking": {
+      "n": 4,
+      "tp": 4,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": null,
+      "false_escalation_rate": null,
+      "sample_precision": 1.0,
+      "sample_accuracy": 1.0,
+      "sample_f1": 1.0,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.5101091635454027,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": null
+    },
+    "service_scan": {
+      "n": 14,
+      "tp": 14,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": null,
+      "false_escalation_rate": null,
+      "sample_precision": 1.0,
+      "sample_accuracy": 1.0,
+      "sample_f1": 1.0,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.7846891972623643,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": null
+    },
+    "wpscan": {
+      "n": 16,
+      "tp": 16,
+      "fn": 0,
+      "fp": 0,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": null,
+      "false_escalation_rate": null,
+      "sample_precision": 1.0,
+      "sample_accuracy": 1.0,
+      "sample_f1": 1.0,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.8063923194655637,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": null
+    }
+  },
+  "model_decided_subset": {
+    "n": 103,
+    "tp": 22,
+    "fn": 0,
+    "fp": 81,
+    "tn": 0,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.0,
+    "false_escalation_rate": 1.0,
+    "sample_precision": 0.21359223300970873,
+    "sample_accuracy": 0.21359223300970873,
+    "sample_f1": 0.352,
+    "suppression_fraction": 0.0,
+    "recall_wilson95_descriptive": [
+      0.8513451253913791,
+      1
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0,
+      0.045278085432415204
+    ]
+  },
+  "latency_s": {
+    "p50": 0.00041259999852627516,
+    "p95_nearest_rank": 0.0005210000090301037,
+    "mean": 0.0004196668225427585,
+    "max": 0.0008208000217564404,
+    "total_wall_s": 0.18897080002352595,
+    "sequential_alerts_per_second": 1132.4500926775884
+  },
+  "always_escalate_baseline": {
+    "n": 214,
+    "tp": 86,
+    "fn": 0,
+    "fp": 128,
+    "tn": 0,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.0,
+    "false_escalation_rate": 1.0,
+    "sample_precision": 0.40186915887850466,
+    "sample_accuracy": 0.40186915887850466,
+    "sample_f1": 0.5733333333333334,
+    "suppression_fraction": 0.0,
+    "recall_wilson95_descriptive": [
+      0.9572418027142576,
+      0.9999999999999999
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0,
+      0.029136956273508416
+    ]
+  },
+  "interval_caveat": "Wilson intervals are descriptive only: alerts are stratified and correlated within scenarios; not deployment or independent attack confidence bounds"
+}

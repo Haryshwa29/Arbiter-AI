@@ -9,15 +9,14 @@ Quick rules handle clear cases, safety checks protect the final decision, and
 customer inference stays local.
 
 **Latest publication — 20 November 2026:**
-[Plain-English progress tables](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PROGRESS-2026-11-20.md) ·
-[Full report and raw results](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/evals/2026-11-20-20k-checkpoint/README.md) ·
+[Plain-English progress tables](docs/PROGRESS-2026-11-20.md) ·
+[Full report and raw results](evals/2026-11-20-20k-checkpoint/README.md) ·
 [GitHub findings](https://github.com/Haryshwa29/Arbiter-AI/issues/13) ·
-[Current architecture](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE.md)
+[Current architecture](docs/ARCHITECTURE.md)
 
-**Source for this design:**
-[`codex/ait-ads-triage-hardening`](https://github.com/Haryshwa29/Arbiter-AI/tree/codex/ait-ads-triage-hardening).
-Use that branch for the implementation described here. Existing releases and
-installed builds may predate the update.
+**Available on [`main`](https://github.com/Haryshwa29/Arbiter-AI/tree/main):**
+the code, reports and architecture described here are merged together. Existing
+releases and installed builds may predate this update.
 
 ## What changed, and why it matters
 
@@ -76,7 +75,7 @@ should reduce unnecessary warnings without weakening that policy.
 work on different records at the same time. This is one L1 model and one L2 model,
 with bounded waiting lines between stages.
 
-[![Current Arbiter design: saved events pass through gateway, L1 rules and Qwen3.5:4b. Only successful Qwen escalations enter the L2 pre-filter and, when unresolved, Gemma4:12b. All exits pass shared final checks. A separate CPU worker prepares reports from saved decisions.](https://raw.githubusercontent.com/Haryshwa29/Arbiter-AI/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/architecture/arbiter-flow.svg)](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE-WALKTHROUGH.md)
+[![Current Arbiter design: saved events pass through gateway, L1 rules and Qwen3.5:4b. Only successful Qwen escalations enter the L2 pre-filter and, when unresolved, Gemma4:12b. All exits pass shared final checks. A separate CPU worker prepares reports from saved decisions.](docs/architecture/arbiter-flow.svg)](docs/ARCHITECTURE-WALKTHROUGH.md)
 
 | Stage | What happens in plain English | Why it helps |
 |---|---|---|
@@ -106,11 +105,11 @@ be revoked. A changed event needs normal review. Uploaded/demo/replay records
 cannot teach or use these live shortcuts. This is saved local memory, not model
 retraining or a blanket exemption for a host.
 
-[Architecture and component map](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE.md) ·
-[Illustrated walkthrough](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE-WALKTHROUGH.md) ·
-[Worker queues](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/FIVE-WORKER-PIPELINE.md) ·
-[Pattern memory](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/LEARNED-PATTERNS.md) ·
-[Decision/report separation](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/DECISION-REPORT-WORKER.md)
+[Architecture and component map](docs/ARCHITECTURE.md) ·
+[Illustrated walkthrough](docs/ARCHITECTURE-WALKTHROUGH.md) ·
+[Worker queues](docs/FIVE-WORKER-PIPELINE.md) ·
+[Pattern memory](docs/LEARNED-PATTERNS.md) ·
+[Decision/report separation](docs/DECISION-REPORT-WORKER.md)
 
 ## Available now and what we test next
 
@@ -139,7 +138,7 @@ Python 3.10+ is required. The core and mock backend need no third-party Python
 dependencies. These commands use sample events and do not enable device actions:
 
 ```bash
-git switch codex/ait-ads-triage-hardening
+git switch main
 python -m arbiter seed
 python -m arbiter run samples/events.jsonl
 ```
@@ -158,7 +157,7 @@ python -m arbiter serve --backend ollama --model qwen3.5:4b --l2-model gemma4:12
 ```
 
 For terminal operation, configuration, hardware considerations and separate state
-directories, follow [the two-brain setup guide](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/TWO-BRAIN-SETUP.md).
+directories, follow [the two-brain setup guide](docs/TWO-BRAIN-SETUP.md).
 The simple `arbiter run` command is a single-brain file runner; use the configured
 dashboard or terminal final-review preset for the worker pipeline above.
 
@@ -175,10 +174,10 @@ Only enabled and permitted sources are collected. Optional AWS acquisition
 contacts configured AWS APIs; it does not send events to cloud inference.
 Real AWS account validation and production-scale delivery remain future work.
 
-[Live lab](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/LIVE_LAB.md) · [Connectors](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/CONNECTORS.md) ·
-[AWS permissions](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/CLOUD_INTEGRATION.md) ·
-[Ingestion limits](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/INGESTION_ARCHITECTURE.md) ·
-[Monitoring and isolated demos](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/DEVICE_MONITORING_AND_DEMO.md)
+[Live lab](docs/LIVE_LAB.md) · [Connectors](docs/CONNECTORS.md) ·
+[AWS permissions](docs/CLOUD_INTEGRATION.md) ·
+[Ingestion limits](docs/INGESTION_ARCHITECTURE.md) ·
+[Monitoring and isolated demos](docs/DEVICE_MONITORING_AND_DEMO.md)
 
 ### Installable builds
 
@@ -189,29 +188,29 @@ Build the customer dashboard with `npm ci` and `npm run build` in `frontend/`,
 then run `python tools/build_release.py` from the repository root.
 
 [Releases](https://github.com/Haryshwa29/Arbiter-AI/releases) ·
-[Windows installation](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/WINDOWS-INSTALLER.md) ·
-[Portable demo](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PORTABLE.md)
+[Windows installation](docs/WINDOWS-INSTALLER.md) ·
+[Portable demo](docs/PORTABLE.md)
 
 ## Reports and evidence, newest first
 
 | Publication | What it contains |
 |---|---|
-| [20 November progress tables](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PROGRESS-2026-11-20.md) | Initial-run comparison, correct attack percentages, remaining findings and next tests. |
-| [20,002-record checkpoint](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/evals/2026-11-20-20k-checkpoint/README.md) | Full measured report, downloadable raw results, one missed attack, processing failures and checksums. |
-| [Compact decisions and report worker](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/DECISION-REPORT-WORKER.md) | The implemented source update and its software validation. |
-| [Initial 26,002-record checkpoint](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/evals/2026-11-18-26k-checkpoint/README.md) | The published baseline, with no attack-labelled records. |
-| [Arrival simulation](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/evals/2026-11-18-arrival-simulation/README.md) | Reconstructed waiting under original arrivals; simulation is distinct from observed run latency. |
-| [Earlier findings](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/FINDINGS-IN-PLAIN-ENGLISH.md) | Historical single-brain results and earlier safeguards. |
+| [20 November progress tables](docs/PROGRESS-2026-11-20.md) | Initial-run comparison, correct attack percentages, remaining findings and next tests. |
+| [20,002-record checkpoint](evals/2026-11-20-20k-checkpoint/README.md) | Full measured report, downloadable raw results, one missed attack, processing failures and checksums. |
+| [Compact decisions and report worker](docs/DECISION-REPORT-WORKER.md) | The implemented source update and its software validation. |
+| [Initial 26,002-record checkpoint](evals/2026-11-18-26k-checkpoint/README.md) | The published baseline, with no attack-labelled records. |
+| [Arrival simulation](evals/2026-11-18-arrival-simulation/README.md) | Reconstructed waiting under original arrivals; simulation is distinct from observed run latency. |
+| [Earlier findings](docs/FINDINGS-IN-PLAIN-ENGLISH.md) | Historical single-brain results and earlier safeguards. |
 
-For full-dataset reproduction, see [the resumable evaluation guide](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/FULL-PUBLIC-RUN.md)
-and [chronological runs](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/CHRONOLOGICAL-PUBLIC-RUN.md). Dataset labels are
+For full-dataset reproduction, see [the resumable evaluation guide](docs/FULL-PUBLIC-RUN.md)
+and [chronological runs](docs/CHRONOLOGICAL-PUBLIC-RUN.md). Dataset labels are
 used for scoring, not supplied as model evidence.
 
 ## Contributing and safety
 
 The decision engine returns verdicts; collectors, reporting, UI and device
 response have separate responsibilities. Classification does not authorize a
-block or a command. The [planned controller/edge design](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/BREACH_CONTAINMENT_ARCHITECTURE.md)
+block or a command. The [planned controller/edge design](docs/BREACH_CONTAINMENT_ARCHITECTURE.md)
 is a future architecture, not a shipped fleet-protection claim.
 
 ```bash
@@ -220,6 +219,6 @@ python -m unittest discover -s tests -v
 python -m arbiter eval
 ```
 
-[Project vision](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/CONCEPT.md) · [Architecture](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE.md) ·
-[Private security reporting](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/SECURITY.md) ·
-[GNU Affero General Public License v3.0 or later](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/LICENSE)
+[Project vision](CONCEPT.md) · [Architecture](docs/ARCHITECTURE.md) ·
+[Private security reporting](SECURITY.md) ·
+[GNU Affero General Public License v3.0 or later](LICENSE)

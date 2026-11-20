@@ -1,0 +1,31 @@
+{
+  "pytest": {
+    "passed": 515,
+    "skipped": 2,
+    "subtests_passed": 25,
+    "duration_s": 53.72,
+    "warning": "installed pytest plugin deprecation"
+  },
+  "mock_cli_smoke": {
+    "events": 22,
+    "escalated": 14,
+    "suppressed": 8,
+    "actions": 0
+  },
+  "hosted_demo_export_check": "passed",
+  "primary_reuse": {
+    "from": "evals/2026-11-17-l2-independent",
+    "source_commit": "c0f3f4a6da849a8428b3b02ad036341171732f11",
+    "sample_primary_audit_byte_match": true,
+    "new_qwen_calls": 0,
+    "all_current_shared_gate_parity_checked": true
+  },
+  "qualitative_correction": {
+    "prior_incomplete_dns_suppressions_retained_without_model": 11,
+    "complete_query_model_suppressions": 2,
+    "attack_annotated_gemma_inputs": 0
+  },
+  "report_assertions": "passed: routing, copied primary bytes, event binding, packet digest, label-free packets, final receipts, model suppression conditions, matrices, current runtime hashes",
+  "installed_build_replaced": false,
+  "live_collectors_started_for_eval": false
+}

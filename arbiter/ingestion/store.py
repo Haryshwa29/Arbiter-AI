@@ -1,4 +1,4 @@
-"""Durable bounded SQLite buffer and event read model, single worker per DB."""
+"""Durable bounded SQLite buffer; one claim owner and locked database access."""
 from __future__ import annotations
 
 import json
@@ -39,6 +39,8 @@ CREATE INDEX IF NOT EXISTS idx_telemetry_due ON telemetry(state, due_at, id);
 CREATE INDEX IF NOT EXISTS idx_telemetry_received ON telemetry(received_at);
 CREATE INDEX IF NOT EXISTS idx_telemetry_source ON telemetry(source, host);
 CREATE INDEX IF NOT EXISTS idx_telemetry_recent ON telemetry(state, timestamp, id);
+CREATE INDEX IF NOT EXISTS idx_telemetry_review_context ON telemetry(timestamp,id)
+ WHERE state='done' OR (state='processing' AND analysis IS NOT NULL);
 CREATE INDEX IF NOT EXISTS idx_telemetry_connector_received ON telemetry(connector, received_at);
 CREATE TABLE IF NOT EXISTS connectors (
  name TEXT PRIMARY KEY, enabled INTEGER NOT NULL, config TEXT NOT NULL,
@@ -51,6 +53,12 @@ CREATE TABLE IF NOT EXISTS inventory (
 );
 CREATE TABLE IF NOT EXISTS ingestion_metrics (name TEXT PRIMARY KEY, value INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS ingestion_settings (name TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS decision_reports (
+ event_id TEXT PRIMARY KEY, revision INTEGER NOT NULL DEFAULT 1,
+ state TEXT NOT NULL DEFAULT 'pending', snapshot TEXT, digest TEXT, body TEXT,
+ error TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_reports_pending ON decision_reports(state);
 CREATE TABLE IF NOT EXISTS incidents (
  incident_id TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
  rule_name TEXT NOT NULL, event_ids TEXT NOT NULL
@@ -74,7 +82,7 @@ class EventBuffer:
                 if name not in columns:
                     self.conn.execute(f"ALTER TABLE telemetry ADD COLUMN {name} {'REAL' if name == 'priority' else 'TEXT'}")
             self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_missing_decision ON telemetry(id) WHERE state='done' AND decision IS NULL")
-            self.conn.execute("UPDATE telemetry SET decision=json_extract(analysis,'$.decision'), "
+            self.conn.execute("UPDATE telemetry INDEXED BY idx_telemetry_missing_decision SET decision=json_extract(analysis,'$.decision'), "
                               "tier=json_extract(analysis,'$.tier') WHERE state='done' AND decision IS NULL AND analysis IS NOT NULL")
             self.conn.execute("CREATE INDEX IF NOT EXISTS idx_telemetry_metrics ON telemetry(connector,state,decision,tier,latency_ms)")
             if "priority" not in columns:
@@ -152,10 +160,19 @@ class EventBuffer:
         with self.lock, self.conn:
             self.conn.execute("UPDATE telemetry SET state='done',analysis=?,related=?,latency_ms=?,error='',decision=?,tier=?,analysis_backend=? WHERE id=?",
                               (json.dumps(analysis), json.dumps(related), latency_ms, analysis.get("decision"), analysis.get("tier"), analysis.get("backend", ""), row_id))
+            self.conn.execute("INSERT INTO decision_reports(event_id) SELECT event_id FROM telemetry WHERE id=? "
+                "ON CONFLICT(event_id) DO UPDATE SET revision=revision+1,state='pending',body=NULL,error=''",(row_id,))
+
+    def queue_report(self, event_id):
+        with self.lock, self.conn:
+            self.conn.execute("INSERT INTO decision_reports(event_id) SELECT event_id FROM telemetry WHERE event_id=? AND state IN ('done','failed') "
+                "ON CONFLICT(event_id) DO UPDATE SET revision=revision+1,state='pending',body=NULL,error=''",(event_id,))
 
     def fail(self, row_id):
         with self.lock, self.conn:
             self.conn.execute("UPDATE telemetry SET state='failed',error='Analysis failed; administrator review required' WHERE id=?", (row_id,))
+            self.conn.execute("INSERT INTO decision_reports(event_id) SELECT event_id FROM telemetry WHERE id=? "
+                "ON CONFLICT(event_id) DO UPDATE SET revision=revision+1,state='pending',body=NULL,error=''",(row_id,))
 
     def query(self, filters=None, limit=100, offset=0):
         filters = filters or {}
@@ -197,11 +214,13 @@ class EventBuffer:
             row = self.conn.execute("SELECT * FROM telemetry WHERE event_id=?", (event_id,)).fetchone()
             return self._decode(dict(row)) if row else None
 
-    def recent(self, event, window=300, limit=300, scope=None, sources=None):
+    def recent(self, event, window=300, limit=300, scope=None, sources=None, review_pending=False):
         cutoff = (datetime.fromisoformat(event.timestamp) - timedelta(seconds=window)).isoformat()
         with self.lock:
             source_clause = " AND source IN (" + ",".join("?" for _ in sources) + ")" if sources else ""
-            rows = self.conn.execute("SELECT payload,connector FROM telemetry WHERE state='done' AND timestamp>=? AND timestamp<=? "
+            state = "(state='done' OR (state='processing' AND analysis IS NOT NULL))" if review_pending else "state='done'"
+            index=" INDEXED BY idx_telemetry_review_context" if review_pending else ""
+            rows = self.conn.execute("SELECT payload,connector FROM telemetry" + index + " WHERE " + state + " AND timestamp>=? AND timestamp<=? "
                 "AND event_id!=? AND (host=? OR (src_ip!='' AND (src_ip=? OR dst_ip=?)) OR "
                 "(cloud_account!='' AND cloud_account=?))" + source_clause + " ORDER BY timestamp DESC,id DESC LIMIT ?",
                 (cutoff, event.timestamp, event.event_id, event.hostname, event.src_ip,
@@ -339,6 +358,8 @@ class EventBuffer:
     def prune(self):
         cutoff = (datetime.now(timezone.utc) - timedelta(days=self.retention_days)).isoformat()
         with self.lock, self.conn:
+            self.conn.execute("DELETE FROM decision_reports WHERE event_id IN (SELECT event_id FROM telemetry "
+                "WHERE received_at<? AND state IN ('done','failed'))",(cutoff,))
             self.conn.execute("DELETE FROM telemetry INDEXED BY idx_telemetry_received WHERE received_at<? AND state IN ('done','failed')", (cutoff,))
             self.conn.execute("DELETE FROM incidents WHERE updated_at<?", (cutoff,))
 

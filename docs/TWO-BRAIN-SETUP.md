@@ -26,7 +26,7 @@ Enter `status`, `events`, `l2-cases`, or `l2-notices` to inspect the setup and
 
 The preset does not replace an installed or portable application. The dashboard
 can enable the same pipeline with `serve --l2-model gemma4:12b`; see
-[dashboard configuration](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/FIVE-WORKER-PIPELINE.md#local-dashboard). In the terminal,
+[dashboard configuration](FIVE-WORKER-PIPELINE.md#local-dashboard). In the terminal,
 `events` shows the final classification while
 preserving `first_stage` and `second_stage`. The durable `l2-cases` records hold
 L2 decisions and reasons. Original ingestion/audit totals remain L1 evidence;
@@ -35,12 +35,12 @@ Qwen verdict. A pending or failed review keeps the warning visible.
 
 ## How the handoff works
 
-The terminal final-review preset now has [five bounded worker stages](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/FIVE-WORKER-PIPELINE.md):
+The terminal final-review preset now has [five bounded worker stages](FIVE-WORKER-PIPELINE.md):
 gateway, L1, L2 prefilter, L2, and final guardrail. L1 can continue while L2
 investigates another event. The current source also has a separate sixth CPU
 report worker; decisions finish before longer template reports. `status` exposes
 decision workers, waiting lines and report-worker state. The
-[latest public checkpoint](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PROGRESS-2026-11-20.md) measured five-worker operation;
+[latest public checkpoint](PROGRESS-2026-11-20.md) measured five-worker operation;
 the newer compact-reply/report update awaits a real-model retest. Installed
 dashboard updates require a new build and explicit L2 configuration.
 
@@ -81,11 +81,11 @@ and independent executor gates. Its defaults were not relaxed for public data.
 
 ## Local inference settings
 
-The separate [L2 security-context upgrade](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/L2-CONTEXT.md) preserves native CVE,
+The separate [L2 security-context upgrade](L2-CONTEXT.md) preserves native CVE,
 technique and conversation details and adds bounded matching login history and
 an offline CISA reference. Its guards keep unknown applicability and unexplained
 protocol anomalies visible. This upgrade is not applied to the already-running
-stopped public replay. [Scoped repeat memory](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/LEARNED-PATTERNS.md) is a subsequent
+stopped public replay. [Scoped repeat memory](LEARNED-PATTERNS.md) is a subsequent
 upgrade and is also excluded from those frozen measurements.
 
 The selected L2 route requests an 8,192-token context, at most 1,536 generated
@@ -104,7 +104,7 @@ new final-review evaluation.
 ## Run the public-data evaluation
 
 For all 2,600,263 supported records with resumable overnight processing, see
-[the full public-data run guide](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/FULL-PUBLIC-RUN.md). The commands below are
+[the full public-data run guide](FULL-PUBLIC-RUN.md). The commands below are
 the smaller comparison workflow.
 
 ```text
@@ -123,7 +123,7 @@ The latest published follow-up reused saved L1 decisions and ran L2 again after
 adding the missing-DNS-question guardrail. It cleared 2 of 85 warnings without
 attack annotations; 92 of 94 L2 cases retained without Gemma. No attack-annotated
 record reached Gemma. This is a modest policy retest, not a new detection-rate
-claim. See [the full results and limits](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/L2-INDEPENDENT-REVIEW.md).
+claim. See [the full results and limits](L2-INDEPENDENT-REVIEW.md).
 
 The evaluation is staged: all Qwen decisions first, then L2 reviews. It does not
 start live collection or a response actuator. Historical timestamps stay

@@ -1,5 +1,5 @@
 """Durable L2 deadlines and policy-controlled response, outside the triage brain."""
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import hashlib
 import json
 import queue
@@ -58,15 +58,64 @@ class L2Workflow:
             b.conn.execute('CREATE TABLE IF NOT EXISTS l2_cases (id TEXT PRIMARY KEY, body TEXT NOT NULL)')
             b.conn.execute('CREATE TABLE IF NOT EXISTS l2_notices (id INTEGER PRIMARY KEY, ts REAL, case_id TEXT, body TEXT)')
             b.conn.execute('CREATE TABLE IF NOT EXISTS l2_settings (key TEXT PRIMARY KEY, value TEXT)')
+            b.conn.execute("CREATE INDEX IF NOT EXISTS idx_l2_event ON l2_cases(json_extract(body,'$.event_id'))")
+            b.conn.execute("CREATE INDEX IF NOT EXISTS idx_l2_classification ON l2_cases(json_extract(body,'$.state'),json_extract(body,'$.review_failed'),json_extract(body,'$.brief.alert_decision'),json_type(body,'$.brief'))")
             b.conn.execute("INSERT OR IGNORE INTO l2_settings VALUES ('stopped','false')")
         # Crash during execution is never blindly retried.
-        for case in self.cases():
+        with b.lock:
+            interrupted = [json.loads(r[0]) for r in b.conn.execute("SELECT body FROM l2_cases WHERE json_extract(body,'$.state')='executing'")]
+        for case in interrupted:
             if case['state'] == 'executing':
                 case['state'] = 'needs_review'; self.save(case, 'Interrupted action: inspect actions and native firewall before recovery')
 
-    def cases(self):
+    def cases(self, event_ids=None, limit=None):
         b = self.agent.service.buffer
-        with b.lock: return [json.loads(r[0]) for r in b.conn.execute('SELECT body FROM l2_cases')]
+        sql, values = 'SELECT body FROM l2_cases', []
+        if event_ids is not None:
+            if not event_ids: return []
+            values = list(event_ids)
+            sql += " WHERE json_extract(body,'$.event_id') IN ("+','.join('?' for _ in values)+')'
+        sql += ' ORDER BY rowid DESC'
+        if limit is not None:
+            sql += ' LIMIT ?'; values.append(max(1,min(int(limit),500)))
+        with b.lock: return [json.loads(r[0]) for r in b.conn.execute(sql, values)]
+
+    def classification_counts(self):
+        b = self.agent.service.buffer
+        with b.lock:
+            groups = b.conn.execute("SELECT json_extract(body,'$.state'),json_extract(body,'$.review_failed'),"
+                "json_extract(body,'$.brief.alert_decision'),json_type(body,'$.brief'),COUNT(*) "
+                "FROM l2_cases INDEXED BY idx_l2_classification GROUP BY 1,2,3,4").fetchall()
+        counts = dict(suppressed=0, retained=0, failed=0, pending=0)
+        for state, failed, decision, brief_type, n in groups:
+            counts['suppressed'] += n if state!='rejected' and decision=='suppress' else 0
+            counts['retained'] += n if state=='rejected' or decision=='escalate' else 0
+            counts['failed'] += n if failed else 0
+            counts['pending'] += n if brief_type in (None,'null') and not failed and state!='rejected' else 0
+        return counts
+
+    def project(self, rows):
+        from .l2_final_review import eligible, project_final
+        cases={case['event_id']:case for case in reversed(self.cases(event_ids=[row['event_id'] for row in rows]))}
+        result=[]
+        for row in rows:
+            first=row.get('analysis')
+            if first and eligible(first):
+                case=cases.get(row['event_id'],{})
+                rejected=case.get('state')=='rejected'
+                brief=case.get('brief') if not rejected else None
+                status=('human-rejected-alert-retained' if rejected else 'failed-alert-retained' if case.get('review_failed')
+                    else 'complete' if brief else 'pending-alert-visible' if row['state'] in {'pending','processing'}
+                    else 'not-reviewed-alert-visible')
+                try: analysis=project_final(first,brief,event_id=row['event_id'])
+                except ValueError:
+                    analysis=project_final(first);status='invalid-review-alert-retained'
+                analysis.update(second_stage_status=status,second_stage_case_id=case.get('id'))
+                if case.get('review_failed'):
+                    analysis['second_stage_error']={key:case.get(key,'') for key in ('review_error','review_error_detail','review_error_stage')}
+                row={**row,'analysis':analysis}
+            result.append(row)
+        return result
 
     def notices(self, after=0):
         b = self.agent.service.buffer
@@ -79,6 +128,7 @@ class L2Workflow:
             b.conn.execute('INSERT OR REPLACE INTO l2_cases VALUES (?,?)', (case['id'], json.dumps(case)))
             if notice:
                 b.conn.execute('INSERT INTO l2_notices(ts,case_id,body) VALUES (?,?,?)', (self.clock(), case['id'], notice))
+        if getattr(self.brain,'final_review',False) is True:b.queue_report(case['event_id'])
         if notice and self.notify: self.notify({'l2_case': case['id'], 'notification': notice})
         if notice: self.agent.audit.record_iam('l2-policy', 'l2_notice', json.dumps({'case': case['id'], 'message': notice}))
 
@@ -95,7 +145,9 @@ class L2Workflow:
                     b.conn.execute("UPDATE l2_settings SET value=? WHERE key='stopped'", ('true' if command == 'stop' else 'false',))
                 self.agent.audit.record_iam(self.agent.actor, 'l2_'+command, '')
                 return {'automatic_stopped': self.halted()}
-            case = next((c for c in self.cases() if c['id'] == case_id), None)
+            b = self.agent.service.buffer
+            with b.lock: saved = b.conn.execute('SELECT body FROM l2_cases WHERE id=?', (case_id,)).fetchone()
+            case = json.loads(saved[0]) if saved else None
             if not case: raise ValueError('unknown L2 case')
             if command == 'revert':
                 if not case.get('action_id'): raise ValueError('no action to revert')
@@ -103,7 +155,9 @@ class L2Workflow:
                 case['state'] = 'reverted'
             else:
                 if case['state'] not in {'waiting', 'needs_review'}: raise ValueError('case is not awaiting review')
-                if command == 'reject': case['state'] = 'rejected'
+                if command == 'reject':
+                    case['state'] = 'rejected'
+                    self.agent.memory.revoke_pattern('l2',(case.get('brief') or {}).get('learned_pattern_key'))
                 elif command in {'ack', 'defer'}:
                     # One bounded extension; duplicates cannot extend it again.
                     if case.get('acknowledged'): raise ValueError('review extension already used')
@@ -116,8 +170,17 @@ class L2Workflow:
 
     def evidence_row(self, row):
         buffer = self.agent.service.buffer
+        sources=('windows','sysmon','defender','linux_auth','local_process')
+        if getattr(self.brain,'final_review',False) is True: sources+=('wazuh',)
+        placeholders=','.join('?' for _ in sources)
+        final=getattr(self.brain,'final_review',False) is True
+        state = "(state='done' OR (state='processing' AND analysis IS NOT NULL))" if final else "state='done'"
+        index=' INDEXED BY idx_telemetry_review_context' if final else ''
+        window=' AND timestamp>=?' if final else ''
+        values=[row['event']['hostname'],*sources,row['event']['timestamp']]
+        if final:values.append((datetime.fromisoformat(row['event']['timestamp'])-timedelta(minutes=5)).isoformat())
         with buffer.lock:
-            ids = [r[0] for r in buffer.conn.execute("SELECT event_id FROM telemetry WHERE host=? AND state='done' AND connector IN ('windows','sysmon','defender','linux_auth','local_process') AND timestamp<=? ORDER BY timestamp DESC,id DESC LIMIT 64", (row['event']['hostname'],row['event']['timestamp']))]
+            ids = [r[0] for r in buffer.conn.execute(f"SELECT event_id FROM telemetry{index} WHERE host=? AND {state} AND connector IN ({placeholders}) AND timestamp<=?{window} ORDER BY timestamp DESC,id DESC LIMIT 64",values)]
         prepared = {**row, '_l2_related':[buffer.detail(event_id) for event_id in ids if event_id != row['event_id']]}
         from .l2_evidence import dossier, assess
         prepared['_l2_assessment'] = assess(dossier(prepared,prepared['_l2_related']), self.agent.protection.proposal(prepared))
@@ -138,6 +201,11 @@ class L2Workflow:
             for row in observations:
                 row['proposal'] = self.agent.protection.proposal(row) if self.agent.scope else None
                 if row['state'] != 'done' or row['analysis']['decision'] != 'escalate': continue
+                if getattr(self.brain,'model_escalations_only',False) is True and row['analysis'].get('tier')!='llm':
+                    continue  # deterministic warnings remain visible without waiting for this model-review queue
+                if getattr(self.brain,'final_review',False) is True:
+                    from .l2_final_review import eligible
+                    if not eligible(row['analysis']): continue
                 row = self.evidence_row(row)
                 event = row['event']
                 identity = [row['connector'], event['hostname'], event['event_type'], event.get('src_ip'), event.get('dst_ip'), event.get('process_name'), event.get('username'), event.get('metadata', {}).get('process_created')]
@@ -153,6 +221,9 @@ class L2Workflow:
                 # events() is newest first: do not replace evidence with an older row.
                 old = self.agent.service.buffer.detail(case['event_id'])
                 if old and event['timestamp'] < old['event']['timestamp']: continue
+                if getattr(self.brain,'final_review',False) is True and case['event_id'] != row['event_id']:
+                    case['brief'] = None
+                    case.pop('review_failed',None)
                 case['event_id'] = row['event_id']
                 if list(WINDOWS).index(level) < list(WINDOWS).index(case['severity']):
                     case['severity'] = level; case['acknowledged'] = False
@@ -180,6 +251,10 @@ class L2Workflow:
                     continue
                 if case['state'] not in {'waiting','needs_review'}: continue
                 if reviewed_level != case['severity']: continue
+                if (getattr(self.brain,'final_review',False) is True and brief
+                        and brief.get('reviewed_event_id') != case['event_id']):
+                    self.save(case,'Earlier-event review arrived; newer alert retained for its own L2 review')
+                    continue
                 if error:
                     case['review_failed'] = True; case['state'] = 'needs_review'
                     self.save(case, 'L2 unavailable or invalid output; human review required')
@@ -226,7 +301,20 @@ class L2Workflow:
             with buffer.lock, buffer.conn:
                 buffer.conn.executemany('INSERT OR IGNORE INTO l2_seen VALUES (?)', [(event_id,) for event_id in unseen])
 
+    def attach(self):
+        from .ingestion.review_pipeline import ReviewPipeline
+        previous=self.agent.service.pipeline
+        previous.stop()
+        pipeline=ReviewPipeline(previous.buffer,previous.engine,previous.audit,self)
+        pipeline.simulation=previous.simulation
+        pipeline.report_worker=getattr(previous,'report_worker',None)
+        self.agent.service.pipeline=pipeline
+        return pipeline
+
     def start(self):
+        if getattr(self.brain,'final_review',False) is True:
+            self.attach().start()
+            return
         def reviewer():
             while not self.stop.is_set():
                 try: _,key,row,proposal = self.jobs.get(timeout=.5)
@@ -251,6 +339,8 @@ class L2Workflow:
 
     def close(self):
         self.stop.set()
+        pipeline = self.agent.service.pipeline
+        if getattr(pipeline,'workflow',None) is self: pipeline.stop()
         # Reviewer never writes SQLite; the scheduler must finish any native
         # operation before Agent closes its database connections.
         if self.threads: self.threads[1].join()

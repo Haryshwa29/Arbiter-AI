@@ -30,6 +30,7 @@ import re
 from dataclasses import dataclass
 
 from .schema import Event
+from .tool_policy import source_observations
 
 
 @dataclass(frozen=True)
@@ -37,6 +38,19 @@ class GuardrailHit:
     code: str      # e.g. NON_SUPPRESSIBLE_PRIVESC
     name: str      # short rule name
     reason: str
+
+
+def final_guardrail_check(event, decision, exempt_name=None, security_context=None):
+    """One suppression veto shared by L1, the L2 prefilter and Gemma."""
+    if decision not in {'escalate','suppress'}:
+        raise ValueError('invalid final decision')
+    if decision != 'suppress':
+        return None
+    hit=guardrail_check(event)
+    if hit and hit.name!=exempt_name:
+        return hit
+    from .l2_guardrails import review_floor
+    return review_floor(event,security_context)
 
 
 def _m(ev: Event) -> str:
@@ -241,10 +255,29 @@ def _high_priority_tool_finding(event):
             and finding.get("high_priority") is True)
 
 
+def _source_web_alert(event):
+    observations = source_observations(event, "wazuh")
+    if observations.get("web_alert_review") is True:
+        return True
+    correlations = event.fields.get("correlation", [])
+    return isinstance(correlations, list) and any(isinstance(c, dict) and c.get("rule") == "web_path_enumeration"
+                                                 for c in correlations)
+
+
+def _source_privileged_session(event):
+    return source_observations(event, "wazuh").get("privileged_session_review") is True
+
+
 RULES = [
     ("NON_SUPPRESSIBLE_TOOL_FINDING", "high_priority_tool_finding",
      "a high-priority security-tool finding requires review; benign history or model confidence cannot dismiss it",
      _high_priority_tool_finding),
+    ("NON_SUPPRESSIBLE_WEB_ALERT", "source_web_alert",
+     "a native web security alert, denied-access finding or correlated path enumeration requires review; a blocked request or HTTP error alone does not establish harmlessness or prove compromise",
+     _source_web_alert),
+    ("NON_SUPPRESSIBLE_PRIVILEGED_SESSION", "source_privileged_session",
+     "a recorded root sudo operation or privileged/service-account identity transition requires review; authentication success alone is not a benign explanation",
+     _source_privileged_session),
     ("NON_SUPPRESSIBLE_EXPOSURE", "internet_exposure",
      "exposing a sensitive service to a broad/public scope is never a benign "
      "maintenance side-effect", _internet_exposure),

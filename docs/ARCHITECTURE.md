@@ -5,14 +5,13 @@ decision workers share bounded queues. A separate sixth CPU worker prepares
 reports from saved decisions. This describes the published source; existing
 installations need an updated build and explicit L2 configuration.
 
-Implementation source:
-[`codex/ait-ads-triage-hardening`](https://github.com/Haryshwa29/Arbiter-AI/tree/codex/ait-ads-triage-hardening).
-The homepage documentation describes this published branch; it does not imply
-that older releases or the `main` application code include the update.
+Implementation source: [`main`](https://github.com/Haryshwa29/Arbiter-AI/tree/main).
+The code, reports and architecture are merged together. Older releases and
+installed builds may predate this update.
 
-[Latest measured progress](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PROGRESS-2026-11-20.md) ·
-[Full report and raw evidence](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/evals/2026-11-20-20k-checkpoint/README.md) ·
-[Plain-English walkthrough](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE-WALKTHROUGH.md)
+[Latest measured progress](PROGRESS-2026-11-20.md) ·
+[Full report and raw evidence](../evals/2026-11-20-20k-checkpoint/README.md) ·
+[Plain-English walkthrough](ARCHITECTURE-WALKTHROUGH.md)
 
 ## The impact behind this design
 
@@ -30,7 +29,7 @@ its real-model performance retest is next.
 
 ## Follow one event
 
-![Six-worker architecture with independent L1 and L2 rules, shared final checks, separate CPU reports and scoped memory.](https://raw.githubusercontent.com/Haryshwa29/Arbiter-AI/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/architecture/arbiter-flow.svg)
+![Six-worker architecture with independent L1 and L2 rules, shared final checks, separate CPU reports and scoped memory.](architecture/arbiter-flow.svg)
 
 ```mermaid
 flowchart TD
@@ -68,16 +67,16 @@ records cannot teach or use those shortcuts. No event is sent directly to Gemma.
 
 | Part | Everyday job | Implementation |
 |---|---|---|
-| Collection and normalization | Read approved sources, retain originals and put records in a common format. | [Collectors](https://github.com/Haryshwa29/Arbiter-AI/tree/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/collectors), [normalization](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/normalization.py), [schema](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/schema.py) |
-| Durable queue and gateway | Keep pending events through restart and add bounded related-event context. | [Store](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/store.py), [review pipeline](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/review_pipeline.py), [correlation](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/correlation.py) |
-| L1 | Apply security rules and cheap sorting; ask Qwen when needed. | [Triage](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/triage.py), [pre-filter](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/prefilter.py), [model adapter](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/llm.py) |
-| L2 pre-filter | Independently resolve supported routine escalations or route to Gemma. | [L2 pre-filter](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/l2_prefilter.py), [security context](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/L2-CONTEXT.md) |
-| L2 model | Evaluate original facts without Qwen's opinion text; select evidence IDs from supplied facts. | [Final review](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/l2_final_review.py), [evidence packet](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/l2_evidence.py), [L2 checks](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/l2_guardrails.py) |
-| Final checks | Preserve protected warnings, exact event bindings and human rejections. | [Shared guardrails](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/guardrails.py), [workflow](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/l2_workflow.py) |
-| Local memory | Store assets, scoped facts, corrections and exact eligible repeat patterns. | [Memory](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/memory.py), [learned patterns](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/learned_patterns.py) |
-| Reporting | Save context receipts; render facts and reasons into local, versioned templates. | [Templates](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/reports.py), [CPU worker](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/report_worker.py) |
-| Audit and operator interface | Keep attributable decisions and expose them through authenticated APIs. | [Audit](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/store.py), [IAM](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/iam.py), [API](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/api/server.py), [frontend](https://github.com/Haryshwa29/Arbiter-AI/tree/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/frontend) |
-| Device response | Apply separately authorized, fixed operations; classification grants no execution rights. | [Response](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/respond.py), [response workflow](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/response_workflow.py), [containment](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/arbiter/ingestion/containment.py) |
+| Collection and normalization | Read approved sources, retain originals and put records in a common format. | [Collectors](../arbiter/ingestion/collectors), [normalization](../arbiter/ingestion/normalization.py), [schema](../arbiter/ingestion/schema.py) |
+| Durable queue and gateway | Keep pending events through restart and add bounded related-event context. | [Store](../arbiter/ingestion/store.py), [review pipeline](../arbiter/ingestion/review_pipeline.py), [correlation](../arbiter/ingestion/correlation.py) |
+| L1 | Apply security rules and cheap sorting; ask Qwen when needed. | [Triage](../arbiter/triage.py), [pre-filter](../arbiter/prefilter.py), [model adapter](../arbiter/llm.py) |
+| L2 pre-filter | Independently resolve supported routine escalations or route to Gemma. | [L2 pre-filter](../arbiter/l2_prefilter.py), [security context](L2-CONTEXT.md) |
+| L2 model | Evaluate original facts without Qwen's opinion text; select evidence IDs from supplied facts. | [Final review](../arbiter/l2_final_review.py), [evidence packet](../arbiter/l2_evidence.py), [L2 checks](../arbiter/l2_guardrails.py) |
+| Final checks | Preserve protected warnings, exact event bindings and human rejections. | [Shared guardrails](../arbiter/guardrails.py), [workflow](../arbiter/l2_workflow.py) |
+| Local memory | Store assets, scoped facts, corrections and exact eligible repeat patterns. | [Memory](../arbiter/memory.py), [learned patterns](../arbiter/learned_patterns.py) |
+| Reporting | Save context receipts; render facts and reasons into local, versioned templates. | [Templates](../arbiter/reports.py), [CPU worker](../arbiter/ingestion/report_worker.py) |
+| Audit and operator interface | Keep attributable decisions and expose them through authenticated APIs. | [Audit](../arbiter/store.py), [IAM](../arbiter/iam.py), [API](../arbiter/api/server.py), [frontend](../frontend) |
+| Device response | Apply separately authorized, fixed operations; classification grants no execution rights. | [Response](../arbiter/respond.py), [response workflow](../arbiter/ingestion/response_workflow.py), [containment](../arbiter/ingestion/containment.py) |
 
 ## Decisions finish before longer reports
 
@@ -97,7 +96,7 @@ The dashboard can show partial facts while analysis is pending, the final
 decision when saved, and the full report when ready. A delayed or failed report
 does not undo the decision. Pending jobs survive restart; revision checks stop
 an old report from replacing a human's newer correction. Retention follows the
-source event. See [implementation and validation](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/DECISION-REPORT-WORKER.md).
+source event. See [implementation and validation](DECISION-REPORT-WORKER.md).
 
 ## Parallel work and honest timing
 
@@ -116,7 +115,7 @@ In the measured checkpoint, a valid L2 model review averaged about **34s**;
 the L2-routed ingestion-to-final path averaged **36m 09s**, including waiting.
 The overall **41.83 records/min** includes large numbers of quick rule decisions.
 These describe different measurements. The new report worker's latency gain
-needs a fresh real-model test. See [queue details](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/FIVE-WORKER-PIPELINE.md).
+needs a fresh real-model test. See [queue details](FIVE-WORKER-PIPELINE.md).
 
 ## Learn repeats without trusting an entire host
 
@@ -130,7 +129,7 @@ It expires after one hour or 25 hits, cannot renew itself and can be revoked.
 Native process patterns retain their stricter evidence/history requirements.
 Changed users, commands, destinations or risk must receive normal review.
 Neither brain edits executable pre-filter code. This is local SQLite memory,
-not fine-tuning. See [scope and limits](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/LEARNED-PATTERNS.md).
+not fine-tuning. See [scope and limits](LEARNED-PATTERNS.md).
 
 The latest checkpoint recorded zero L2 pre-filter suppressions and zero learned
 hits. The capability is implemented; its benefit on that run was not demonstrated.
@@ -157,7 +156,7 @@ hits. The capability is implemented; its benefit on that run was not demonstrate
   The public landing carries static copy and makes no authenticated API calls;
   customer installs leave it off by default.
 
-The [controller + trusted edge architecture](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/BREACH_CONTAINMENT_ARCHITECTURE.md)
+The [controller + trusted edge architecture](BREACH_CONTAINMENT_ARCHITECTURE.md)
 remains a planned extension. Remote fleet enforcement, broader cloud adapters,
 real AWS account validation and production delivery capacity are future work.
 
@@ -170,5 +169,5 @@ must test the missed account/session case, malformed evidence, GPU endurance,
 repeat-pattern eligibility and queue delay with real Qwen/Gemma. The **18–23s**
 L2 model-review goal is a planning target, not a measured result.
 
-[Setup](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/TWO-BRAIN-SETUP.md) · [Measured progress](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PROGRESS-2026-11-20.md) ·
-[Reproduction](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/CHRONOLOGICAL-PUBLIC-RUN.md) · [Project vision](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/CONCEPT.md)
+[Setup](TWO-BRAIN-SETUP.md) · [Measured progress](PROGRESS-2026-11-20.md) ·
+[Reproduction](CHRONOLOGICAL-PUBLIC-RUN.md) · [Project vision](../CONCEPT.md)

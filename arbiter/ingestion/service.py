@@ -22,6 +22,7 @@ class IngestionService:
     def __init__(self, path, memory, audit, backend="mock", model="qwen3.5:4b",
                  ollama_url="http://localhost:11434", registry=None, capacity=10000):
         self.backend, self.model = backend, model
+        self.final_review = None
         self.buffer = EventBuffer(path, capacity=capacity)
         self.ollama_url = ollama_url
         with self.buffer.lock, self.buffer.conn:
@@ -39,15 +40,49 @@ class IngestionService:
         # runtime/API backend names still resolve only to local or mock models.
         llm = backend if isinstance(backend, LLMBackend) else OllamaBackend(model, ollama_url) if backend == "ollama" else get_backend(backend, model)
         self.pipeline = Pipeline(self.buffer, TriageEngine(memory, llm, os.devnull, shadow=True), audit)
+        from .report_worker import ReportWorker
+        self.reports=ReportWorker(self.buffer,lambda row:self.project_rows([row])[0] if row else None)
+        self.pipeline.report_worker=self.reports
+
+    def enable_final_review(self, model, protection, review_seconds=180):
+        from types import SimpleNamespace
+        from ..l2_final_review import FinalReviewL2Brain
+        from ..l2_workflow import L2Workflow
+        if self.final_review or self.backend!='ollama' or model==self.model:
+            raise ValueError('final review requires distinct local L1 and L2 models')
+        brain=FinalReviewL2Brain(model,review_seconds,ollama_url=self.ollama_url)
+        brain.memory=self.pipeline.engine.memory
+        brain.backend.verify()
+        host=SimpleNamespace(service=self,memory=brain.memory,audit=self.pipeline.audit,
+            protection=protection,scope=None,actor='dashboard-review')
+        workflow=L2Workflow(host,brain)
+        workflow.attach()
+        self.final_review=workflow
+        protection.project=self.project
+
+    def project(self, row):
+        return self.reports.attach(self.project_rows([row])[0]) if row else row
+
+    def project_rows(self, rows):
+        return self.final_review.project(rows) if self.final_review else rows
 
     def connect_model(self, model):
         if not isinstance(model, str) or model not in available_models(self.ollama_url)["models"]:
             raise ValueError("model is not installed on the local inference service")
         with self.lock:
+            workflow = getattr(self.pipeline, 'workflow', None)
+            if workflow and model == workflow.brain.backend.model:
+                raise ValueError('L1 and L2 must use distinct local models')
             self.pipeline.stop()
             old = self.pipeline.engine
-            self.pipeline = Pipeline(self.buffer, TriageEngine(old.memory, OllamaBackend(model, self.ollama_url), os.devnull, shadow=True), self.pipeline.audit)
+            engine = TriageEngine(old.memory, OllamaBackend(model, self.ollama_url), os.devnull, shadow=True)
+            if workflow:
+                from .review_pipeline import ReviewPipeline
+                self.pipeline = ReviewPipeline(self.buffer, engine, self.pipeline.audit, workflow)
+            else:
+                self.pipeline = Pipeline(self.buffer, engine, self.pipeline.audit)
             self.backend, self.model = "ollama", model
+            self.pipeline.report_worker=self.reports
             with self.buffer.lock, self.buffer.conn:
                 self.buffer.conn.execute("INSERT OR REPLACE INTO analysis_configuration VALUES (1,?,?)", (self.backend, model))
             self.pipeline.start()
@@ -129,11 +164,18 @@ class IngestionService:
                 **(self.buffer.connector_stats(name) if include_metrics else {})})
         metrics = self.buffer.metrics("live") if include_metrics else {}
         metrics["connector_errors"] = sum(c["errors"] for c in connectors)
+        workers = self.pipeline.status() if hasattr(self.pipeline, 'status') else {
+            'l1': {'alive': bool(self.pipeline.thread and self.pipeline.thread.is_alive())}}
         return {"device": socket.gethostname(), "backend": self.backend, "model": self.model,
                 "elevated": is_elevated(), "protection_enabled": False,
                 "coverage": "This device and explicitly configured sources; other network devices require sensors",
                 "connectors": connectors, "metrics": metrics,
-                "worker_alive": bool(self.pipeline.thread and self.pipeline.thread.is_alive())}
+                "worker_alive": all(w['alive'] for w in workers.values()), "pipeline_workers": workers,
+                "report_worker": self.reports.status() if include_metrics else {'alive':bool(self.reports.thread and self.reports.thread.is_alive()),'uses_inference':False},
+                "learned_patterns": self.pipeline.engine.memory.learned_counts() if include_metrics else {},
+                "l2": {"enabled": self.final_review is not None,
+                    "model": self.final_review.brain.backend.model if self.final_review else '',
+                    "counts": self.final_review.classification_counts() if self.final_review and include_metrics else {}}}
 
     def submit(self, data, source="auto", connector="api"):
         try:
@@ -161,7 +203,9 @@ class IngestionService:
         with self.lock:
             for collector in self.collectors.values():
                 collector.stop()
+        if self.final_review: self.final_review.close()
         self.pipeline.stop()
+        self.reports.stop()
         self.buffer.close()
 
 

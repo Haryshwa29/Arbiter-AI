@@ -25,10 +25,41 @@ ALERT = {"timestamp": "2026-10-11T12:00:00.000+0000", "id": "1791720000.1",
 
 
 class WazuhTests(unittest.TestCase):
+    def test_source_hostname_precedes_shared_agent_label(self):
+        raw=deepcopy(ALERT);raw['predecoder']={'hostname':'mail-real'}
+        event=normalize(raw)
+        self.assertEqual(event.hostname,'mail-real')
+        self.assertEqual(event.metadata['host_identity_basis'],'predecoder.hostname')
+        self.assertEqual(event.metadata['agent'],raw['agent'])
+
+    def test_dns_client_is_not_misidentified_as_its_resolver(self):
+        from tests.test_l2_context import raw
+        data=raw();data['data'].update(src_ip='10.0.0.1',dest_ip='10.0.0.53')
+        event=normalize(data)
+        self.assertEqual(event.hostname,'10.0.0.1')
+        self.assertEqual(event.metadata['host_identity_basis'],'agent-matched network endpoint')
+        data['data'].update(src_ip='10.0.0.2',dest_ip='10.0.0.1')
+        self.assertEqual(normalize(data).hostname,'10.0.0.1')
+
+    def test_passive_network_sensor_preserves_both_endpoints_without_inventing_ownership(self):
+        from tests.test_l2_context import raw
+        data=raw();data['agent']['ip']='10.0.0.99'
+        event=normalize(data)
+        self.assertEqual(event.hostname,'10.0.0.2 -> 10.0.0.1')
+        self.assertIn('asset unverified',event.metadata['host_identity_basis'])
+
+    def test_generic_labels_do_not_merge_agents_without_hostnames(self):
+        first=normalize(ALERT)
+        other=deepcopy(ALERT);other['agent']['ip']='192.168.1.11'
+        self.assertNotEqual(first.hostname,normalize(other).hostname)
+        other['agent'].pop('ip');one=normalize(other)
+        other['agent']['id']='002'
+        self.assertNotEqual(one.hostname,normalize(other).hostname)
+
     def test_mapping_identity_and_raw_evidence(self):
         event = normalize(ALERT)
         self.assertEqual(event.source_type, "wazuh")
-        self.assertEqual((event.hostname, event.device_id, event.event_type), ("server-01", "001", "auth_failure"))
+        self.assertEqual((event.hostname, event.device_id, event.event_type), ("192.168.1.10", "001", "auth_failure"))
         self.assertEqual((event.username, event.src_ip, event.src_port), ("alice", "192.168.1.20", 4242))
         self.assertAlmostEqual(event.severity, 10 * 10 / 15)
         self.assertEqual(event.raw_event, ALERT)

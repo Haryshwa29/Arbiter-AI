@@ -1,0 +1,118 @@
+{
+  "first_stage": {
+    "n": 192,
+    "tp": 64,
+    "fn": 0,
+    "fp": 85,
+    "tn": 43,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.3359375,
+    "false_escalation_rate": 0.6640625,
+    "sample_precision": 0.42953020134228187,
+    "sample_accuracy": 0.5572916666666666,
+    "sample_f1": 0.6009389671361502,
+    "suppression_fraction": 0.22395833333333334,
+    "recall_wilson95_descriptive": [
+      0.9433759402071946,
+      1
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0.2599537727882833,
+      0.4214817909889617
+    ]
+  },
+  "visible_final_alerts": {
+    "n": 192,
+    "tp": 64,
+    "fn": 0,
+    "fp": 72,
+    "tn": 56,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.4375,
+    "false_escalation_rate": 0.5625,
+    "sample_precision": 0.47058823529411764,
+    "sample_accuracy": 0.625,
+    "sample_f1": 0.64,
+    "suppression_fraction": 0.2916666666666667,
+    "recall_wilson95_descriptive": [
+      0.9433759402071946,
+      1
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0.35462313127053047,
+      0.5240189882636581
+    ]
+  },
+  "first_stage_tiers": {
+    "prefilter": 46,
+    "llm": 94,
+    "guardrail": 52
+  },
+  "first_stage_errors": 0,
+  "secondary_eligible": 94,
+  "secondary_completed": 94,
+  "secondary_validated": 94,
+  "secondary_errors": 0,
+  "l2_prefilter_routes": {
+    "escalate": 81,
+    "model": 13
+  },
+  "gemma_reviews": 13,
+  "l2_prefilter_decisions": 81,
+  "first_stage_final_guardrail_vetoes": {},
+  "secondary_status": {
+    "prefilter": 81,
+    "accepted": 13
+  },
+  "advisory_outlooks": {
+    "suspicious": 81,
+    "routine_looking": 13
+  },
+  "advisory_by_label_class": {
+    "attack_annotation": {
+      "suspicious": 12
+    },
+    "no_attack_annotation": {
+      "suspicious": 69,
+      "routine_looking": 13
+    }
+  },
+  "timing": {
+    "qwen_engine": {
+      "n": 192,
+      "p50_s": 0.0016861500043887645,
+      "p95_s": 6.767782300012186,
+      "mean_s": 2.4673259687463847,
+      "max_s": 8.959970599971712,
+      "total_s": 473.7265859993058
+    },
+    "l2_stage": {
+      "n": 94,
+      "p50_s": 0.00011064999853260815,
+      "p95_s": 32.82818569999654,
+      "mean_s": 4.420446180853066,
+      "max_s": 47.65033780003432,
+      "total_s": 415.52194100018824
+    },
+    "gemma_review": {
+      "n": 13,
+      "p50_s": 30.934791399980895,
+      "p95_s": 47.65033780003432,
+      "mean_s": 31.962571846160035,
+      "max_s": 47.65033780003432,
+      "total_s": 415.51343400008045
+    }
+  },
+  "actions_executed": 0,
+  "alert_decisions_changed_by_gemma": 13,
+  "gemma_decisions_by_label_class": {
+    "attack_annotation": {
+      "escalate": 12
+    },
+    "no_attack_annotation": {
+      "escalate": 69,
+      "suppress": 13
+    }
+  },
+  "caution": "Selected alert-label replay, not live breach detection; unannotated records are not certified benign; checks do not certify every prose claim."
+}

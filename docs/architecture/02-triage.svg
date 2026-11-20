@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1686" viewBox="0 0 1000 1686" role="img" aria-labelledby="title desc">
-<title id="title">Rules first. Local AI when needed.</title><desc id="desc">A detection decision never grants permission to execute a response. Read the accompanying architecture walkthrough for a complete text equivalent.</desc>
+<title id="title">Rules first. Qwen3.5 when needed.</title><desc id="desc">The AI can recommend a decision; it cannot authorize changes to a device. Read the accompanying architecture walkthrough for a complete text equivalent.</desc>
 <rect width="1000" height="1686" fill="#101820"/>
-<text x="70" y="60" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="600">02 / TRIAGE</text>
-<text x="70" y="119" fill="#edf2f5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="37" font-weight="600">Rules first. Local AI when needed.</text>
-<text x="70" y="161" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">A detection decision never grants permission to execute a response</text>
+<text x="70" y="60" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="600">02 / DECIDE WHAT NEEDS ATTENTION</text>
+<text x="70" y="119" fill="#edf2f5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="37" font-weight="600">Rules first. Qwen3.5 when needed.</text>
+<text x="70" y="161" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">The AI can recommend a decision; it cannot authorize changes to a device</text>
 <polyline points="500.0,352 500.0,379.0 500.0,379.0 500.0,406" fill="none" stroke="#536575" stroke-width="3"/>
 <path d="M494.0,397 L500.0,406 L506.0,397" fill="none" stroke="#536575" stroke-width="3"/>
 <polyline points="500.0,548 500.0,575.0 500.0,575.0 500.0,602" fill="none" stroke="#536575" stroke-width="3"/>
@@ -27,36 +27,36 @@
 <polyline points="70,673.0 28,673.0 28,1170 190,1170 190,1190" fill="none" stroke="#536575" stroke-width="3"/>
 <path d="M184,1181 L190,1190 L196,1181" fill="none" stroke="#536575" stroke-width="3"/>
 <rect x="70" y="210" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,230 V332" stroke="#8bbcff" stroke-width="4"/>
-<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Normalized Event + scoped memory</text>
-<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Asset criticality, signature history, curated environment facts</text>
-<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Facts are scope-checked against this event</text>
+<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Start with the event and relevant history</text>
+<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Check how important the computer is and what happened before</text>
+<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Use approved facts only when they fit this exact event</text>
 <rect x="70" y="406" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,426 V528" stroke="#eac080" stroke-width="4"/>
-<text x="94" y="450" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Pre-model security guardrails</text>
-<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Recognized dangerous signals normally escalate directly</text>
-<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">A narrow standing-fact exception routes to AI review, never auto-suppression</text>
+<text x="94" y="450" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Safety rules: must someone review this?</text>
+<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Known risky signals normally create an alert without asking AI</text>
+<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">An exact approved fact can allow AI review, never dismissal by itself</text>
 <rect x="70" y="602" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,622 V724" stroke="#8bbcff" stroke-width="4"/>
-<text x="94" y="646" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Deterministic prefilter</text>
-<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Source/severity, asset criticality and verdict history</text>
-<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Decide strong signals cheaply; send ambiguity to local AI</text>
+<text x="94" y="646" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Quick rules: is the answer already clear?</text>
+<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Keep clearly routine records quietly; flag clearly risky ones</text>
+<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Ask the AI when the rules do not have enough support to decide</text>
 <rect x="70" y="798" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,818 V920" stroke="#c4a7ff" stroke-width="4"/>
-<text x="94" y="842" fill="#c4a7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Local Ollama reasoning</text>
-<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Only ambiguous cases or an explicitly downgraded guardrail</text>
-<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Evidence + rationale + bounded manual investigation advice</text>
+<text x="94" y="842" fill="#c4a7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Qwen3.5: a replaceable local AI model</text>
+<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Read unclear alerts and explain a recommendation</text>
+<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Another compatible local model can replace Qwen3.5</text>
 <rect x="70" y="994" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1014 V1116" stroke="#eac080" stroke-width="4"/>
-<text x="94" y="1038" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Validate the model answer</text>
-<text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Recheck guardrails; validate output and suppression confidence</text>
-<text x="94" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Failure or low-confidence suppression becomes an escalation</text>
+<text x="94" y="1038" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Check the AI&#x27;s recommendation</text>
+<text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Safety rules still apply; a fluent explanation is not proof</text>
+<text x="94" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">If the AI fails or is too unsure, ask a person to review</text>
 <rect x="70" y="1190" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1210 V1312" stroke="#94d7b4" stroke-width="4"/>
-<text x="94" y="1234" fill="#94d7b4" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Suppress</text>
-<text x="94" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Written rationale</text>
-<text x="94" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Retain an observation</text>
+<text x="94" y="1234" fill="#94d7b4" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Keep an observation</text>
+<text x="94" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Write why it was quieted</text>
+<text x="94" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Keep the record</text>
 <rect x="516" y="1190" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M517,1210 V1312" stroke="#ff9c95" stroke-width="4"/>
-<text x="540" y="1234" fill="#ff9c95" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Escalate</text>
-<text x="540" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Evidence + reason</text>
-<text x="540" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Requires review</text>
+<text x="540" y="1234" fill="#ff9c95" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Flag for review</text>
+<text x="540" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Show the evidence and reason</text>
+<text x="540" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Ask a person to investigate</text>
 <rect x="70" y="1386" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1406 V1508" stroke="#8bbcff" stroke-width="4"/>
-<text x="94" y="1430" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Persist the verdict</text>
-<text x="94" y="1470" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Memory history + JSONL trail + queryable SQLite audit</text>
-<text x="94" y="1499" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Record decision tier and model provenance where available</text>
-<text x="70" y="1634" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Shortcut paths: guardrail -&gt; Escalate; decisive prefilter -&gt; either verdict.</text>
+<text x="94" y="1430" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Save the decision and its reason</text>
+<text x="94" y="1470" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Keep the evidence, history and rule or model that decided</text>
+<text x="94" y="1499" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Make the result available for a person to check later</text>
+<text x="70" y="1634" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Side arrows show where safety rules or quick rules can decide without AI.</text>
 </svg>

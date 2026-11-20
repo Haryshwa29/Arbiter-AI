@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import sqlite3
 import threading
+import time
 from dataclasses import dataclass, replace
 from pathlib import Path
 from datetime import datetime, timezone
@@ -47,6 +48,13 @@ CREATE TABLE IF NOT EXISTS facts (
     f_events    TEXT DEFAULT '',             -- comma-separated event types
     f_window    TEXT DEFAULT ''              -- "HH:MM-HH:MM" time-of-day
 );
+CREATE TABLE IF NOT EXISTS learned_patterns (
+    stage TEXT NOT NULL, pattern_key TEXT NOT NULL, signature TEXT NOT NULL,
+    host TEXT NOT NULL, model TEXT NOT NULL, reason TEXT NOT NULL,
+    origin_event TEXT NOT NULL, expires REAL NOT NULL, hits INTEGER NOT NULL DEFAULT 0,
+    blocked INTEGER NOT NULL DEFAULT 0, report_template TEXT NOT NULL DEFAULT '', PRIMARY KEY(stage,pattern_key)
+);
+CREATE INDEX IF NOT EXISTS idx_learned_expiry ON learned_patterns(expires);
 """
 
 # Columns added after the first release; applied to pre-existing DBs.
@@ -97,6 +105,8 @@ class Memory:
             if col not in have:
                 self.conn.execute(
                     f"ALTER TABLE facts ADD COLUMN {col} TEXT DEFAULT ''")
+        if 'report_template' not in {row[1] for row in self.conn.execute('PRAGMA table_info(learned_patterns)')}:
+            self.conn.execute("ALTER TABLE learned_patterns ADD COLUMN report_template TEXT NOT NULL DEFAULT ''")
 
     # -- assets ------------------------------------------------------------
     def upsert_asset(self, host: str, criticality: float, role: str = "",
@@ -179,6 +189,54 @@ class Memory:
             )
             self.conn.commit()
             self._history_cache.clear()
+            if label=='overruled':
+                self.conn.execute('UPDATE learned_patterns SET blocked=1 WHERE signature=?',(signature,))
+                self.conn.commit()
+
+    def learn_pattern(self, stage, key, event, model, reason, now=None, report_template=None):
+        if not key or stage not in {'l1','l2'} or not reason:return
+        from .reports import TEMPLATES, template_for
+        report_template=report_template or template_for(event)
+        if report_template not in TEMPLATES:raise ValueError('unknown report template')
+        now=time.time() if now is None else now
+        with self._lock,self.conn:
+            self.conn.execute('DELETE FROM learned_patterns WHERE expires<? AND blocked=0',(now,))
+            # A replayed origin or rejected pattern cannot renew its own authority.
+            self.conn.execute('INSERT INTO learned_patterns(stage,pattern_key,signature,host,model,reason,origin_event,expires,report_template) '
+                'VALUES(?,?,?,?,?,?,?,?,?) ON CONFLICT(stage,pattern_key) DO UPDATE SET '
+                'reason=excluded.reason,origin_event=excluded.origin_event,expires=excluded.expires,hits=0,report_template=excluded.report_template '
+                'WHERE learned_patterns.blocked=0 AND learned_patterns.origin_event!=excluded.origin_event',
+                (stage,key,event.signature,event.host,model,reason,event.id,now+3600,report_template))
+
+    def match_pattern(self, stage, key, now=None):
+        if not key:return None
+        now=time.time() if now is None else now
+        with self._lock,self.conn:
+            row=self.conn.execute('SELECT reason,origin_event,hits,report_template,model FROM learned_patterns WHERE stage=? AND pattern_key=? '
+                'AND blocked=0 AND expires>? AND hits<25',(stage,key,now)).fetchone()
+            if not row:return None
+            self.conn.execute('UPDATE learned_patterns SET hits=hits+1 WHERE stage=? AND pattern_key=?',(stage,key))
+        return {'key':key,'reason':row[0],'origin_event':row[1],'hit':row[2]+1,'report_template':row[3],'model':row[4]}
+
+    def revoke_pattern(self, stage, key):
+        if key:
+            with self._lock,self.conn:
+                self.conn.execute('UPDATE learned_patterns SET blocked=1 WHERE stage=? AND pattern_key=?',(stage,key))
+
+    def learned_counts(self):
+        with self._lock:
+            rows=self.conn.execute('SELECT stage,COUNT(*),SUM(hits) FROM learned_patterns '
+                'WHERE blocked=0 AND expires>? GROUP BY stage',(time.time(),)).fetchall()
+        return {stage:{'patterns':count,'hits':hits or 0} for stage,count,hits in rows}
+
+    def human_cleared_context(self, signature, pending_ts=''):
+        """Require five explicit false-alarm corrections and no other unresolved risk."""
+        with self._lock:
+            row=self.conn.execute("SELECT SUM(decision!='suppress' AND human_label='overruled'), "
+                "SUM((decision='suppress' AND human_label='overruled') OR "
+                "(decision!='suppress' AND human_label!='overruled' AND NOT(ts=? AND human_label=''))) "
+                "FROM verdict_history WHERE signature=?",(pending_ts,signature)).fetchone()
+        return (row[0] or 0)>=5 and (row[1] or 0)==0
 
     # -- environment facts ---------------------------------------------------
     def add_fact(self, fact: str, scope: str = "*", *, user: str = "",

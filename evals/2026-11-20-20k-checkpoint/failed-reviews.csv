@@ -1,0 +1,14 @@
+record,event_id,label,final_decision,review_error,review_error_detail,review_error_stage
+17463,ede703cb76a0ecb2117eb8837fbdc7df6518faecc865fecb2a14017d94589e83,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='dst_port'",l2
+17703,057a501d7bae7cc32137e0a20bb5bcd6138bd9750ac78211d48418bfda113d7e,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='username'",l2
+17705,147c3505934dd1d7199b8a6b8db7e0141f3dc41c5622e6a8c9988a5cffb442b6,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='username'",l2
+17784,67288d18a66589563197f1913e538c800cffb1f74530404bf4cd455fd8516b53,-,escalate,HTTPError,HTTP Error 500: Internal Server Error,l2
+18032,a23bc754ba9c22431db3b1a1d1086b3438c609ca2f77cc851d43fcfe9b5791a8,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='signature'",l2
+18086,09908b8dd649ed57e971af44b4b1aa90263c9d980a36e68fd34916a8d0cfdd82,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",l2
+18161,c2c32becb681bc2222fdf012219f9971f484b9662fd8479548c6b3d047a70e5e,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",l2
+18165,cbc43c1d6ba51b5d6bf1938aa909f309f4e65c385130d1785c49026ec3755b18,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",l2
+19730,fd5b1218df081bac610872a330928e0c76f8d414e80b9c149628f95a600abd98,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",l2
+19731,fc5717158f36d4cbc38c05477cef7219bff77e5e42f084d116b482ca270dc163,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",l2
+19732,462e2b277b2617e4c84ff805ef32afbc410a1c6834e633bf2ce59d5bf2ee278a,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",l2
+19733,757b6361ed24e00fbaa6314cedf7433df8b9f4b3de05813f9707656b30670697,-,escalate,ValueError,"unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",l2
+20059,11223ef658f31299f9646193ec15f2163f105ea4e060c2ccc4a39ff1151f7258,-,escalate,HTTPError,LLM tier failed (HTTP Error 500: Internal Server Error); escalating by policy.,l1

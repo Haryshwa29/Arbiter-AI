@@ -18,9 +18,10 @@ RULES = {"repeated_login_failures", "malware_process_network"}
 
 
 class ResponseWorkflow:
-    def __init__(self, buffer, audit, protection=None, simulation=False, clock=time.time):
+    def __init__(self, buffer, audit, protection=None, simulation=False, clock=time.time, project=None):
         self.buffer, self.audit, self.protection = buffer, audit, protection
         self.simulation, self.clock = simulation, clock
+        self.project=project
         self.lock = threading.RLock()
         self.stop = threading.Event()
         self.thread = None
@@ -55,6 +56,10 @@ class ResponseWorkflow:
         with self.buffer.lock:
             row = self.buffer.conn.execute("SELECT body FROM l1_response_cases WHERE event_id=?", (event_id,)).fetchone()
         return json.loads(row[0]) if row else None
+
+    def detail(self, event_id):
+        row=self.buffer.detail(event_id)
+        return self.project(row) if row and self.project else row
 
     def save(self, case, action=None, actor="l1-policy"):
         with self.buffer.lock, self.buffer.conn:
@@ -123,7 +128,7 @@ class ResponseWorkflow:
                             self.save(case, "l1_schedule_cancelled", actor)
                 self.audit.record_iam(actor, "l1_" + command, "")
                 return {"stopped": self.stopped()}
-            row = self.buffer.detail(event_id)
+            row = self.detail(event_id)
             case = self.ensure(row)
             if not case: raise ValueError("completed escalation required")
             if command == "undo":
@@ -178,8 +183,9 @@ class ResponseWorkflow:
         """Rebuild the enrolled correlation; old model prose never suffices."""
         from .correlation import correlate
         from .schema import SecurityEvent
-        original = self.buffer.detail(case["event_id"])
+        original = self.detail(case["event_id"])
         if not original: return None
+        if not original.get('analysis') or original['analysis']['decision']!='escalate': return None
         for candidate in self.buffer.query({"scope": "live", "host": original["event"]["hostname"]}, limit=100):
             event = candidate["event"]
             try:
@@ -213,7 +219,7 @@ class ResponseWorkflow:
             # completed out of order by the priority worker. Slow old events
             # cannot hold newly completed urgent findings out of the scheduler.
             for event_id in event_ids:
-                self.ensure(self.buffer.detail(event_id))
+                self.ensure(self.detail(event_id))
                 with self.buffer.lock, self.buffer.conn:
                     self.buffer.conn.execute("INSERT OR IGNORE INTO l1_response_seen VALUES (?)", (event_id,))
             for case in self.cases(["pending"]):
@@ -232,7 +238,7 @@ class ResponseWorkflow:
                         # Bind execution to this review's original event ID. A new
                         # collector row only refreshes evidence, never re-arms it.
                         checked["event_id"] = case["event_id"]
-                        original = self.buffer.detail(case["event_id"])
+                        original = self.detail(case["event_id"])
                         # Revalidate the original proposal as well as the fresh evidence.
                         if not original or self.protection.proposal(original) != self.protection.proposal(checked):
                             raise ValueError("Original proposal no longer matches fresh evidence.")

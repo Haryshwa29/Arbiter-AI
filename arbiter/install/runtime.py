@@ -74,7 +74,9 @@ def _run(config_path: Path, health) -> None:
               iam_db=paths["iam_db"], mem_db=paths["memory_db"],
               events=paths.get("events", ""), backend=backend, model=model,
               ollama_url=ollama_url, health_callback=runtime_health,
-              local_access=cfg.getboolean("server", "local_access", fallback=False))
+              local_access=cfg.getboolean("server", "local_access", fallback=False),
+              l2_model=cfg.get('llm','l2_model',fallback=''),
+              l2_review_seconds=cfg.getint('llm','l2_review_seconds',fallback=180))
     finally:
         if job:
             job.close()
@@ -105,7 +107,8 @@ def run(config_path: Path) -> None:
             degraded = not status["worker_alive"] or any(source["enabled"] and source["status"] == "Error" for source in sources)
             write_health(data_dir, "degraded" if degraded else "running", backend=status["backend"],
                          worker_alive=status["worker_alive"], sources=sources,
-                         queue_depth=status["metrics"].get("queue_depth", 0))
+                         queue_depth=status["metrics"].get("queue_depth", 0),
+                         pipeline_workers=status.get('pipeline_workers',{}),l2=status.get('l2',{}))
         try:
             _run(config_path, health)
         except Exception:

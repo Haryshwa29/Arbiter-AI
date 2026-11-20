@@ -1,0 +1,1241 @@
+{
+  "Original": {
+    "n": 214,
+    "tp": 72,
+    "fn": 14,
+    "fp": 123,
+    "tn": 5,
+    "attack_label_recall": 0.8372093023255814,
+    "negative_label_suppression": 0.0390625,
+    "false_escalation_rate": 0.9609375,
+    "sample_precision": 0.36923076923076925,
+    "sample_accuracy": 0.3598130841121495,
+    "sample_f1": 0.5124555160142349,
+    "suppression_fraction": 0.08878504672897196,
+    "recall_wilson95_descriptive": [
+      0.7451029913702094,
+      0.900478689530104
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0.016798610797803704,
+      0.08818702076683686
+    ],
+    "backend_errors_escalated_by_policy": 0,
+    "tiers": {
+      "llm": 206,
+      "guardrail": 3,
+      "prefilter": 5
+    },
+    "by_scenario": {
+      "fox": {
+        "n": 28,
+        "tp": 10,
+        "fn": 2,
+        "fp": 16,
+        "tn": 0,
+        "attack_label_recall": 0.8333333333333334,
+        "negative_label_suppression": 0.0,
+        "false_escalation_rate": 1.0,
+        "sample_precision": 0.38461538461538464,
+        "sample_accuracy": 0.35714285714285715,
+        "sample_f1": 0.5263157894736842,
+        "suppression_fraction": 0.07142857142857142,
+        "recall_wilson95_descriptive": [
+          0.5519691377470266,
+          0.9530348578161463
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0,
+          0.1936076805344365
+        ]
+      },
+      "harrison": {
+        "n": 28,
+        "tp": 10,
+        "fn": 2,
+        "fp": 16,
+        "tn": 0,
+        "attack_label_recall": 0.8333333333333334,
+        "negative_label_suppression": 0.0,
+        "false_escalation_rate": 1.0,
+        "sample_precision": 0.38461538461538464,
+        "sample_accuracy": 0.35714285714285715,
+        "sample_f1": 0.5263157894736842,
+        "suppression_fraction": 0.07142857142857142,
+        "recall_wilson95_descriptive": [
+          0.5519691377470266,
+          0.9530348578161463
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0,
+          0.1936076805344365
+        ]
+      },
+      "russellmitchell": {
+        "n": 26,
+        "tp": 9,
+        "fn": 1,
+        "fp": 16,
+        "tn": 0,
+        "attack_label_recall": 0.9,
+        "negative_label_suppression": 0.0,
+        "false_escalation_rate": 1.0,
+        "sample_precision": 0.36,
+        "sample_accuracy": 0.34615384615384615,
+        "sample_f1": 0.5142857142857142,
+        "suppression_fraction": 0.038461538461538464,
+        "recall_wilson95_descriptive": [
+          0.5958499732047615,
+          0.9821237869049271
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0,
+          0.1936076805344365
+        ]
+      },
+      "santos": {
+        "n": 30,
+        "tp": 12,
+        "fn": 2,
+        "fp": 15,
+        "tn": 1,
+        "attack_label_recall": 0.8571428571428571,
+        "negative_label_suppression": 0.0625,
+        "false_escalation_rate": 0.9375,
+        "sample_precision": 0.4444444444444444,
+        "sample_accuracy": 0.43333333333333335,
+        "sample_f1": 0.5853658536585366,
+        "suppression_fraction": 0.1,
+        "recall_wilson95_descriptive": [
+          0.6005862050302965,
+          0.9599060787285351
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.01111934476464252,
+          0.28328737570298945
+        ]
+      },
+      "shaw": {
+        "n": 24,
+        "tp": 6,
+        "fn": 2,
+        "fp": 14,
+        "tn": 2,
+        "attack_label_recall": 0.75,
+        "negative_label_suppression": 0.125,
+        "false_escalation_rate": 0.875,
+        "sample_precision": 0.3,
+        "sample_accuracy": 0.3333333333333333,
+        "sample_f1": 0.42857142857142855,
+        "suppression_fraction": 0.16666666666666666,
+        "recall_wilson95_descriptive": [
+          0.40927543031016883,
+          0.9285207872478909
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.03497748774324047,
+          0.36022827265758695
+        ]
+      },
+      "wardbeck": {
+        "n": 26,
+        "tp": 9,
+        "fn": 1,
+        "fp": 16,
+        "tn": 0,
+        "attack_label_recall": 0.9,
+        "negative_label_suppression": 0.0,
+        "false_escalation_rate": 1.0,
+        "sample_precision": 0.36,
+        "sample_accuracy": 0.34615384615384615,
+        "sample_f1": 0.5142857142857142,
+        "suppression_fraction": 0.038461538461538464,
+        "recall_wilson95_descriptive": [
+          0.5958499732047615,
+          0.9821237869049271
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0,
+          0.1936076805344365
+        ]
+      },
+      "wheeler": {
+        "n": 26,
+        "tp": 8,
+        "fn": 2,
+        "fp": 14,
+        "tn": 2,
+        "attack_label_recall": 0.8,
+        "negative_label_suppression": 0.125,
+        "false_escalation_rate": 0.875,
+        "sample_precision": 0.36363636363636365,
+        "sample_accuracy": 0.38461538461538464,
+        "sample_f1": 0.5,
+        "suppression_fraction": 0.15384615384615385,
+        "recall_wilson95_descriptive": [
+          0.49016247153664183,
+          0.9433178485456247
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.03497748774324047,
+          0.36022827265758695
+        ]
+      },
+      "wilson": {
+        "n": 26,
+        "tp": 8,
+        "fn": 2,
+        "fp": 16,
+        "tn": 0,
+        "attack_label_recall": 0.8,
+        "negative_label_suppression": 0.0,
+        "false_escalation_rate": 1.0,
+        "sample_precision": 0.3333333333333333,
+        "sample_accuracy": 0.3076923076923077,
+        "sample_f1": 0.47058823529411764,
+        "suppression_fraction": 0.07692307692307693,
+        "recall_wilson95_descriptive": [
+          0.49016247153664183,
+          0.9433178485456247
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0,
+          0.1936076805344365
+        ]
+      }
+    },
+    "by_label": {
+      "-": {
+        "n": 128,
+        "tp": 0,
+        "fn": 0,
+        "fp": 123,
+        "tn": 5,
+        "attack_label_recall": null,
+        "negative_label_suppression": 0.0390625,
+        "false_escalation_rate": 0.9609375,
+        "sample_precision": 0.0,
+        "sample_accuracy": 0.0390625,
+        "sample_f1": 0.0,
+        "suppression_fraction": 0.0390625,
+        "recall_wilson95_descriptive": null,
+        "negative_suppression_wilson95_descriptive": [
+          0.016798610797803704,
+          0.08818702076683686
+        ]
+      },
+      "attacker_change_user": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "dirb": {
+        "n": 16,
+        "tp": 2,
+        "fn": 14,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 0.125,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 0.125,
+        "sample_f1": 0.2222222222222222,
+        "suppression_fraction": 0.875,
+        "recall_wilson95_descriptive": [
+          0.03497748774324047,
+          0.36022827265758695
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "dnsteal": {
+        "n": 4,
+        "tp": 4,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.5101091635454027,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "escalated_sudo_command": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "online_cracking": {
+        "n": 4,
+        "tp": 4,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.5101091635454027,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "service_scan": {
+        "n": 14,
+        "tp": 14,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.7846891972623643,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "wpscan": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      }
+    },
+    "model_decided_subset": {
+      "n": 206,
+      "tp": 67,
+      "fn": 14,
+      "fp": 120,
+      "tn": 5,
+      "attack_label_recall": 0.8271604938271605,
+      "negative_label_suppression": 0.04,
+      "false_escalation_rate": 0.96,
+      "sample_precision": 0.3582887700534759,
+      "sample_accuracy": 0.34951456310679613,
+      "sample_f1": 0.5,
+      "suppression_fraction": 0.09223300970873786,
+      "recall_wilson95_descriptive": [
+        0.7305386248522877,
+        0.8941559612227986
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.017204609071915906,
+        0.09022555313974442
+      ]
+    },
+    "latency_s": {
+      "p50": 3.847296849999111,
+      "p95_nearest_rank": 6.894074700016063,
+      "mean": 4.2629233766352606,
+      "max": 7.661451899970416,
+      "total_wall_s": 912.4439698999631,
+      "sequential_alerts_per_second": 0.23453494905935116
+    },
+    "always_escalate_baseline": {
+      "n": 214,
+      "tp": 86,
+      "fn": 0,
+      "fp": 128,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.0,
+      "false_escalation_rate": 1.0,
+      "sample_precision": 0.40186915887850466,
+      "sample_accuracy": 0.40186915887850466,
+      "sample_f1": 0.5733333333333334,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.9572418027142576,
+        0.9999999999999999
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0,
+        0.029136956273508416
+      ]
+    },
+    "interval_caveat": "Wilson intervals are descriptive only: alerts are stratified and correlated within scenarios; not deployment or independent attack confidence bounds"
+  },
+  "Same-alert retest": {
+    "n": 214,
+    "tp": 86,
+    "fn": 0,
+    "fp": 81,
+    "tn": 47,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.3671875,
+    "false_escalation_rate": 0.6328125,
+    "sample_precision": 0.5149700598802395,
+    "sample_accuracy": 0.6214953271028038,
+    "sample_f1": 0.6798418972332015,
+    "suppression_fraction": 0.21962616822429906,
+    "recall_wilson95_descriptive": [
+      0.9572418027142576,
+      0.9999999999999999
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0.2886845465087532,
+      0.4534299575013975
+    ],
+    "backend_errors_escalated_by_policy": 0,
+    "tiers": {
+      "llm": 103,
+      "prefilter": 47,
+      "guardrail": 64
+    },
+    "by_scenario": {
+      "fox": {
+        "n": 28,
+        "tp": 12,
+        "fn": 0,
+        "fp": 9,
+        "tn": 7,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.4375,
+        "false_escalation_rate": 0.5625,
+        "sample_precision": 0.5714285714285714,
+        "sample_accuracy": 0.6785714285714286,
+        "sample_f1": 0.7272727272727273,
+        "suppression_fraction": 0.25,
+        "recall_wilson95_descriptive": [
+          0.7575059933447592,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.23098652405492354,
+          0.6682144360118811
+        ]
+      },
+      "harrison": {
+        "n": 28,
+        "tp": 12,
+        "fn": 0,
+        "fp": 11,
+        "tn": 5,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.3125,
+        "false_escalation_rate": 0.6875,
+        "sample_precision": 0.5217391304347826,
+        "sample_accuracy": 0.6071428571428571,
+        "sample_f1": 0.6857142857142857,
+        "suppression_fraction": 0.17857142857142858,
+        "recall_wilson95_descriptive": [
+          0.7575059933447592,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.14164643854782039,
+          0.5559564416525933
+        ]
+      },
+      "russellmitchell": {
+        "n": 26,
+        "tp": 10,
+        "fn": 0,
+        "fp": 8,
+        "tn": 8,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.5,
+        "false_escalation_rate": 0.5,
+        "sample_precision": 0.5555555555555556,
+        "sample_accuracy": 0.6923076923076923,
+        "sample_f1": 0.7142857142857143,
+        "suppression_fraction": 0.3076923076923077,
+        "recall_wilson95_descriptive": [
+          0.7224672001371107,
+          0.9999999999999999
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.27999563610326017,
+          0.7200043638967398
+        ]
+      },
+      "santos": {
+        "n": 30,
+        "tp": 14,
+        "fn": 0,
+        "fp": 9,
+        "tn": 7,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.4375,
+        "false_escalation_rate": 0.5625,
+        "sample_precision": 0.6086956521739131,
+        "sample_accuracy": 0.7,
+        "sample_f1": 0.7567567567567568,
+        "suppression_fraction": 0.23333333333333334,
+        "recall_wilson95_descriptive": [
+          0.7846891972623643,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.23098652405492354,
+          0.6682144360118811
+        ]
+      },
+      "shaw": {
+        "n": 24,
+        "tp": 8,
+        "fn": 0,
+        "fp": 10,
+        "tn": 6,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.375,
+        "false_escalation_rate": 0.625,
+        "sample_precision": 0.4444444444444444,
+        "sample_accuracy": 0.5833333333333334,
+        "sample_f1": 0.6153846153846154,
+        "suppression_fraction": 0.25,
+        "recall_wilson95_descriptive": [
+          0.6755924351161198,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.18481232558863633,
+          0.6135895945449727
+        ]
+      },
+      "wardbeck": {
+        "n": 26,
+        "tp": 10,
+        "fn": 0,
+        "fp": 7,
+        "tn": 9,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.5625,
+        "false_escalation_rate": 0.4375,
+        "sample_precision": 0.5882352941176471,
+        "sample_accuracy": 0.7307692307692307,
+        "sample_f1": 0.7407407407407407,
+        "suppression_fraction": 0.34615384615384615,
+        "recall_wilson95_descriptive": [
+          0.7224672001371107,
+          0.9999999999999999
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.331785563988119,
+          0.7690134759450765
+        ]
+      },
+      "wheeler": {
+        "n": 26,
+        "tp": 10,
+        "fn": 0,
+        "fp": 15,
+        "tn": 1,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.0625,
+        "false_escalation_rate": 0.9375,
+        "sample_precision": 0.4,
+        "sample_accuracy": 0.4230769230769231,
+        "sample_f1": 0.5714285714285714,
+        "suppression_fraction": 0.038461538461538464,
+        "recall_wilson95_descriptive": [
+          0.7224672001371107,
+          0.9999999999999999
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.01111934476464252,
+          0.28328737570298945
+        ]
+      },
+      "wilson": {
+        "n": 26,
+        "tp": 10,
+        "fn": 0,
+        "fp": 12,
+        "tn": 4,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.25,
+        "false_escalation_rate": 0.75,
+        "sample_precision": 0.45454545454545453,
+        "sample_accuracy": 0.5384615384615384,
+        "sample_f1": 0.625,
+        "suppression_fraction": 0.15384615384615385,
+        "recall_wilson95_descriptive": [
+          0.7224672001371107,
+          0.9999999999999999
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.10182067491213048,
+          0.49498316535508774
+        ]
+      }
+    },
+    "by_label": {
+      "-": {
+        "n": 128,
+        "tp": 0,
+        "fn": 0,
+        "fp": 81,
+        "tn": 47,
+        "attack_label_recall": null,
+        "negative_label_suppression": 0.3671875,
+        "false_escalation_rate": 0.6328125,
+        "sample_precision": 0.0,
+        "sample_accuracy": 0.3671875,
+        "sample_f1": 0.0,
+        "suppression_fraction": 0.3671875,
+        "recall_wilson95_descriptive": null,
+        "negative_suppression_wilson95_descriptive": [
+          0.2886845465087532,
+          0.4534299575013975
+        ]
+      },
+      "attacker_change_user": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "dirb": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "dnsteal": {
+        "n": 4,
+        "tp": 4,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.5101091635454027,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "escalated_sudo_command": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "online_cracking": {
+        "n": 4,
+        "tp": 4,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.5101091635454027,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "service_scan": {
+        "n": 14,
+        "tp": 14,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.7846891972623643,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "wpscan": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      }
+    },
+    "model_decided_subset": {
+      "n": 103,
+      "tp": 22,
+      "fn": 0,
+      "fp": 78,
+      "tn": 3,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.037037037037037035,
+      "false_escalation_rate": 0.9629629629629629,
+      "sample_precision": 0.22,
+      "sample_accuracy": 0.24271844660194175,
+      "sample_f1": 0.36065573770491804,
+      "suppression_fraction": 0.02912621359223301,
+      "recall_wilson95_descriptive": [
+        0.8513451253913791,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.012675114183298107,
+        0.10332311306893818
+      ]
+    },
+    "latency_s": {
+      "p50": 0.0005007500294595957,
+      "p95_nearest_rank": 6.900107100023888,
+      "mean": 2.310311241121908,
+      "max": 9.500790100020822,
+      "total_wall_s": 494.5059072999866,
+      "sequential_alerts_per_second": 0.4327551943078796
+    },
+    "always_escalate_baseline": {
+      "n": 214,
+      "tp": 86,
+      "fn": 0,
+      "fp": 128,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.0,
+      "false_escalation_rate": 1.0,
+      "sample_precision": 0.40186915887850466,
+      "sample_accuracy": 0.40186915887850466,
+      "sample_f1": 0.5733333333333334,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.9572418027142576,
+        0.9999999999999999
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0,
+        0.029136956273508416
+      ]
+    },
+    "interval_caveat": "Wilson intervals are descriptive only: alerts are stratified and correlated within scenarios; not deployment or independent attack confidence bounds"
+  },
+  "Disjoint-alert holdout": {
+    "n": 202,
+    "tp": 74,
+    "fn": 0,
+    "fp": 77,
+    "tn": 51,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.3984375,
+    "false_escalation_rate": 0.6015625,
+    "sample_precision": 0.4900662251655629,
+    "sample_accuracy": 0.6188118811881188,
+    "sample_f1": 0.6577777777777778,
+    "suppression_fraction": 0.2524752475247525,
+    "recall_wilson95_descriptive": [
+      0.950650220603614,
+      1
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0.3177758511189852,
+      0.4850175931240712
+    ],
+    "backend_errors_escalated_by_policy": 0,
+    "tiers": {
+      "prefilter": 45,
+      "llm": 100,
+      "guardrail": 57
+    },
+    "by_scenario": {
+      "fox": {
+        "n": 25,
+        "tp": 9,
+        "fn": 0,
+        "fp": 3,
+        "tn": 13,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.8125,
+        "false_escalation_rate": 0.1875,
+        "sample_precision": 0.75,
+        "sample_accuracy": 0.88,
+        "sample_f1": 0.8571428571428571,
+        "suppression_fraction": 0.52,
+        "recall_wilson95_descriptive": [
+          0.7008549515804559,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.5699111903802586,
+          0.9340840092857187
+        ]
+      },
+      "harrison": {
+        "n": 27,
+        "tp": 11,
+        "fn": 0,
+        "fp": 14,
+        "tn": 2,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.125,
+        "false_escalation_rate": 0.875,
+        "sample_precision": 0.44,
+        "sample_accuracy": 0.48148148148148145,
+        "sample_f1": 0.6111111111111112,
+        "suppression_fraction": 0.07407407407407407,
+        "recall_wilson95_descriptive": [
+          0.7411670330319684,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.03497748774324047,
+          0.36022827265758695
+        ]
+      },
+      "russellmitchell": {
+        "n": 24,
+        "tp": 8,
+        "fn": 0,
+        "fp": 7,
+        "tn": 9,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.5625,
+        "false_escalation_rate": 0.4375,
+        "sample_precision": 0.5333333333333333,
+        "sample_accuracy": 0.7083333333333334,
+        "sample_f1": 0.6956521739130435,
+        "suppression_fraction": 0.375,
+        "recall_wilson95_descriptive": [
+          0.6755924351161198,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.331785563988119,
+          0.7690134759450765
+        ]
+      },
+      "santos": {
+        "n": 29,
+        "tp": 13,
+        "fn": 0,
+        "fp": 9,
+        "tn": 7,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.4375,
+        "false_escalation_rate": 0.5625,
+        "sample_precision": 0.5909090909090909,
+        "sample_accuracy": 0.6896551724137931,
+        "sample_f1": 0.7428571428571429,
+        "suppression_fraction": 0.2413793103448276,
+        "recall_wilson95_descriptive": [
+          0.7719046276458016,
+          0.9999999999999999
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.23098652405492354,
+          0.6682144360118811
+        ]
+      },
+      "shaw": {
+        "n": 23,
+        "tp": 7,
+        "fn": 0,
+        "fp": 11,
+        "tn": 5,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.3125,
+        "false_escalation_rate": 0.6875,
+        "sample_precision": 0.3888888888888889,
+        "sample_accuracy": 0.5217391304347826,
+        "sample_f1": 0.56,
+        "suppression_fraction": 0.21739130434782608,
+        "recall_wilson95_descriptive": [
+          0.6456695649333126,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.14164643854782039,
+          0.5559564416525933
+        ]
+      },
+      "wardbeck": {
+        "n": 25,
+        "tp": 9,
+        "fn": 0,
+        "fp": 11,
+        "tn": 5,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.3125,
+        "false_escalation_rate": 0.6875,
+        "sample_precision": 0.45,
+        "sample_accuracy": 0.56,
+        "sample_f1": 0.6206896551724138,
+        "suppression_fraction": 0.2,
+        "recall_wilson95_descriptive": [
+          0.7008549515804559,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.14164643854782039,
+          0.5559564416525933
+        ]
+      },
+      "wheeler": {
+        "n": 24,
+        "tp": 8,
+        "fn": 0,
+        "fp": 11,
+        "tn": 5,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.3125,
+        "false_escalation_rate": 0.6875,
+        "sample_precision": 0.42105263157894735,
+        "sample_accuracy": 0.5416666666666666,
+        "sample_f1": 0.5925925925925926,
+        "suppression_fraction": 0.20833333333333334,
+        "recall_wilson95_descriptive": [
+          0.6755924351161198,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.14164643854782039,
+          0.5559564416525933
+        ]
+      },
+      "wilson": {
+        "n": 25,
+        "tp": 9,
+        "fn": 0,
+        "fp": 11,
+        "tn": 5,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": 0.3125,
+        "false_escalation_rate": 0.6875,
+        "sample_precision": 0.45,
+        "sample_accuracy": 0.56,
+        "sample_f1": 0.6206896551724138,
+        "suppression_fraction": 0.2,
+        "recall_wilson95_descriptive": [
+          0.7008549515804559,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": [
+          0.14164643854782039,
+          0.5559564416525933
+        ]
+      }
+    },
+    "by_label": {
+      "-": {
+        "n": 128,
+        "tp": 0,
+        "fn": 0,
+        "fp": 77,
+        "tn": 51,
+        "attack_label_recall": null,
+        "negative_label_suppression": 0.3984375,
+        "false_escalation_rate": 0.6015625,
+        "sample_precision": 0.0,
+        "sample_accuracy": 0.3984375,
+        "sample_f1": 0.0,
+        "suppression_fraction": 0.3984375,
+        "recall_wilson95_descriptive": null,
+        "negative_suppression_wilson95_descriptive": [
+          0.3177758511189852,
+          0.4850175931240712
+        ]
+      },
+      "attacker_change_user": {
+        "n": 6,
+        "tp": 6,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.6096657120978346,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "dirb": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "dnsteal": {
+        "n": 4,
+        "tp": 4,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.5101091635454027,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "escalated_sudo_command": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "online_cracking": {
+        "n": 2,
+        "tp": 2,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.34238022750665303,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "service_scan": {
+        "n": 14,
+        "tp": 14,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.7846891972623643,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      },
+      "wpscan": {
+        "n": 16,
+        "tp": 16,
+        "fn": 0,
+        "fp": 0,
+        "tn": 0,
+        "attack_label_recall": 1.0,
+        "negative_label_suppression": null,
+        "false_escalation_rate": null,
+        "sample_precision": 1.0,
+        "sample_accuracy": 1.0,
+        "sample_f1": 1.0,
+        "suppression_fraction": 0.0,
+        "recall_wilson95_descriptive": [
+          0.8063923194655637,
+          1
+        ],
+        "negative_suppression_wilson95_descriptive": null
+      }
+    },
+    "model_decided_subset": {
+      "n": 100,
+      "tp": 17,
+      "fn": 0,
+      "fp": 77,
+      "tn": 6,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.07228915662650602,
+      "false_escalation_rate": 0.927710843373494,
+      "sample_precision": 0.18085106382978725,
+      "sample_accuracy": 0.23,
+      "sample_f1": 0.3063063063063063,
+      "suppression_fraction": 0.06,
+      "recall_wilson95_descriptive": [
+        0.8156818649911483,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0.03355029552299279,
+        0.14886786091773183
+      ]
+    },
+    "latency_s": {
+      "p50": 0.0006986999942455441,
+      "p95_nearest_rank": 6.937842300045304,
+      "mean": 2.459083752475257,
+      "max": 8.027637000021059,
+      "total_wall_s": 496.8297936000163,
+      "sequential_alerts_per_second": 0.40657787154090147
+    },
+    "always_escalate_baseline": {
+      "n": 202,
+      "tp": 74,
+      "fn": 0,
+      "fp": 128,
+      "tn": 0,
+      "attack_label_recall": 1.0,
+      "negative_label_suppression": 0.0,
+      "false_escalation_rate": 1.0,
+      "sample_precision": 0.36633663366336633,
+      "sample_accuracy": 0.36633663366336633,
+      "sample_f1": 0.5362318840579711,
+      "suppression_fraction": 0.0,
+      "recall_wilson95_descriptive": [
+        0.950650220603614,
+        1
+      ],
+      "negative_suppression_wilson95_descriptive": [
+        0,
+        0.029136956273508416
+      ]
+    },
+    "interval_caveat": "Wilson intervals are descriptive only: alerts are stratified and correlated within scenarios; not deployment or independent attack confidence bounds"
+  }
+}

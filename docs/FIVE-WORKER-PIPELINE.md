@@ -3,9 +3,9 @@
 **Current source adds a sixth, independent CPU report worker.** The five
 decision stages below are unchanged. Saved decisions reach the dashboard while
 the report worker formats their evidence using local templates, without a model
-call. See [the current architecture](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE.md),
-[decision/report separation](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/DECISION-REPORT-WORKER.md) and
-[latest measured progress](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PROGRESS-2026-11-20.md). The 20K checkpoint predates
+call. See [the current architecture](ARCHITECTURE.md),
+[decision/report separation](DECISION-REPORT-WORKER.md) and
+[latest measured progress](PROGRESS-2026-11-20.md). The 20K checkpoint predates
 the compact-reply/report update; its real-model timing retest is next.
 
 The terminal agent's `--l2-final-review` preset and L2-enabled local dashboard use five worker threads.
@@ -118,7 +118,7 @@ brains share the same verified loopback inference endpoint, including an owned
 private runtime when configured. An absent L2 setting preserves single-brain mode.
 
 Data Sources shows each stage's activity, waiting line, completed work and
-errors, plus separate L2 outcomes and [learned-pattern counts](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/LEARNED-PATTERNS.md).
+errors, plus separate L2 outcomes and [learned-pattern counts](LEARNED-PATTERNS.md).
 Live event details show both opinions and the final result; administrators can
 choose **Keep this warning visible** to reject a suppression. That also revokes
 the matching learned L2 shortcut. Original audit/KPI totals remain L1 totals and
@@ -150,5 +150,5 @@ loading, queue delay, per-stage median/95th-percentile latency and throughput,
 and check decision quality alongside speed. Then test attack-containing
 timelines, ordinary lookalikes and bursts with persistent scoped history.
 
-Start commands: [two-brain setup](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/TWO-BRAIN-SETUP.md). Context boundaries:
-[L2 security context](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/L2-CONTEXT.md). Historical results stay separate.
+Start commands: [two-brain setup](TWO-BRAIN-SETUP.md). Context boundaries:
+[L2 security context](L2-CONTEXT.md). Historical results stay separate.

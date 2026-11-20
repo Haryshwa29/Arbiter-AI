@@ -1,42 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1490" viewBox="0 0 1000 1490" role="img" aria-labelledby="title desc">
-<title id="title">Separate reasoning from authority</title><desc id="desc">Optional L2 is an agent feature; the public simulator is a separate system. Read the accompanying architecture walkthrough for a complete text equivalent.</desc>
-<rect width="1000" height="1490" fill="#101820"/>
-<text x="70" y="60" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="600">04 / BOUNDARIES</text>
-<text x="70" y="119" fill="#edf2f5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="37" font-weight="600">Separate reasoning from authority</text>
-<text x="70" y="161" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Optional L2 is an agent feature; the public simulator is a separate system</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1686" viewBox="0 0 1000 1686" role="img" aria-labelledby="title desc">
+<title id="title">An AI opinion is not permission</title><desc id="desc">The optional second opinion and public demonstration have separate limits. Read the accompanying architecture walkthrough for a complete text equivalent.</desc>
+<rect width="1000" height="1686" fill="#101820"/>
+<text x="70" y="60" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="600">04 / KEEP RESPONSIBILITIES SEPARATE</text>
+<text x="70" y="119" fill="#edf2f5" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="37" font-weight="600">An AI opinion is not permission</text>
+<text x="70" y="161" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">The optional second opinion and public demonstration have separate limits</text>
 <polyline points="500.0,352 500.0,379.0 500.0,379.0 500.0,406" fill="none" stroke="#536575" stroke-width="3"/>
 <path d="M494.0,397 L500.0,406 L506.0,397" fill="none" stroke="#536575" stroke-width="3"/>
 <polyline points="500.0,548 500.0,575.0 500.0,575.0 500.0,602" fill="none" stroke="#536575" stroke-width="3"/>
 <path d="M494.0,593 L500.0,602 L506.0,593" fill="none" stroke="#536575" stroke-width="3"/>
 <polyline points="500.0,744 500.0,771.0 500.0,771.0 500.0,798" fill="none" stroke="#536575" stroke-width="3"/>
 <path d="M494.0,789 L500.0,798 L506.0,789" fill="none" stroke="#536575" stroke-width="3"/>
+<polyline points="500.0,940 500.0,967.0 500.0,967.0 500.0,994" fill="none" stroke="#536575" stroke-width="3"/>
+<path d="M494.0,985 L500.0,994 L506.0,985" fill="none" stroke="#536575" stroke-width="3"/>
 <rect x="70" y="210" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,230 V332" stroke="#8bbcff" stroke-width="4"/>
-<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L1 escalation in the terminal agent</text>
-<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Same local telemetry; independent L2 is explicitly enabled</text>
-<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Default: advice only; no automatic model download</text>
+<text x="94" y="254" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L1 first reviewer: Qwen3.5:4b</text>
+<text x="94" y="294" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Review unclear events; escalate those needing a deeper review</text>
+<text x="94" y="323" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Only Qwen&#x27;s escalations enter L2; rules may settle them first</text>
 <rect x="70" y="406" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,426 V528" stroke="#8bbcff" stroke-width="4"/>
-<text x="94" y="450" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Independent bounded L2 dossier</text>
-<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Rebuild trusted evidence; assign fact IDs; limit to 64 records</text>
-<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Reject stale, cross-host, replayed or unsupported action evidence</text>
-<rect x="70" y="602" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,622 V724" stroke="#c4a7ff" stroke-width="4"/>
-<text x="94" y="646" fill="#c4a7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Separate local investigation + challenge</text>
-<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Distinct local model; metadata must report more than 4B parameters</text>
-<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Structured assessment, gaps, alternatives, recovery and critique</text>
-<rect x="70" y="798" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,818 V920" stroke="#eac080" stroke-width="4"/>
-<text x="94" y="842" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L2 policy + typed executor gate</text>
-<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Model recommends human review or an exact supported peer block</text>
-<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Automatic eligibility requires explicit local policy and scope</text>
-<rect x="70" y="994" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1014 V1116" stroke="#94d7b4" stroke-width="4"/>
-<text x="94" y="1038" fill="#94d7b4" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Customer installation</text>
-<text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Local inference + local state</text>
-<text x="94" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">No runtime CDN or analytics</text>
-<rect x="516" y="994" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M517,1014 V1116" stroke="#8bbcff" stroke-width="4"/>
-<text x="540" y="1038" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Public simulator</text>
-<text x="540" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Consented cloud AI exception</text>
-<text x="540" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">No native device actuator</text>
-<rect x="70" y="1190" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1210 V1312" stroke="#b0becb" stroke-width="4"/>
-<text x="94" y="1234" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Planned: controller + trusted edge</text>
-<text x="94" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Authenticated remote telemetry and signed typed action requests</text>
-<text x="94" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Architecture target, not a shipped remote execution channel</text>
-<text x="70" y="1438" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Lower boxes describe deployment boundaries, not outbound data flow.</text>
+<text x="94" y="450" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Give L2 the recorded facts</text>
+<text x="94" y="490" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">The model assessment does not receive Qwen&#x27;s opinion text</text>
+<text x="94" y="519" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Historical records stay historical and grant no action rights</text>
+<rect x="70" y="602" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,622 V724" stroke="#8bbcff" stroke-width="4"/>
+<text x="94" y="646" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Separate L2 guardrails and pre-filter</text>
+<text x="94" y="686" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Protect risky evidence; use exact human-corrected history</text>
+<text x="94" y="715" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Retain context-poor protocol/login alerts without a model repeat</text>
+<rect x="70" y="798" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,818 V920" stroke="#c4a7ff" stroke-width="4"/>
+<text x="94" y="842" fill="#c4a7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">L2 final reviewer: Gemma4:12b</text>
+<text x="94" y="882" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Assess the evidence, then challenge that decision in a second pass</text>
+<text x="94" y="911" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Keep or suppress Qwen&#x27;s alert with a written explanation</text>
+<rect x="70" y="994" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1014 V1116" stroke="#eac080" stroke-width="4"/>
+<text x="94" y="1038" fill="#eac080" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Shared final guardrail: L1 and L2</text>
+<text x="94" y="1078" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Check every final route, including pre-filter shortcuts</text>
+<text x="94" y="1107" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">A known risk veto retains the alert; preserve the reasons and layer</text>
+<rect x="70" y="1190" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1210 V1312" stroke="#94d7b4" stroke-width="4"/>
+<text x="94" y="1234" fill="#94d7b4" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Customer installation</text>
+<text x="94" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">AI and records stay local</text>
+<text x="94" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">No tracking or remote assets</text>
+<rect x="516" y="1190" width="414" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M517,1210 V1312" stroke="#8bbcff" stroke-width="4"/>
+<text x="540" y="1234" fill="#8bbcff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Public demonstration</text>
+<text x="540" y="1274" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Separate consented cloud demo</text>
+<text x="540" y="1303" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Cannot change your device</text>
+<rect x="70" y="1386" width="860" height="142" rx="12" fill="#18232e" stroke="#536575"/><path d="M71,1406 V1508" stroke="#b0becb" stroke-width="4"/>
+<text x="94" y="1430" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="600">Planned: coordinate protected devices</text>
+<text x="94" y="1470" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">A future controller would send authenticated, restricted requests</text>
+<text x="94" y="1499" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">This remote design is planned; it is not a shipped protection claim</text>
+<text x="70" y="1634" fill="#b0becb" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">L2 rules can bypass Gemma. All final routes pass the shared guardrail.</text>
 </svg>

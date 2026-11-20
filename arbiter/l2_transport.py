@@ -3,21 +3,31 @@ import re
 import json
 import time
 import urllib.request
+from urllib.parse import urlsplit
+import ipaddress
 from .ingestion.schema import safe_json
-
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise ValueError('L2 inference redirects are forbidden')
+from .llm import NoRedirect
 
 class L2Transport:
-    def __init__(self, model):
+    def __init__(self, model, *, think=True, num_ctx=16384, num_predict=3072, base_url='http://127.0.0.1:11434'):
         if not isinstance(model,str) or not model.strip() or model.lower().endswith((':cloud','-cloud')):
             raise ValueError('L2 requires an installed local model')
         self.model=model
+        endpoint=urlsplit(base_url)
+        try: local=endpoint.hostname=='localhost' or ipaddress.ip_address(endpoint.hostname or '').is_loopback
+        except ValueError: local=False
+        if (not local or endpoint.scheme!='http' or not endpoint.port or endpoint.username or endpoint.password
+                or endpoint.path not in ('','/') or endpoint.query or endpoint.fragment):
+            raise ValueError('L2 inference requires a literal loopback or localhost HTTP endpoint')
+        self.base_url=base_url.rstrip('/')
+        if type(think) is not bool or type(num_ctx) is not int or not 4096<=num_ctx<=16384 or type(num_predict) is not int or not 256<=num_predict<=3072:
+            raise ValueError('invalid bounded L2 generation options')
+        self.think,self.num_ctx,self.num_predict=think,num_ctx,num_predict
         self.opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
+        self.usage=[]
 
     def request(self, path, data=None, timeout=5):
-        request=urllib.request.Request('http://127.0.0.1:11434'+path,
+        request=urllib.request.Request(self.base_url+path,
             data=json.dumps(data).encode() if data is not None else None,
             headers={'Content-Type':'application/json'})
         with self.opener.open(request,timeout=timeout) as response:
@@ -42,13 +52,17 @@ class L2Transport:
         # of parameter count, quality or a larger capacity than L1.
         return metadata.get('details',{})
 
-    def generate(self,prompt,system,deadline=None):
+    def generate(self,prompt,system,deadline=None,format_schema=None):
+        if format_schema is not None and not isinstance(format_schema,dict):
+            raise ValueError('structured response schema must be an object')
         remaining=(deadline-time.monotonic()) if deadline else 30
         if remaining<=0: raise TimeoutError('L2 reasoning budget exhausted')
         self.verify(remaining)
         remaining=(deadline-time.monotonic()) if deadline else 30
         if remaining<=0: raise TimeoutError('L2 reasoning budget exhausted')
         body=self.request('/api/generate',{'model':self.model,'system':system,'prompt':prompt,
-            'stream':False,'format':'json','think':True,
-            'options':{'temperature':0.1,'num_ctx':16384,'num_predict':3072}},timeout=min(90,remaining))
+            'stream':False,'format':format_schema if format_schema is not None else 'json','think':self.think,
+            'options':{'temperature':0.1,'num_ctx':self.num_ctx,'num_predict':self.num_predict}},timeout=min(90,remaining))
+        self.usage.append({key:body.get(key) for key in ('prompt_eval_count','eval_count','load_duration','prompt_eval_duration','eval_duration','done_reason')})
+        del self.usage[:-64]
         return body['response']

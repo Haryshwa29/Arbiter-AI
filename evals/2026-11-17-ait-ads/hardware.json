@@ -1,0 +1,7 @@
+{
+  "cpu": "13th Gen Intel(R) Core(TM) i7-13700F",
+  "ram_bytes": 34130571264,
+  "gpu": "NVIDIA GeForce RTX 4060 Ti",
+  "gpu_vram_mib": 16380,
+  "nvidia_driver": "617.42"
+}

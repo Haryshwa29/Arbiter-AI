@@ -174,20 +174,54 @@ def wazuh(data: dict, source="wazuh") -> SecurityEvent:
     manager = data.get("manager", {})
     if not isinstance(manager, dict):
         raise ValueError("invalid Wazuh manager")
+    from .wazuh_evidence import observations
+    observed = observations(data, groups)
+    embedded = observed.get("suricata", {})
+    mail = observed.get("mail_auth", {})
+    endpoints=observed.get('network_tuple',{})
+    severity = level * 10 / 15
+    if embedded:
+        kind, category = "network_alert", "network"
+        severity = max(severity, {1: 8, 2: 5, 3: 3}[embedded["priority"]])
+    hostname,host_basis=wazuh_host(data,agent,manager,bool(embedded))
     return SecurityEvent(source_type=source, source_vendor="Wazuh", source_product="Wazuh",
-        hostname=str(agent.get("name") or manager.get("name") or "wazuh-manager"),
+        hostname=hostname,
         device_id=str(agent.get("id", "")), event_type=kind, event_category=category,
-        timestamp=str(data["timestamp"]), severity=level * 10 / 15,
+        timestamp=str(data["timestamp"]), severity=severity,
         event_id=identity(source, (manager.get("name", ""), agent.get("id", ""),
             data.get("id"), data["timestamp"], json.dumps(data, sort_keys=True))),
-        message=message, username=str(detail.get("dstuser", detail.get("srcuser", ""))),
-        src_ip=str(detail.get("srcip", "")), dst_ip=str(detail.get("dstip", "")),
-        src_port=detail.get("srcport"), dst_port=detail.get("dstport"),
-        protocol=str(detail.get("protocol", "")), file_path=str(fim.get("path", "")),
+        message=message, username=str(detail.get("dstuser", detail.get("srcuser", mail.get("username", "")))),
+        src_ip=str(detail.get("srcip", detail.get("src_ip", mail.get("src_ip", "")))),
+        dst_ip=str(detail.get("dstip", detail.get("dest_ip", mail.get("dst_ip", "")))),
+        src_port=detail.get("srcport", detail.get("src_port",endpoints.get('src_port'))), dst_port=detail.get("dstport", detail.get("dest_port",endpoints.get('dst_port'))),
+        protocol=str(detail.get("proto", detail.get("protocol", ""))), file_path=str(fim.get("path", "")),
         file_hash=str(fim.get("sha256_after", "")), action=str(fim.get("event", "")),
         rule_id=str(rule["id"]), rule_name=description, tags=groups,
         raw_event=data, metadata={"normalized_by": source, "wazuh_level": level,
-            "rule": rule, "agent": agent, "manager": manager, "location": data.get("location", "")})
+            "rule": rule, "agent": agent, "manager": manager, "location": data.get("location", ""),
+            "host_identity_basis":host_basis})
+
+
+def wazuh_host(data,agent,manager,network):
+    header=data.get('predecoder')
+    hostname=header.get('hostname') if isinstance(header,dict) else None
+    if isinstance(hostname,str) and hostname.strip() and hostname.strip()!='-':
+        return hostname.strip(),'predecoder.hostname'
+    address=agent.get('ip')
+    detail=data.get('data',{})
+    if network:
+        src=detail.get('src_ip',detail.get('srcip',''))
+        dst=detail.get('dest_ip',detail.get('dstip',''))
+        endpoints=[str(ip) for ip in (src,dst) if _is_ip(ip)]
+        if _is_ip(address) and address in endpoints:
+            return str(address),'agent-matched network endpoint'
+        if endpoints:
+            # A passive sensor does not establish which endpoint owns the alert.
+            return ' -> '.join(dict.fromkeys(endpoints)),'network conversation; asset unverified'
+    if _is_ip(address):return str(address),'agent.ip'
+    name=agent.get('name') or manager.get('name') or 'wazuh-manager'
+    # Agent IDs distinguish repeated/generic names even when no address is known.
+    return str(name)+(f" [agent {agent['id']}]" if agent.get('id') else ''),'agent.name / agent.id fallback'
 
 
 def cloudtrail(data: dict, source="cloudtrail") -> SecurityEvent:

@@ -1,0 +1,23 @@
+Local Ollama log evidence relevant to this checkpoint
+Times are Eastern (UTC minus five). Source: the saved local Ollama server.log.
+Only short error extracts are included; customer paths and unrelated logs are omitted.
+
+2026-11-19 21:33:02
+CUDA error: out of memory
+current device: 0, in function ggml_cuda_mul_mat_q
+runtime OOM detected; expiring loaded models to clear memory before next request
+POST /api/generate returned HTTP 500
+llama-server terminated, exit 0xc0000409
+Corresponding saved failed Gemma review: record 17784.
+
+2026-11-20 01:38:28
+CUDA error: out of memory
+runtime OOM detected; expiring loaded models to clear memory before next request
+llama-server terminated, exit 0xc0000409
+Corresponding saved Qwen policy fallback: record 20059, HTTP 500; alert retained.
+
+Final benchmark worker error:
+RuntimeError: Three consecutive model failures
+Stopped progress saved at 2026-11-20T06:41:51.742613+00:00.
+The shutdown trigger was repeated Gemma evidence-validation failures;
+the CUDA events and the deliberate stop condition are distinct findings.

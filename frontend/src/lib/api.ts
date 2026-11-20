@@ -379,6 +379,10 @@ export interface IngestionStatus {
   connectors: Connector[];
   metrics: Record<string, number>;
   worker_alive: boolean;
+  pipeline_workers?: Record<string, {alive: boolean; busy?: boolean; queued?: number; completed?: number; errors?: number}>;
+  report_worker?: {alive: boolean; queued: number; completed: number; errors: number; uses_inference: boolean};
+  learned_patterns?: Record<string, {patterns: number; hits: number}>;
+  l2?: {enabled: boolean; model: string; counts: {suppressed?: number; retained?: number; failed?: number; pending?: number}};
 }
 export interface TelemetryEvent {
   event_id: string; timestamp: string; received_at: string; source_type: string;
@@ -388,6 +392,10 @@ export interface TelemetryEvent {
 }
 export interface ProtectionAction {id: string; status: string; target: string; expires_at: string; actor: string;}
 export interface TelemetryRow {
+  report?: {state: 'partial' | 'pending' | 'ready' | 'stale' | 'failed' | 'not_requested'; error?: string; body?: {
+    title: string; template_id: string; decision: Decision | null; reviewer: string; checks: string[];
+    brief: {observed: string; why: string; origin: Record<string,string>; uncertainty: string};
+  } | null};
   response_case?: ResponseCase | null;
   response_stopped?: boolean;
   response_schedule_available?: boolean;
@@ -398,6 +406,10 @@ export interface TelemetryRow {
   related: string[]; analysis: {
     decision: Decision; tier: Tier; score: number; rationale: string;
     backend?: string; model?: string;
+    first_stage?: {decision: Decision; rationale: string; evidence: string; model?: string};
+    second_stage_status?: string;
+    second_stage_case_id?: string;
+    second_stage?: {decision: Decision; decision_reason: string; backend: string; model: string; review_status: string; guardrail?: {veto?: string | null}};
     brief?: {observed?: string; why: string; decision_basis?: string; origin: Record<string, string>; uncertainty: string; guidance: {source: "model" | "policy"; steps: string[]; caution: string} | null} | null;
     guidance?: {source: "model" | "policy"; steps: string[]; caution: string} | null;
     evidence: string; kind: "alert" | "observation"; correlation?: unknown; incident_id?: string;
@@ -417,7 +429,8 @@ export interface ImportSummary {
   valid_events: number; invalid_events: number; import_status: string;
   accepted_events: number; errors: string[];
 }
-export const getIngestionStatus = () => apiFetch<IngestionStatus>("/api/ingestion/status");
+export const getIngestionStatus = () => apiFetch<IngestionStatus>("/api/ingestion/status", {timeoutMs: 60_000});
+export const rejectL2Review = (event_id: string, reason: string) => apiFetch('/api/l2/reject', {method:'POST',body:{event_id,reason}});
 export const configureConnector = (name: string, enabled: boolean, configuration: Record<string, unknown>) =>
   apiFetch("/api/ingestion/configure", {method: "POST", body: {name, enabled, configuration}, timeoutMs: 40_000});
 export const getEvents = (filters: Record<string, string> = {}) =>
@@ -443,7 +456,7 @@ export const approveProtection = (event_id: string) => apiFetch("/api/protection
 export const undoProtection = (action_id: string) => apiFetch("/api/protection/undo", {method: "POST", body: {action_id}, timeoutMs: 40_000});
 
 export const getModels = () => apiFetch<{available: boolean; models: string[]}>("/api/models");
-export const connectModel = (model: string) => apiFetch("/api/models/connect", {method: "POST", body: {model}, timeoutMs: 140_000});
+export const connectModel = (model: string) => apiFetch("/api/models/connect", {method: "POST", body: {model}, timeoutMs: 200_000});
 
 export const previewDemo = (body: Record<string, unknown>) => apiFetch<{files: ImportSummary[]}>("/api/demo/preview", {method: "POST", body});
 

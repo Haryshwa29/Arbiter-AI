@@ -1,0 +1,101 @@
+{
+  "first_stage": {
+    "n": 202,
+    "tp": 74,
+    "fn": 0,
+    "fp": 80,
+    "tn": 48,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.375,
+    "false_escalation_rate": 0.625,
+    "sample_precision": 0.4805194805194805,
+    "sample_accuracy": 0.6039603960396039,
+    "sample_f1": 0.6491228070175439,
+    "suppression_fraction": 0.2376237623762376,
+    "recall_wilson95_descriptive": [
+      0.950650220603614,
+      1
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0.29592429097646555,
+      0.4613599480919116
+    ]
+  },
+  "visible_final_alerts": {
+    "n": 202,
+    "tp": 74,
+    "fn": 0,
+    "fp": 80,
+    "tn": 48,
+    "attack_label_recall": 1.0,
+    "negative_label_suppression": 0.375,
+    "false_escalation_rate": 0.625,
+    "sample_precision": 0.4805194805194805,
+    "sample_accuracy": 0.6039603960396039,
+    "sample_f1": 0.6491228070175439,
+    "suppression_fraction": 0.2376237623762376,
+    "recall_wilson95_descriptive": [
+      0.950650220603614,
+      1
+    ],
+    "negative_suppression_wilson95_descriptive": [
+      0.29592429097646555,
+      0.4613599480919116
+    ]
+  },
+  "first_stage_tiers": {
+    "prefilter": 45,
+    "llm": 100,
+    "guardrail": 57
+  },
+  "first_stage_errors": 0,
+  "secondary_eligible": 97,
+  "secondary_completed": 97,
+  "secondary_validated": 97,
+  "secondary_errors": 0,
+  "secondary_status": {
+    "accepted": 97
+  },
+  "advisory_outlooks": {
+    "suspicious": 96,
+    "routine_looking": 1
+  },
+  "advisory_by_label_class": {
+    "attack_annotation": {
+      "suspicious": 17
+    },
+    "no_attack_annotation": {
+      "suspicious": 79,
+      "routine_looking": 1
+    }
+  },
+  "timing": {
+    "qwen_engine": {
+      "n": 202,
+      "p50_s": 0.0015134500281419605,
+      "p95_s": 6.181944500014652,
+      "mean_s": 2.233429183666525,
+      "max_s": 7.333101800002623,
+      "total_s": 451.1526951006381
+    },
+    "gemma_review": {
+      "n": 97,
+      "p50_s": 31.575026399979834,
+      "p95_s": 37.798053200007416,
+      "mean_s": 31.242126667011558,
+      "max_s": 41.03027109999675,
+      "total_s": 3030.486286700121
+    }
+  },
+  "actions_executed": 0,
+  "alert_decisions_changed_by_gemma": 0,
+  "gemma_decisions_by_label_class": {
+    "attack_annotation": {
+      "escalate": 17
+    },
+    "no_attack_annotation": {
+      "escalate": 80
+    }
+  },
+  "caution": "Selected alert-label replay, not live breach detection; unannotated records are not certified benign; checks do not certify every prose claim."
+}
