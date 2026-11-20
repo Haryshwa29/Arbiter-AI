@@ -1,6 +1,6 @@
 # Arbiter AI evaluation progress and development roadmap
 
-**20,002 saved decisions from AIT-ADS, compared with the first published 26,002-record checkpoint. Prepared November 20, 2026. Local review copy.**
+**20,002 saved decisions from AIT-ADS, compared with the first published 26,002-record checkpoint. Published November 20, 2026.**
 
 Arbiter AI's latest evaluation shows progress in both alert handling and the role of its second brain. Across **20,002 saved decisions**, L2 quieted **496 of the 767 unannotated warnings raised by L1—a 64.67% reduction in that alert list**. The first published checkpoint recorded a 0.35% L2 reduction. Gemma now investigates escalations and makes decisions that materially reduce the number of warnings left for review.
 
@@ -191,4 +191,4 @@ The selected input has 26,000 records, but completed rows are noncontiguous thro
 
 Runtime SHA-256: `fa1ca25e942534ff60858f49b00c8892c39dcd932eb0e63fb97ab460b25da0df`. Both model weight digests match the first published checkpoint. The runtime contains uncommitted source refinements relative to the recorded base commit; its source hashes and packaged bytes identify the code actually evaluated. Dataset archive and publisher-label hashes are recorded in `summary.json` and the ZIP. AIT-ADS attribution and [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) are retained; copies in this package are selected and reserialized.
 
-**Publication status:** prepared for owner review. No GitHub publication, Git push, benchmark restart or installed-dashboard update was performed for this report.
+**Publication status:** published to the public Arbiter AI repository with owner approval. The report and evidence are on branch `codex/ait-ads-triage-hardening`. The benchmark remains stopped; publication did not restart it or upgrade the installed dashboard.
