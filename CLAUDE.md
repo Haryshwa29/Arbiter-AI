@@ -4,6 +4,26 @@ Self-hosted AI security analyst for small companies with no security team. Read 
 
 ## Current state
 
+November 20 documentation refresh: README leads with the latest publication,
+initial/current impact table, attack-type percentages and plain-English findings.
+ARCHITECTURE.md, the walkthrough and still edition now describe five decision
+workers plus the separate sixth CPU report worker. The local unified renderer
+builds the current SVG/PNG/GIF and the architecture.svg compatibility path.
+Only successful Qwen model escalations enter the L2 pre-filter; missing context
+passes onward to Gemma, proposed suppression needs the checking call, all exits
+pass shared checks, and saved decisions do not wait for reports. Setup/worker
+guides link to the current design. The 20K evidence remains frozen; new report
+worker real-model results remain unmeasured. All earlier source/report changes
+and both historical November 17 ZIP bundles were pushed, most recently 37ced8b.
+Do not restart the installed dashboard or benchmark for this documentation task.
+Refresh validation: 647 tests passed, two optional AWS checks skipped in the base
+environment, 25 subtests passed; 22-event mock seed/run passed. Local document
+links/anchors, SVG/XML labels, PNG/GIF dimensions and frozen result counts were
+checked; the current illustrated design was visually inspected. Main's older
+homepage was identified as the discoverability problem. Publish documentation
+there with explicit links to the implementation branch; do not merge application
+changes or deploy as part of this refresh.
+
 Owner approved pushing the tested source update and requested an initial-run
 comparison as the main public table. README and docs/PROGRESS-2026-11-20.md now
 show the initial 26,002 checkpoint versus the measured 20,002 results, followed
@@ -12,7 +32,7 @@ by implemented report-worker changes, remaining findings and next tests. Frozen
 subtests passed, hosted demo exports synchronized, public/private frontend
 builds, lint and 17 frontend checks passed. Added streaming benchmark hashing
 for Python 3.10 support. Publish the application, tests and required evaluation
-helpers together; exclude the two unrelated owner-owned November 17 ZIPs.
+helpers together; the owner subsequently authorized both November 17 ZIPs too.
 No deployment, benchmark resume or installed-dashboard restart is authorized
 by this publication request.
 

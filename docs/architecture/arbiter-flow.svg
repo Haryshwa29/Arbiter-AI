@@ -1,213 +1,102 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="4150" viewBox="0 0 1120 4150" role="img" aria-labelledby="title desc">
-<title id="title">Arbiter AI: one event, from evidence to explained decision</title>
-<desc id="desc">Collection and L1 rules lead to Qwen3.5:4b. Only Qwen escalations enter separate L2 guardrails and a pre-filter. Gemma4:12b receives original facts without Qwen opinion text when model judgment is useful. Shared final guardrails protect both stages and shortcuts. Known risk or missing context retains review; supported ordinary activity can be quieted. Both models are replaceable compatible local models. Classification grants no device-action rights.</desc>
-<rect width="1120" height="4150" fill="#0d1420"/>
-<text x="52" y="56" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="700">ARBITER AI / SYSTEM ARCHITECTURE</text>
-<text x="52" y="117" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="39" font-weight="700">From raw evidence to a clear next step</text>
-<text x="52" y="159" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="24" font-weight="400">Qwen is L1. Only its escalations go to Gemma L2 for a final review.</text>
-<rect x="50" y="205" width="240" height="112" rx="16" fill="#162840" stroke="#82b7ff" stroke-width="2"/>
-<text x="65" y="236" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">COMPUTER REPORTS</text>
-<text x="65" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Windows / Sysmon</text>
-<text x="65" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Defender / osquery</text>
-<rect x="310" y="205" width="240" height="112" rx="16" fill="#162840" stroke="#82b7ff" stroke-width="2"/>
-<text x="325" y="236" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">NETWORK + DEVICES</text>
-<text x="325" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Wazuh / Suricata</text>
-<text x="325" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Syslog / devices</text>
-<rect x="570" y="205" width="240" height="112" rx="16" fill="#162840" stroke="#82b7ff" stroke-width="2"/>
-<text x="585" y="236" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">OPTIONAL INPUTS</text>
-<text x="585" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Enabled AWS readers</text>
-<text x="585" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Approved sources only</text>
-<rect x="830" y="205" width="240" height="112" rx="16" fill="#29203d" stroke="#c4a0ff" stroke-width="2"/>
-<text x="845" y="236" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">PRACTICE / REPLAY</text>
-<text x="845" y="268" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Separate test records</text>
-<text x="845" y="293" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">No device changes</text>
-<polyline points="170,317 170,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
-<polyline points="430,317 430,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
-<polyline points="690,317 690,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
-<polyline points="950,317 950,341 560,341 560,425" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,425 554.0,414.0 566.0,414.0" fill="#82b7ff"/>
-<rect x="24" y="355" width="1072" height="70" rx="12" fill="#192c46" stroke="#192c46" stroke-width="2"/>
-<rect x="42" y="370" width="38" height="38" rx="10" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="54" y="395" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">1</text>
-<text x="96" y="391" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="700">COLLECT + KEEP EVIDENCE</text>
-<text x="96" y="414" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="17" font-weight="400">Gather reports without letting the AI change a device.</text>
-<rect x="210" y="435" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
-<rect x="228" y="453" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="238" y="474" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">01</text>
-<text x="280" y="479" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Read security reports</text>
-<text x="236" y="522" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Read logs and alerts from the sources you enable.</text>
-<text x="236" y="553" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Keep originals so a person can check what happened.</text>
-<polyline points="560,585 560,635" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,635 554.0,624.0 566.0,624.0" fill="#82b7ff"/>
-<rect x="210" y="635" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
-<rect x="228" y="653" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="238" y="674" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">02</text>
-<text x="280" y="679" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Organize and check</text>
-<text x="236" y="722" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Put computer, user, time and network details in one format.</text>
-<text x="236" y="753" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Reject broken records; keep the original evidence.</text>
-<polyline points="560,785 560,835" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,835 554.0,824.0 566.0,824.0" fill="#82b7ff"/>
-<rect x="210" y="835" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
-<rect x="228" y="853" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="238" y="874" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">03</text>
-<text x="280" y="879" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Save events in a waiting line</text>
-<text x="236" y="922" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Save waiting events so a restart does not lose the queue.</text>
-<text x="236" y="953" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Limit the queue; show when incoming work exceeds capacity.</text>
-<polyline points="560,985 560,1055" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1055 554.0,1044.0 566.0,1044.0" fill="#82b7ff"/>
-<rect x="24" y="1000" width="1072" height="70" rx="12" fill="#192c46" stroke="#192c46" stroke-width="2"/>
-<rect x="42" y="1015" width="38" height="38" rx="10" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="54" y="1040" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">2</text>
-<text x="96" y="1036" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="700">CONNECT CLUES + DECIDE</text>
-<text x="96" y="1059" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="17" font-weight="400">Review urgent events first; let older waiting events progress too.</text>
-<rect x="210" y="1080" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
-<rect x="228" y="1098" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="238" y="1119" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">04</text>
-<text x="280" y="1124" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Connect the clues</text>
-<text x="236" y="1167" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Link nearby events; check the computer&#x27;s role and history.</text>
-<text x="236" y="1198" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Use approved facts only when they fit this exact event.</text>
-<polyline points="560,1230 560,1280" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1280 554.0,1269.0 566.0,1269.0" fill="#82b7ff"/>
-<polygon points="560,1280 910,1360 560,1440 210,1360" fill="#302719" stroke="#f2c777" stroke-width="2"/>
-<text x="410" y="1343" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">05  Must someone review?</text>
-<text x="365" y="1383" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Safety rules check for known risky signals</text>
-<polyline points="560,1440 560,1540" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1540 554.0,1529.0 566.0,1529.0" fill="#82b7ff"/>
-<rect x="564" y="1460" width="158.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="570" y="1478" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">No forced review</text>
-<polygon points="560,1540 910,1620 560,1700 210,1620" fill="#302719" stroke="#f2c777" stroke-width="2"/>
-<text x="410" y="1603" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">06  Can quick rules decide?</text>
-<text x="365" y="1643" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="400">Clearly routine, clearly risky, or still unclear?</text>
-<polyline points="560,1700 560,1820" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,1820 554.0,1809.0 566.0,1809.0" fill="#c4a0ff"/>
-<rect x="568" y="1740" width="172.015625" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="574" y="1758" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Unclear: ask the AI</text>
-<rect x="210" y="1820" width="700" height="150" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
-<rect x="228" y="1838" width="38" height="34" rx="9" fill="#c4a0ff" stroke="#c4a0ff" stroke-width="2"/>
-<text x="238" y="1859" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">07</text>
-<text x="280" y="1864" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">First brain: Qwen3.5:4b</text>
-<text x="236" y="1907" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Review unclear alerts and explain a recommendation.</text>
-<text x="236" y="1938" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">This local model can be replaced by a compatible one.</text>
-<polyline points="560,1970 560,2050" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2050 554.0,2039.0 566.0,2039.0" fill="#c4a0ff"/>
-<rect x="568" y="1990" width="131.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="574" y="2008" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Model answer</text>
-<rect x="210" y="2050" width="700" height="150" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
-<rect x="228" y="2068" width="38" height="34" rx="9" fill="#c4a0ff" stroke="#c4a0ff" stroke-width="2"/>
-<text x="238" y="2089" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">08</text>
-<text x="280" y="2094" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Check the AI recommendation</text>
-<text x="236" y="2137" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Check the answer against rules and required evidence.</text>
-<text x="236" y="2168" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">If the AI fails or is too unsure, ask a person to review.</text>
-<polyline points="910,1360 1060,1360 1060,2300 810,2300 810,2425" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="810,2425 804.0,2414.0 816.0,2414.0" fill="#ff939b"/>
-<rect x="919" y="1390" width="78.984375" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="925" y="1408" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Yes: ask</text>
-<rect x="919" y="1414" width="98.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="925" y="1432" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">for review</text>
-<polyline points="910,1620 1000,1620 1000,2280 865,2280 865,2425" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="865,2425 859.0,2414.0 871.0,2414.0" fill="#ff939b"/>
-<rect x="919" y="1650" width="126.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="925" y="1668" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Needs review</text>
-<polyline points="210,1620 60,1620 60,2300 280,2300 280,2425" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="280,2425 274.0,2414.0 286.0,2414.0" fill="#7cddb0"/>
-<rect x="66" y="1660" width="126.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="72" y="1678" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Routine, with</text>
-<rect x="66" y="1684" width="148.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="72" y="1702" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">enough support</text>
-<polyline points="560,2200 560,2290 370,2290 370,2425" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="370,2425 364.0,2414.0 376.0,2414.0" fill="#7cddb0"/>
-<rect x="279" y="2230" width="225.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="285" y="2248" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Enough routine evidence</text>
-<polyline points="560,2200 560,2290 700,2290 700,2425" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="700,2425 694.0,2414.0 706.0,2414.0" fill="#ff939b"/>
-<rect x="599" y="2230" width="191.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="605" y="2248" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Risky / still uncertain</text>
-<text x="454" y="2368" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">THE TWO OUTCOMES</text>
-<rect x="90" y="2425" width="430" height="130" rx="16" fill="#163027" stroke="#7cddb0" stroke-width="2"/>
-<text x="110" y="2465" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">KEEP AS AN OBSERVATION</text>
-<text x="110" y="2503" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Quiet the alert with a written reason.</text>
-<text x="110" y="2531" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Keep the record for later checks.</text>
-<rect x="600" y="2425" width="430" height="130" rx="16" fill="#351e28" stroke="#ff939b" stroke-width="2"/>
-<text x="620" y="2465" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">FLAG FOR REVIEW</text>
-<text x="620" y="2503" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Show why it needs someone&#x27;s attention.</text>
-<text x="620" y="2531" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">A warning alone does not block anything.</text>
-<polyline points="305,2555 305,2590 560,2590 560,2630" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2630 554.0,2619.0 566.0,2619.0" fill="#7cddb0"/>
-<polyline points="815,2555 815,2590 560,2590 560,2630" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2630 554.0,2619.0 566.0,2619.0" fill="#ff939b"/>
-<rect x="210" y="2630" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
-<rect x="228" y="2648" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="238" y="2669" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">09</text>
-<text x="280" y="2674" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Save the decision and reason</text>
-<text x="236" y="2717" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Record the decision, evidence, and rule or model used.</text>
-<text x="236" y="2748" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Keep a history so a person can check the reasoning.</text>
-<polyline points="560,2780 560,2830" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,2830 554.0,2819.0 566.0,2819.0" fill="#82b7ff"/>
-<rect x="210" y="2830" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
-<rect x="228" y="2848" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="238" y="2869" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">10</text>
-<text x="280" y="2874" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Show a person the next step</text>
-<text x="236" y="2917" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Explain what happened, where, and what needs checking.</text>
-<text x="236" y="2948" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Keep alerts visible while the second brain investigates.</text>
-<polyline points="560,2980 560,3030" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,3030 554.0,3019.0 566.0,3019.0" fill="#c4a0ff"/>
-<rect x="568" y="2990" width="230.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="574" y="3008" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Only Qwen-flagged alerts</text>
-<rect x="210" y="3030" width="700" height="150" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
-<rect x="228" y="3048" width="38" height="34" rx="9" fill="#82b7ff" stroke="#82b7ff" stroke-width="2"/>
-<text x="238" y="3069" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">11</text>
-<text x="280" y="3074" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">L2 rules: settle or route</text>
-<text x="236" y="3117" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Protect risky evidence; use exact human feedback.</text>
-<text x="236" y="3148" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Skip repeat reviews when needed context is missing.</text>
-<polyline points="560,3180 560,3240" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,3240 554.0,3229.0 566.0,3229.0" fill="#c4a0ff"/>
-<rect x="568" y="3196" width="210.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="574" y="3214" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Needs model judgment</text>
-<rect x="210" y="3240" width="700" height="150" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
-<rect x="228" y="3258" width="38" height="34" rx="9" fill="#c4a0ff" stroke="#c4a0ff" stroke-width="2"/>
-<text x="238" y="3279" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">12</text>
-<text x="280" y="3284" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Independent Gemma4:12b review</text>
-<text x="236" y="3327" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Read original facts without Qwen&#x27;s opinion text.</text>
-<text x="236" y="3358" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Propose a decision, then challenge it in another pass.</text>
-<polyline points="560,3390 560,3470" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="560,3470 554.0,3459.0 566.0,3459.0" fill="#c4a0ff"/>
-<polyline points="910,3105 1060,3105 1060,3440 865,3440 865,3470" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="865,3470 859.0,3459.0 871.0,3459.0" fill="#82b7ff"/>
-<rect x="914" y="3340" width="157.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="920" y="3358" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">L2 rules settled it</text>
-<polyline points="210,2905 60,2905 60,3440 255,3440 255,3470" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="255,3470 249.0,3459.0 261.0,3459.0" fill="#82b7ff"/>
-<rect x="64" y="3402" width="168.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="70" y="3420" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Other L1 decisions</text>
-<rect x="64" y="3426" width="153.0" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="70" y="3444" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">same final check</text>
-<rect x="210" y="3470" width="700" height="150" rx="16" fill="#302719" stroke="#f2c777" stroke-width="2"/>
-<rect x="228" y="3488" width="38" height="34" rx="9" fill="#f2c777" stroke="#f2c777" stroke-width="2"/>
-<text x="238" y="3509" fill="#0d1420" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="20" font-weight="700">13</text>
-<text x="280" y="3514" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="27" font-weight="700">Shared final checks: L1 + L2</text>
-<text x="236" y="3557" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Known risk can veto quieting, whichever stage proposed it.</text>
-<text x="236" y="3588" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Keep the original decisions, reasons and deciding layer.</text>
-<polyline points="560,3620 560,3670 305,3670 305,3740" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="305,3740 299.0,3729.0 311.0,3729.0" fill="#7cddb0"/>
-<rect x="89" y="3695" width="246.015625" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="95" y="3713" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Supported ordinary activity</text>
-<polyline points="560,3620 560,3670 815,3670 815,3740" fill="none" stroke="#ff939b" stroke-width="3" stroke-linejoin="round"/>
-<polygon points="815,3740 809.0,3729.0 821.0,3729.0" fill="#ff939b"/>
-<rect x="674" y="3695" width="223.984375" height="25" rx="3" fill="#0d1420" stroke="#0d1420" stroke-width="2"/>
-<text x="680" y="3713" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Risky, uncertain or failed</text>
-<rect x="90" y="3740" width="430" height="120" rx="16" fill="#163027" stroke="#7cddb0" stroke-width="2"/>
-<text x="110" y="3778" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">SUPPRESS ALERT</text>
-<text x="110" y="3814" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Keep the reason and both reviews.</text>
-<text x="110" y="3842" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">No device action.</text>
-<rect x="600" y="3740" width="430" height="120" rx="16" fill="#351e28" stroke="#ff939b" stroke-width="2"/>
-<text x="620" y="3778" fill="#ff939b" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="23" font-weight="700">KEEP ALERT</text>
-<text x="620" y="3814" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">Keep the warning visible.</text>
-<text x="620" y="3842" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="19" font-weight="400">A person investigates.</text>
-<text x="52" y="3948" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">WHO CAN AUTHORIZE A DEVICE CHANGE?</text>
-<text x="52" y="3988" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Alert decisions do not authorize commands, blocks or other actions.</text>
-<text x="52" y="4028" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Either model can be replaced by a compatible local model. Both reviews remain auditable.</text>
-<text x="52" y="4060" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="400">Only Qwen escalations enter L2. Rules can avoid an unnecessary Gemma call.</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="2540" viewBox="0 0 1440 2540" role="img" aria-labelledby="title desc">
+<title id="title">Arbiter AI: five decision workers and one CPU report worker</title>
+<desc id="desc">Only successful Qwen3.5:4b escalations enter the L2 pre-filter. Supported routine cases can be suppressed; unresolved cases, including missing context, reach Gemma4:12b. Proposed Gemma suppressions require a checking call. All L1 and L2 exits pass shared final guardrails. Saved decisions reach the dashboard immediately; a separate CPU worker prepares reports without model calls. Scoped live pattern memory feeds each pre-filter. Either model is replaceable. Classification grants no device-action rights.</desc>
+<rect width="1440" height="2540" fill="#0d1420"/>
+<text x="54" y="51" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="700">ARBITER AI / CURRENT PROJECT DESIGN / NOVEMBER 2026</text>
+<text x="54" y="114" fill="#eef3fa" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="38" font-weight="700">Two brains decide. A separate worker explains.</text>
+<text x="54" y="159" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="25" font-weight="400">Five decision workers + one CPU report worker. Models and evidence stay local.</text>
+<rect x="330" y="205" width="780" height="130" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<text x="352" y="245" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Enabled sources or isolated practice replay</text>
+<text x="352" y="282" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Read original security reports; check and normalize each record.</text>
+<text x="352" y="310" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Collection permissions and device actions remain separate.</text>
+<polyline points="720,335 720,380" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="720,380 714.0,369.0 726.0,369.0" fill="#82b7ff"/>
+<rect x="330" y="380" width="780" height="130" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<text x="352" y="420" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Durable waiting line: keep events through restart</text>
+<text x="352" y="457" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Save pending work in SQLite. Limit capacity and show overload.</text>
+<text x="352" y="485" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Keep source identity, original facts and timestamps.</text>
+<polyline points="720,510 720,555" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="720,555 714.0,544.0 726.0,544.0" fill="#82b7ff"/>
+<rect x="330" y="555" width="780" height="130" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<text x="352" y="595" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">WORKER 1 / Gateway: connect the clues</text>
+<text x="352" y="632" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Choose a saved event; add nearby activity and relevant local facts.</text>
+<text x="352" y="660" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Prepare the evidence before either model reviews it.</text>
+<polyline points="720,685 720,730" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="720,730 714.0,719.0 726.0,719.0" fill="#82b7ff"/>
+<rect x="330" y="730" width="780" height="155" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
+<text x="352" y="770" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">WORKER 2 / L1 rules + Qwen3.5:4b</text>
+<text x="352" y="807" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Quick rules handle clear cases. Qwen reviews unclear activity.</text>
+<text x="352" y="835" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">It can quiet an event or raise a warning with a short reason.</text>
+<text x="352" y="863" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">L1 can review another event while Gemma works.</text>
+<polyline points="720,885 720,990" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="720,990 714.0,979.0 726.0,979.0" fill="#c4a0ff"/>
+<text x="742" y="937" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Only successful Qwen model escalations</text>
+<rect x="330" y="990" width="780" height="130" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<text x="352" y="1030" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">WORKER 3 / Independent L2 pre-filter</text>
+<text x="352" y="1067" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Quiet an eligible routine case only with supporting evidence.</text>
+<text x="352" y="1095" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Pass unresolved warnings to Gemma, even with missing context.</text>
+<polyline points="720,1120 720,1225" fill="none" stroke="#c4a0ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="720,1225 714.0,1214.0 726.0,1214.0" fill="#c4a0ff"/>
+<text x="742" y="1169" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Unresolved: ask the second brain</text>
+<rect x="330" y="1225" width="780" height="155" rx="16" fill="#241c35" stroke="#c4a0ff" stroke-width="2"/>
+<text x="352" y="1265" fill="#c4a0ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">WORKER 4 / L2: Gemma4:12b</text>
+<text x="352" y="1302" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Read original facts without Qwen&#x27;s opinion text.</text>
+<text x="352" y="1330" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Return a compact decision, explanations and supplied evidence IDs.</text>
+<text x="352" y="1358" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Proposed suppression needs a checking call and 90% confidence.</text>
+<polyline points="720,1380 720,1490" fill="none" stroke="#f2c777" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="720,1490 714.0,1479.0 726.0,1479.0" fill="#f2c777"/>
+<text x="742" y="1435" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Check the proposed outcome</text>
+<polyline points="330,808 98,808 98,1555 330,1555" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="330,1555 319.0,1561.0 319.0,1549.0" fill="#82b7ff"/>
+<text x="122" y="972" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Other L1 exits:</text>
+<text x="122" y="996" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">quiet decisions,</text>
+<text x="122" y="1020" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">mandatory rules,</text>
+<text x="122" y="1044" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">failed Qwen calls.</text>
+<text x="122" y="1068" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700"></text>
+<text x="122" y="1092" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Bypass Gemma;</text>
+<text x="122" y="1116" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">still checked.</text>
+<polyline points="1110,1055 1338,1055 1338,1555 1110,1555" fill="none" stroke="#7cddb0" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1110,1555 1121.0,1549.0 1121.0,1561.0" fill="#7cddb0"/>
+<text x="1135" y="1156" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Supported</text>
+<text x="1135" y="1180" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">routine case:</text>
+<text x="1135" y="1204" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">bypass Gemma;</text>
+<text x="1135" y="1228" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">still checked.</text>
+<rect x="330" y="1490" width="780" height="130" rx="16" fill="#172335" stroke="#f2c777" stroke-width="2"/>
+<text x="352" y="1530" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">WORKER 5 / Shared final guardrail</text>
+<text x="352" y="1567" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Check every L1 and L2 exit, including pre-filter shortcuts.</text>
+<text x="352" y="1595" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Protected risk, failed review or rejected suppression stays visible.</text>
+<polyline points="720,1620 720,1725" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="720,1725 714.0,1714.0 726.0,1714.0" fill="#82b7ff"/>
+<rect x="330" y="1725" width="780" height="130" rx="16" fill="#172335" stroke="#7cddb0" stroke-width="2"/>
+<text x="352" y="1765" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Save the final decision, facts and actual model context</text>
+<text x="352" y="1802" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Keep visible for investigation OR quiet with a recorded reason.</text>
+<text x="352" y="1830" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Preserve L1, L2 and final outcomes; queue a durable report job.</text>
+<polyline points="720,1855 720,1900 355,1900 355,1970" fill="none" stroke="#82b7ff" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="355,1970 349.0,1959.0 361.0,1959.0" fill="#82b7ff"/>
+<text x="182" y="1941" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Decision visible now</text>
+<polyline points="720,1855 720,1900 1085,1900 1085,1970" fill="none" stroke="#f2c777" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="1085,1970 1079.0,1959.0 1091.0,1959.0" fill="#f2c777"/>
+<text x="864" y="1941" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="18" font-weight="700">Report job: separate work</text>
+<rect x="50" y="1970" width="610" height="135" rx="16" fill="#172335" stroke="#82b7ff" stroke-width="2"/>
+<text x="72" y="2010" fill="#82b7ff" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Authenticated dashboard / API</text>
+<text x="72" y="2047" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Show saved decisions and both reviewers.</text>
+<text x="72" y="2075" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Partial facts first; final report when ready.</text>
+<rect x="780" y="1970" width="610" height="135" rx="16" fill="#172335" stroke="#f2c777" stroke-width="2"/>
+<text x="802" y="2010" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">WORKER 6 / CPU report writer</text>
+<text x="802" y="2047" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Six local templates use saved evidence.</text>
+<text x="802" y="2075" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">No AI call. Decisions do not wait for it.</text>
+<polyline points="780,2038 660,2038" fill="none" stroke="#f2c777" stroke-width="3" stroke-linejoin="round"/>
+<polygon points="660,2038 671.0,2032.0 671.0,2044.0" fill="#f2c777"/>
+<text x="54" y="2182" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">REMEMBER ELIGIBLE LIVE REPEATS / LOCAL SQLITE MEMORY</text>
+<rect x="50" y="2210" width="650" height="135" rx="16" fill="#172335" stroke="#7cddb0" stroke-width="2"/>
+<text x="72" y="2250" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Qwen-approved patterns feed L1 rules</text>
+<text x="72" y="2287" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Exact host, source, content and model scope.</text>
+<text x="72" y="2315" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Record origin, reason and template.</text>
+<rect x="740" y="2210" width="650" height="135" rx="16" fill="#172335" stroke="#7cddb0" stroke-width="2"/>
+<text x="762" y="2250" fill="#7cddb0" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="26" font-weight="700">Gemma-approved patterns feed L2 rules</text>
+<text x="762" y="2287" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">Challenge and final gates must pass first.</text>
+<text x="762" y="2315" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="21" font-weight="400">A match avoids another Gemma review.</text>
+<text x="54" y="2397" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Expires after 1 hour or 25 hits; revocable. File/API/demo/replay cannot teach or use shortcuts.</text>
+<text x="54" y="2442" fill="#b8c5d8" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="400">Either brain can use a compatible local replacement. Ollama is the runner, not the model.</text>
+<text x="54" y="2492" fill="#f2c777" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="22" font-weight="700">Classification does not authorize commands or device changes. New report-worker speed: retest next.</text>
 </svg>

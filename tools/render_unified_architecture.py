@@ -1,4 +1,4 @@
-"""Build the single README architecture flow; local Pillow, no network access."""
+"""Render the current six-worker documentation diagram; local Pillow only."""
 from pathlib import Path
 import html
 import math
@@ -7,163 +7,124 @@ from PIL import Image, ImageDraw
 from render_architecture import font
 
 OUT = Path(__file__).resolve().parents[1] / 'docs' / 'architecture'
-W, H = 1120, 4150
-INK, MUTED = '#eef3fa', '#b8c5d8'
+W, H = 1440, 2540
+BG, INK, MUTED = '#0d1420', '#eef3fa', '#b8c5d8'
 BLUE, PURPLE, RED, GREEN, GOLD = '#82b7ff', '#c4a0ff', '#ff939b', '#7cddb0', '#f2c777'
-base = Image.new('RGB', (W, H), '#0d1420')
+base = Image.new('RGB', (W, H), BG)
 d = ImageDraw.Draw(base)
 svg = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" role="img" aria-labelledby="title desc">',
-       '<title id="title">Arbiter AI: one event, from evidence to explained decision</title>',
-       '<desc id="desc">Collection and L1 rules lead to Qwen3.5:4b. Only Qwen escalations enter separate L2 guardrails and a pre-filter. Gemma4:12b receives original facts without Qwen opinion text when model judgment is useful. Shared final guardrails protect both stages and shortcuts. Known risk or missing context retains review; supported ordinary activity can be quieted. Both models are replaceable compatible local models. Classification grants no device-action rights.</desc>',
-       f'<rect width="{W}" height="{H}" fill="#0d1420"/>']
+       '<title id="title">Arbiter AI: five decision workers and one CPU report worker</title>',
+       '<desc id="desc">Only successful Qwen3.5:4b escalations enter the L2 pre-filter. Supported routine cases can be suppressed; unresolved cases, including missing context, reach Gemma4:12b. Proposed Gemma suppressions require a checking call. All L1 and L2 exits pass shared final guardrails. Saved decisions reach the dashboard immediately; a separate CPU worker prepares reports without model calls. Scoped live pattern memory feeds each pre-filter. Either model is replaceable. Classification grants no device-action rights.</desc>',
+       f'<rect width="{W}" height="{H}" fill="{BG}"/>']
+paths = []
 
 
-def rect(box, fill, stroke=None, radius=16):
-    x,y,w,h=box
-    d.rounded_rectangle((x,y,x+w,y+h),radius=radius,fill=fill,outline=stroke,width=2)
-    svg.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="{radius}" fill="{fill}" stroke="{stroke or fill}" stroke-width="2"/>')
-
-
-def text(x,y,value,size=23,color=INK,bold=False,max_width=None):
-    face=font(size,bold)
-    if max_width and d.textlength(value,font=face)>max_width:
-        raise ValueError('Text overflow: '+value)
-    d.text((x,y),value,font=face,fill=color)
+def text(x, y, value, size=22, color=INK, bold=False, width=None):
+    face = font(size, bold)
+    assert x >= 0 and y >= 0 and y+size+8 < H, 'Text outside canvas: '+value
+    assert d.textlength(value, font=face) <= (width if width else W-x-28), 'Text overflow: '+value
+    d.text((x, y), value, font=face, fill=color)
     svg.append(f'<text x="{x}" y="{y+size}" fill="{color}" font-family="Segoe UI,DejaVu Sans,sans-serif" font-size="{size}" font-weight="{700 if bold else 400}">{html.escape(value)}</text>')
 
 
-def band(y,n,title,subtitle,color,fill):
-    rect((24,y,W-48,70),fill,radius=12)
-    rect((42,y+15,38,38),color,radius=10)
-    text(54,y+18,n,22,'#0d1420',True)
-    text(96,y+11,title,25,color,True)
-    text(96,y+42,subtitle,17,MUTED)
+def box(y, title, lines, color=BLUE, x=330, width=780, height=130):
+    assert x >= 0 and x+width < W and y+height < H
+    fill = '#241c35' if color == PURPLE else '#172335'
+    d.rounded_rectangle((x, y, x+width, y+height), radius=16, fill=fill, outline=color, width=2)
+    svg.append(f'<rect x="{x}" y="{y}" width="{width}" height="{height}" rx="16" fill="{fill}" stroke="{color}" stroke-width="2"/>')
+    text(x+22, y+14, title, 26, color, True, width-44)
+    for i, line in enumerate(lines):
+        assert 56+i*28+26 <= height, 'Text outside box: '+line
+        text(x+22, y+56+i*28, line, 21, MUTED, width=width-44)
 
 
-def node(y,n,title,lines,color=BLUE,fill='#172335'):
-    rect((210,y,700,150),fill,color)
-    rect((228,y+18,38,34),color,radius=9)
-    text(238,y+19,n,20,'#0d1420',True)
-    text(280,y+17,title,27,color,True,max_width=605)
-    for i,line in enumerate(lines): text(236,y+65+31*i,line,22,MUTED,max_width=646)
-
-
-paths=[]
-
-
-def edge(points,color=BLUE,label=None,lx=0,ly=0):
-    paths.append((points,color))
-    d.line(points,fill=color,width=3)
+def edge(points, color=BLUE, label=(), label_x=0, label_y=0):
+    paths.append((points, color))
+    d.line(points, fill=color, width=3)
     svg.append(f'<polyline points="{" ".join(f"{x},{y}" for x,y in points)}" fill="none" stroke="{color}" stroke-width="3" stroke-linejoin="round"/>')
-    a,b=points[-2:]; theta=math.atan2(b[1]-a[1],b[0]-a[0]); x,y=b
-    wings=[(x-11*math.cos(theta)+s*6*math.sin(theta),y-11*math.sin(theta)-s*6*math.cos(theta)) for s in (-1,1)]
-    d.polygon([b,*wings],fill=color)
+    a, b = points[-2:]
+    theta = math.atan2(b[1]-a[1], b[0]-a[0])
+    x, y = b
+    wings = [(x-11*math.cos(theta)+s*6*math.sin(theta), y-11*math.sin(theta)-s*6*math.cos(theta)) for s in (-1, 1)]
+    d.polygon([b, *wings], fill=color)
     svg.append(f'<polygon points="{x},{y} {wings[0][0]},{wings[0][1]} {wings[1][0]},{wings[1][1]}" fill="{color}"/>')
-    if label:
-        for i,line in enumerate(label.split('|')):
-            width=d.textlength(line,font=font(18,True))+12
-            rect((lx-6,ly+i*24,width,25),'#0d1420',radius=3)
-            text(lx,ly+i*24,line,18,color,True)
+    for i, line in enumerate(label):
+        text(label_x, label_y+i*24, line, 18, color, True)
 
 
-def decision(y,n,title,line):
-    pts=[(560,y),(910,y+80),(560,y+160),(210,y+80)]
-    d.polygon(pts,fill='#302719',outline=GOLD,width=2)
-    svg.append(f'<polygon points="{" ".join(f"{x},{yy}" for x,yy in pts)}" fill="#302719" stroke="{GOLD}" stroke-width="2"/>')
-    text(410,y+37,n+'  '+title,26,GOLD,True,max_width=550)
-    text(365,y+83,line,20,MUTED,max_width=640)
-
-
-text(52,35,'ARBITER AI / SYSTEM ARCHITECTURE',21,BLUE,True)
-text(52,78,'From raw evidence to a clear next step',39,INK,True)
-text(52,135,'Qwen is L1. Only its escalations go to Gemma L2 for a final review.',24,MUTED)
-
-for x,title,lines,color,fill in [
-    (50,'COMPUTER REPORTS',['Windows / Sysmon','Defender / osquery'],BLUE,'#162840'),
-    (310,'NETWORK + DEVICES',['Wazuh / Suricata','Syslog / devices'],BLUE,'#162840'),
-    (570,'OPTIONAL INPUTS',['Enabled AWS readers','Approved sources only'],BLUE,'#162840'),
-    (830,'PRACTICE / REPLAY',['Separate test records','No device changes'],PURPLE,'#29203d'),
-]:
-    rect((x,205,240,112),fill,color)
-    text(x+15,218,title,18,color,True,max_width=210)
-    for i,line in enumerate(lines): text(x+15,250+i*25,line,18,MUTED,max_width=210)
-
-# Source paths converge; demo uses an isolated instance of the same pipeline.
-for x in (170,430,690,950): edge([(x,317),(x,341),(560,341),(560,425)],BLUE)
-band(355,'1','COLLECT + KEEP EVIDENCE','Gather reports without letting the AI change a device.',BLUE,'#192c46')
-node(435,'01','Read security reports',['Read logs and alerts from the sources you enable.','Keep originals so a person can check what happened.'])
-edge([(560,585),(560,635)])
-node(635,'02','Organize and check',['Put computer, user, time and network details in one format.','Reject broken records; keep the original evidence.'])
-edge([(560,785),(560,835)])
-node(835,'03','Save events in a waiting line',['Save waiting events so a restart does not lose the queue.','Limit the queue; show when incoming work exceeds capacity.'])
-edge([(560,985),(560,1055)])
-band(1000,'2','CONNECT CLUES + DECIDE','Review urgent events first; let older waiting events progress too.',BLUE,'#192c46')
-node(1080,'04','Connect the clues',['Link nearby events; check the computer\'s role and history.','Use approved facts only when they fit this exact event.'])
-edge([(560,1230),(560,1280)])
-decision(1280,'05','Must someone review?','Safety rules check for known risky signals')
-edge([(560,1440),(560,1540)],BLUE,'No forced review',570,1460)
-decision(1540,'06','Can quick rules decide?','Clearly routine, clearly risky, or still unclear?')
-edge([(560,1700),(560,1820)],PURPLE,'Unclear: ask the AI',574,1740)
-node(1820,'07','First brain: Qwen3.5:4b',['Review unclear alerts and explain a recommendation.','This local model can be replaced by a compatible one.'],PURPLE,'#241c35')
-edge([(560,1970),(560,2050)],PURPLE,'Model answer',574,1990)
-node(2050,'08','Check the AI recommendation',['Check the answer against rules and required evidence.','If the AI fails or is too unsure, ask a person to review.'],PURPLE,'#241c35')
-
-# Conditional early exits are explicit and labelled, rather than hidden in prose.
-edge([(910,1360),(1060,1360),(1060,2300),(810,2300),(810,2425)],RED,'Yes: ask|for review',925,1390)
-edge([(910,1620),(1000,1620),(1000,2280),(865,2280),(865,2425)],RED,'Needs review',925,1650)
-edge([(210,1620),(60,1620),(60,2300),(280,2300),(280,2425)],GREEN,'Routine, with|enough support',72,1660)
-edge([(560,2200),(560,2290),(370,2290),(370,2425)],GREEN,'Enough routine evidence',285,2230)
-edge([(560,2200),(560,2290),(700,2290),(700,2425)],RED,'Risky / still uncertain',605,2230)
-text(454,2350,'THE TWO OUTCOMES',18,MUTED,True)
-for x,title,lines,color,fill in [
-    (90,'KEEP AS AN OBSERVATION',['Quiet the alert with a written reason.','Keep the record for later checks.'],GREEN,'#163027'),
-    (600,'FLAG FOR REVIEW',['Show why it needs someone\'s attention.','A warning alone does not block anything.'],RED,'#351e28'),
-]:
-    rect((x,2425,430,130),fill,color)
-    text(x+20,2442,title,23,color,True,max_width=390)
-    for i,line in enumerate(lines): text(x+20,2484+i*28,line,19,MUTED,max_width=390)
-edge([(305,2555),(305,2590),(560,2590),(560,2630)],GREEN)
-edge([(815,2555),(815,2590),(560,2590),(560,2630)],RED)
-node(2630,'09','Save the decision and reason',['Record the decision, evidence, and rule or model used.','Keep a history so a person can check the reasoning.'],BLUE)
-edge([(560,2780),(560,2830)])
-node(2830,'10','Show a person the next step',['Explain what happened, where, and what needs checking.','Keep alerts visible while the second brain investigates.'],BLUE)
-edge([(560,2980),(560,3030)],PURPLE,'Only Qwen-flagged alerts',574,2990)
-node(3030,'11','L2 rules: settle or route',['Protect risky evidence; use exact human feedback.','Skip repeat reviews when needed context is missing.'],BLUE)
-edge([(560,3180),(560,3240)],PURPLE,'Needs model judgment',574,3196)
-node(3240,'12','Independent Gemma4:12b review',["Read original facts without Qwen's opinion text.",'Propose a decision, then challenge it in another pass.'],PURPLE,'#241c35')
-edge([(560,3390),(560,3470)],PURPLE)
-edge([(910,3105),(1060,3105),(1060,3440),(865,3440),(865,3470)],BLUE,'L2 rules settled it',920,3340)
-edge([(210,2905),(60,2905),(60,3440),(255,3440),(255,3470)],BLUE,'Other L1 decisions|same final check',70,3402)
-node(3470,'13','Shared final checks: L1 + L2',['Known risk can veto quieting, whichever stage proposed it.','Keep the original decisions, reasons and deciding layer.'],GOLD,'#302719')
-edge([(560,3620),(560,3670),(305,3670),(305,3740)],GREEN,'Supported ordinary activity',95,3695)
-edge([(560,3620),(560,3670),(815,3670),(815,3740)],RED,'Risky, uncertain or failed',680,3695)
-for x,title,lines,color,fill in [
-    (90,'SUPPRESS ALERT',['Keep the reason and both reviews.','No device action.'],GREEN,'#163027'),
-    (600,'KEEP ALERT',['Keep the warning visible.','A person investigates.'],RED,'#351e28'),
-]:
-    rect((x,3740,430,120),fill,color)
-    text(x+20,3755,title,23,color,True,max_width=390)
-    for i,line in enumerate(lines):text(x+20,3795+i*28,line,19,MUTED,max_width=390)
-text(52,3930,'WHO CAN AUTHORIZE A DEVICE CHANGE?',18,GOLD,True)
-text(52,3962,'Alert decisions do not authorize commands, blocks or other actions.',26,INK,True)
-text(52,4010,'Either model can be replaced by a compatible local model. Both reviews remain auditable.',18,MUTED)
-text(52,4042,'Only Qwen escalations enter L2. Rules can avoid an unnecessary Gemma call.',18,MUTED)
+text(54, 30, 'ARBITER AI / CURRENT PROJECT DESIGN / NOVEMBER 2026', 21, BLUE, True)
+text(54, 76, 'Two brains decide. A separate worker explains.', 38, INK, True)
+text(54, 134, 'Five decision workers + one CPU report worker. Models and evidence stay local.', 25, MUTED)
+box(205, 'Enabled sources or isolated practice replay',
+    ['Read original security reports; check and normalize each record.', 'Collection permissions and device actions remain separate.'])
+edge([(720, 335), (720, 380)])
+box(380, 'Durable waiting line: keep events through restart',
+    ['Save pending work in SQLite. Limit capacity and show overload.', 'Keep source identity, original facts and timestamps.'])
+edge([(720, 510), (720, 555)])
+box(555, 'WORKER 1 / Gateway: connect the clues',
+    ['Choose a saved event; add nearby activity and relevant local facts.', 'Prepare the evidence before either model reviews it.'])
+edge([(720, 685), (720, 730)])
+box(730, 'WORKER 2 / L1 rules + Qwen3.5:4b',
+    ['Quick rules handle clear cases. Qwen reviews unclear activity.', 'It can quiet an event or raise a warning with a short reason.', 'L1 can review another event while Gemma works.'], PURPLE, height=155)
+edge([(720, 885), (720, 990)], PURPLE,
+    ['Only successful Qwen model escalations'], 742, 919)
+box(990, 'WORKER 3 / Independent L2 pre-filter',
+    ['Quiet an eligible routine case only with supporting evidence.', 'Pass unresolved warnings to Gemma, even with missing context.'])
+edge([(720, 1120), (720, 1225)], PURPLE,
+    ['Unresolved: ask the second brain'], 742, 1151)
+box(1225, 'WORKER 4 / L2: Gemma4:12b',
+    ["Read original facts without Qwen's opinion text.", 'Return a compact decision, explanations and supplied evidence IDs.', 'Proposed suppression needs a checking call and 90% confidence.'], PURPLE, height=155)
+edge([(720, 1380), (720, 1490)], GOLD,
+    ['Check the proposed outcome'], 742, 1417)
+edge([(330, 808), (98, 808), (98, 1555), (330, 1555)], BLUE,
+    ['Other L1 exits:', 'quiet decisions,', 'mandatory rules,', 'failed Qwen calls.', '', 'Bypass Gemma;', 'still checked.'], 122, 954)
+edge([(1110, 1055), (1338, 1055), (1338, 1555), (1110, 1555)], GREEN,
+    ['Supported', 'routine case:', 'bypass Gemma;', 'still checked.'], 1135, 1138)
+box(1490, 'WORKER 5 / Shared final guardrail',
+    ['Check every L1 and L2 exit, including pre-filter shortcuts.', 'Protected risk, failed review or rejected suppression stays visible.'], GOLD)
+edge([(720, 1620), (720, 1725)])
+box(1725, 'Save the final decision, facts and actual model context',
+    ['Keep visible for investigation OR quiet with a recorded reason.', 'Preserve L1, L2 and final outcomes; queue a durable report job.'], GREEN)
+edge([(720, 1855), (720, 1900), (355, 1900), (355, 1970)], BLUE,
+    ['Decision visible now'], 182, 1923)
+edge([(720, 1855), (720, 1900), (1085, 1900), (1085, 1970)], GOLD,
+    ['Report job: separate work'], 864, 1923)
+box(1970, 'Authenticated dashboard / API',
+    ['Show saved decisions and both reviewers.', 'Partial facts first; final report when ready.'],
+    BLUE, x=50, width=610, height=135)
+box(1970, 'WORKER 6 / CPU report writer',
+    ['Six local templates use saved evidence.', 'No AI call. Decisions do not wait for it.'],
+    GOLD, x=780, width=610, height=135)
+edge([(780, 2038), (660, 2038)], GOLD)
+text(54, 2160, 'REMEMBER ELIGIBLE LIVE REPEATS / LOCAL SQLITE MEMORY', 22, GREEN, True)
+box(2210, 'Qwen-approved patterns feed L1 rules',
+    ['Exact host, source, content and model scope.', 'Record origin, reason and template.'],
+    GREEN, x=50, width=650, height=135)
+box(2210, 'Gemma-approved patterns feed L2 rules',
+    ['Challenge and final gates must pass first.', 'A match avoids another Gemma review.'],
+    GREEN, x=740, width=650, height=135)
+text(54, 2375, 'Expires after 1 hour or 25 hits; revocable. File/API/demo/replay cannot teach or use shortcuts.', 22, MUTED)
+text(54, 2420, 'Either brain can use a compatible local replacement. Ollama is the runner, not the model.', 22, MUTED)
+text(54, 2470, 'Classification does not authorize commands or device changes. New report-worker speed: retest next.', 22, GOLD, True)
 svg.append('</svg>')
-OUT.mkdir(parents=True,exist_ok=True)
-(OUT/'arbiter-flow.svg').write_text('\n'.join(svg)+'\n',encoding='utf-8')
-base.save(OUT/'arbiter-flow.png',optimize=True)
-frames=[]
-for frame in range(60):
-    im=base.copy(); painter=ImageDraw.Draw(im)
-    for index,(points,color) in enumerate(paths):
-        distance=((frame/60-index*.07)%1)*sum(math.dist(a,b) for a,b in zip(points,points[1:]))
-        for a,b in zip(points,points[1:]):
-            length=math.dist(a,b)
-            if length and distance<=length:
-                t=distance/length; x=a[0]+(b[0]-a[0])*t; y=a[1]+(b[1]-a[1])*t
-                painter.ellipse((x-6,y-6,x+6,y+6),fill=color)
+OUT.mkdir(parents=True, exist_ok=True)
+(OUT/'arbiter-flow.svg').write_text('\n'.join(svg)+'\n', encoding='utf-8')
+(OUT.parent/'architecture.svg').write_text('\n'.join(svg)+'\n', encoding='utf-8')
+base.save(OUT/'arbiter-flow.png', optimize=True)
+frames = []
+for frame in range(40):
+    im = base.copy()
+    painter = ImageDraw.Draw(im)
+    for index, (points, color) in enumerate(paths):
+        distance = ((frame/40-index*.07) % 1)*sum(math.dist(a, b) for a, b in zip(points, points[1:]))
+        for a, b in zip(points, points[1:]):
+            length = math.dist(a, b)
+            if length and distance <= length:
+                t = distance/length
+                x, y = a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t
+                painter.ellipse((x-5, y-5, x+5, y+5), fill=color)
                 break
-            distance-=length
+            distance -= length
     frames.append(im.quantize(colors=128))
-frames[0].save(OUT/'arbiter-flow.gif',save_all=True,append_images=frames[1:],duration=100,loop=0,optimize=True,disposal=1)
-print('Combined flow rendered:',(OUT/'arbiter-flow.gif').stat().st_size,'bytes')
+frames[0].save(OUT/'arbiter-flow.gif', save_all=True, append_images=frames[1:], duration=100, loop=0, optimize=True, disposal=1)
+print('Rendered current diagram:', W, 'x', H, ';', len(frames), 'animation frames')

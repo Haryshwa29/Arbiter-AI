@@ -37,9 +37,12 @@ Qwen verdict. A pending or failed review keeps the warning visible.
 
 The terminal final-review preset now has [five bounded worker stages](FIVE-WORKER-PIPELINE.md):
 gateway, L1, L2 prefilter, L2, and final guardrail. L1 can continue while L2
-investigates another event. The current public checkpoint remains the original
-sequential replay; installed dashboard builds are unchanged. `status` exposes
-the five workers and their waiting lines. Real-GPU speedup is not yet measured.
+investigates another event. The current source also has a separate sixth CPU
+report worker; decisions finish before longer template reports. `status` exposes
+decision workers, waiting lines and report-worker state. The
+[latest public checkpoint](PROGRESS-2026-11-20.md) measured five-worker operation;
+the newer compact-reply/report update awaits a real-model retest. Installed
+dashboard updates require a new build and explicit L2 configuration.
 
 1. Existing rules handle clear cases. Mandatory safety warnings remain flagged;
    they do not enter Gemma's queue. Quiet observations also do not enter it.
@@ -61,10 +64,10 @@ the five workers and their waiting lines. Real-GPU speedup is not yet measured.
    It considers ordinary and malicious explanations and proposes one final
    `escalate` or `suppress` decision, with a written reason. The older duplicate
    `outlook` judgment is derived for display rather than requested independently.
-5. A separate Gemma call challenges that decision. This is a second pass by the
-   same model, not an independent third model.
+5. A separate Gemma call challenges a proposed suppression. Retain-only decisions
+   can skip it. This is a second pass by the same model, not a third brain.
 6. A **shared final guardrail** checks L1 and L2 decisions, including shortcuts.
-   Model suppression needs an accepted challenge, exact copied facts and
+   Model suppression needs an accepted challenge, validated supplied evidence and
    confidence of at least 0.9. Uncertainty, low confidence,
    malformed answers, known-risk vetoes or errors retain the warning. Model confidence is not a
    measured probability of correctness, and exact citations do not certify prose.

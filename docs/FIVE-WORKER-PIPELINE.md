@@ -1,5 +1,13 @@
 # Five workers: keep each stage moving
 
+**Current source adds a sixth, independent CPU report worker.** The five
+decision stages below are unchanged. Saved decisions reach the dashboard while
+the report worker formats their evidence using local templates, without a model
+call. See [the current architecture](ARCHITECTURE.md),
+[decision/report separation](DECISION-REPORT-WORKER.md) and
+[latest measured progress](PROGRESS-2026-11-20.md). The 20K checkpoint predates
+the compact-reply/report update; its real-model timing retest is next.
+
 The terminal agent's `--l2-final-review` preset and L2-enabled local dashboard use five worker threads.
 They work on different events at the same time. **Qwen3.5:4b remains L1;
 Gemma4:12b remains L2. Only Qwen's successful model escalations enter L2.**
@@ -38,7 +46,7 @@ flowchart TD
 | Gateway | Chooses the next saved event, prepares its evidence and keeps review deadlines visible. |
 | L1 | Handles clear cases with rules; asks Qwen about unclear ones. It can continue while Gemma investigates another event. |
 | L2 prefilter | Independently quiets a supported routine case; passes unresolved L1 escalations, including missing context, to Gemma. |
-| L2 | Gives Gemma the original evidence and bounded security context, without Qwen's written opinion; requires a separate challenge pass. |
+| L2 | Gives Gemma original evidence and bounded security context, without Qwen's written opinion; proposed suppressions require a separate checking pass. |
 | Final guardrail | Checks L1-only exits and L2 outcomes. Unsupported or failed L2 decisions leave the original warning visible. Saves exact event bindings. |
 
 The old replay's `L2_CONTEXT_REQUIRED` shortcut retained warnings before Gemma

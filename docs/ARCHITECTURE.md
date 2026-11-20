@@ -1,168 +1,174 @@
-# Arbiter AI — architecture & positioning
+# Arbiter AI — current architecture and project design
 
-> A self-hosted AI security analyst for companies with no security team.
-> Your data never leaves your network. For the full product vision see [`CONCEPT.md`](../CONCEPT.md).
->
-> **New direction:** Arbiter is evolving from a single-host analyst into a controller + trusted edge architecture for authorized remote breach response. See [`BREACH_CONTAINMENT_ARCHITECTURE.md`](BREACH_CONTAINMENT_ARCHITECTURE.md).
+Updated 20 November 2026. **Qwen3.5:4b is L1; Gemma4:12b is L2.** Five
+decision workers share bounded queues. A separate sixth CPU worker prepares
+reports from saved decisions. This describes the published source; existing
+installations need an updated build and explicit L2 configuration.
 
-**[Start with the detailed, animated vertical walkthrough](ARCHITECTURE-WALKTHROUGH.md)**
-for the current implementation, evidence flow, review controls, optional L2 and
-deployment boundaries. A [still-diagram edition](architecture/STILL.md) is also
-available. The older positioning diagrams below are conceptual; the walkthrough
-distinguishes shipped local behavior from the planned controller/edge design.
+Implementation source:
+[`codex/ait-ads-triage-hardening`](https://github.com/Haryshwa29/Arbiter-AI/tree/codex/ait-ads-triage-hardening).
+The homepage documentation describes this published branch; it does not imply
+that older releases or the `main` application code include the update.
 
-![Arbiter architecture](architecture.svg)
+[Latest measured progress](PROGRESS-2026-11-20.md) ·
+[Full report and raw evidence](../evals/2026-11-20-20k-checkpoint/README.md) ·
+[Plain-English walkthrough](ARCHITECTURE-WALKTHROUGH.md)
 
-## The problem it solves
+## The impact behind this design
 
-![Why it helps a startup](value-prop.svg)
+The latest measured checkpoint quieted **89.95%** of unannotated records,
+compared with **57.52%** in the initial published run. L2 removed **496 of 767
+unannotated L1 warnings — 64.67%**, compared with **0.35%** initially. The whole
+pipeline retained **17,304 of 17,305 attack-labelled records — 99.994%**.
+Most attacks were repeated scans handled by rules; five reached the models,
+and four stayed flagged. Unannotated records are not independently certified benign.
 
-Growing startups generate real log volume and are increasingly targeted, but they have no security hire. The detection tooling available to them is genuinely good — and nearly all of it assumes somebody is reading the output, writing the rules, and tuning the noise. That somebody is exactly who these companies don't have, so the alerts pile up unread and most run effectively unprotected.
+The five-worker checkpoint also exposed long L2 waits, invalid evidence replies
+and one missed account/session attack. The new compact-reply and CPU-report
+update addresses part of the work behind those delays. It is software-tested;
+its real-model performance retest is next.
 
-**A shield you can raise before you can afford an army.** Arbiter supplies the missing analyst rather than another dashboard for one to watch. The collection layer is table stakes; the AI triage brain is the product.
+## Follow one event
 
-## How it works
-
-Every alert flows through a two-tier brain and comes out as an auditable verdict. Nothing in this path calls the cloud.
+![Six-worker architecture with independent L1 and L2 rules, shared final checks, separate CPU reports and scoped memory.](architecture/arbiter-flow.svg)
 
 ```mermaid
 flowchart TD
-    subgraph net["🔒 customer network — nothing leaves the box"]
-        L["your log streams<br/><small>sshd · auditd · nginx · cloud</small>"]
-        C["collector<br/><small>normalizes to the Event schema</small>"]
-        P["tier 1 · prefilter (cheap)<br/><small>severity × criticality × history</small>"]
-        M["memory (SQLite)<br/><small>assets · history · facts · feedback</small>"]
-        LLM["Qwen3.5 · replaceable local AI<br/><small>another compatible local model can take this role</small>"]
-        V["verdict<br/><small>escalate + evidence · suppress + rationale</small>"]
-        D["dashboard<br/><small>analyst sees, acts, resolves</small>"]
-        R["response actuator<br/><small>surgical · TTL · reversible</small>"]
-
-        G["security guardrails<br/><small>non-suppressible signals</small>"]
-        L --> C --> G
-        G -- "hard signal: exposure / tampering / exfil" --> V
-        G -- "otherwise" --> P
-        P -- "high/low score: decided cheaply" --> V
-        P -- "ambiguous only" --> LLM --> GV{"guardrail veto"}
-        GV --> V
-        V --> D
-        V --> R
-        M -. feeds scoring .-> P
-        M -. feeds context .-> LLM
-        D -. analyst feedback trains .-> M
-    end
+    S["Enabled collectors or isolated replay<br/>Keep the original evidence"]
+    Q["Durable SQLite waiting line<br/>Normalize and save incoming records"]
+    G["Worker 1: Gateway<br/>Choose an event and connect nearby clues"]
+    L1["Worker 2: L1 rules + Qwen3.5:4b<br/>Decide clear cases; review unclear ones locally"]
+    P2["Worker 3: L2 pre-filter<br/>Quiet supported routine cases or pass to Gemma"]
+    L2["Worker 4: Gemma4:12b<br/>Independent compact decision<br/>Proposed suppression needs a checking call"]
+    F["Worker 5: Shared final guardrail<br/>Check L1 and L2 exits, including shortcuts"]
+    D["Saved final decision + evidence + actual model context<br/>Keep visible or quiet with a reason"]
+    UI["Authenticated API and dashboard<br/>Show the decision while the report is pending"]
+    R["Worker 6: CPU reports<br/>Six local templates; no model calls"]
+    M1["Scoped L1 repeat memory"]
+    M2["Scoped L2 repeat memory"]
+    S --> Q --> G --> L1
+    L1 -->|Successful Qwen model escalation only| P2
+    L1 -->|Quiet, rule-mandated warning or failed Qwen call| F
+    P2 -->|Unresolved, including missing context| L2
+    P2 -->|Supported routine suppression| F
+    L2 --> F --> D
+    D --> UI
+    D -->|Durable report job| R
+    R -->|Saved explanation| UI
+    F -.->|Qualifying live Qwen suppression| M1
+    F -.->|Qualifying live Gemma suppression| M2
+    M1 -.->|Future exact matches| L1
+    M2 -.->|Future exact matches| P2
 ```
 
-The guardrail layer wraps the model on both sides — `Event → guardrails → LLM → guardrails → Decision`. See "Guardrails" below for why.
+The learning arrows apply only to eligible live records. File/API/demo/replay
+records cannot teach or use those shortcuts. No event is sent directly to Gemma.
 
-The quick sorting rules handle clear cases, while **Qwen3.5** reviews cases that
-need an AI opinion. Another compatible local model can replace it. **Ollama is
-the current local runner, not the model itself.** A different serving system
-needs a compatible backend adapter. Keeping customer inference local is a
-separate requirement; changing the model does not remove the safety checks.
-The share of events that need AI depends on the workload and must be measured.
+## What each part owns
 
-## Remote deployment model
+| Part | Everyday job | Implementation |
+|---|---|---|
+| Collection and normalization | Read approved sources, retain originals and put records in a common format. | [Collectors](../arbiter/ingestion/collectors), [normalization](../arbiter/ingestion/normalization.py), [schema](../arbiter/ingestion/schema.py) |
+| Durable queue and gateway | Keep pending events through restart and add bounded related-event context. | [Store](../arbiter/ingestion/store.py), [review pipeline](../arbiter/ingestion/review_pipeline.py), [correlation](../arbiter/ingestion/correlation.py) |
+| L1 | Apply security rules and cheap sorting; ask Qwen when needed. | [Triage](../arbiter/triage.py), [pre-filter](../arbiter/prefilter.py), [model adapter](../arbiter/llm.py) |
+| L2 pre-filter | Independently resolve supported routine escalations or route to Gemma. | [L2 pre-filter](../arbiter/l2_prefilter.py), [security context](L2-CONTEXT.md) |
+| L2 model | Evaluate original facts without Qwen's opinion text; select evidence IDs from supplied facts. | [Final review](../arbiter/l2_final_review.py), [evidence packet](../arbiter/l2_evidence.py), [L2 checks](../arbiter/l2_guardrails.py) |
+| Final checks | Preserve protected warnings, exact event bindings and human rejections. | [Shared guardrails](../arbiter/guardrails.py), [workflow](../arbiter/l2_workflow.py) |
+| Local memory | Store assets, scoped facts, corrections and exact eligible repeat patterns. | [Memory](../arbiter/memory.py), [learned patterns](../arbiter/learned_patterns.py) |
+| Reporting | Save context receipts; render facts and reasons into local, versioned templates. | [Templates](../arbiter/reports.py), [CPU worker](../arbiter/ingestion/report_worker.py) |
+| Audit and operator interface | Keep attributable decisions and expose them through authenticated APIs. | [Audit](../arbiter/store.py), [IAM](../arbiter/iam.py), [API](../arbiter/api/server.py), [frontend](../frontend) |
+| Device response | Apply separately authorized, fixed operations; classification grants no execution rights. | [Response](../arbiter/respond.py), [response workflow](../arbiter/ingestion/response_workflow.py), [containment](../arbiter/ingestion/containment.py) |
 
-The same decision pipeline now has a defined path for remote breach response:
+## Decisions finish before longer reports
 
-```text
-protected endpoint / sensor
-    -> Arbiter Edge Agent
-    -> authenticated encrypted telemetry channel
-    -> Arbiter Controller
-    -> guardrails / deterministic triage / correlation / local LLM
-    -> typed containment proposal
-    -> approval/policy
-    -> signed typed action request
-    -> Edge Agent actuator
-    -> verification / expiry / rollback / audit
-```
+Gemma's final-review reply requests a decision, confidence, short reason,
+ordinary and suspicious explanations, missing context and evidence IDs. Code
+resolves the selected IDs to supplied facts. A proposed suppression still needs
+the checking call, confidence of at least 0.9 and all final gates. Retain-only
+decisions can skip the checking call. This is a second pass by the same Gemma
+model, not a separate third brain.
 
-The Edge Agent is intentionally not a second AI runtime and does not expose an arbitrary shell. It collects approved telemetry, applies local response policy, executes only registered typed actions, and reports verified results. The controller owns reasoning, incident state and operator workflow.
+The actual model input context and decision receipt are saved. A durable report
+job then goes to the CPU worker. Authentication, web, network, software/update,
+process and generic templates format the recorded explanation and manual checks
+without another inference request. They do not invent missing evidence.
 
-For the detailed trust model, deployment modes, typed actuator registry, host isolation, priority queues, breakout-time metrics and implementation phases, see [`BREACH_CONTAINMENT_ARCHITECTURE.md`](BREACH_CONTAINMENT_ARCHITECTURE.md).
+The dashboard can show partial facts while analysis is pending, the final
+decision when saved, and the full report when ready. A delayed or failed report
+does not undo the decision. Pending jobs survive restart; revision checks stop
+an old report from replacing a human's newer correction. Retention follows the
+source event. See [implementation and validation](DECISION-REPORT-WORKER.md).
 
-## The trust model (the make-or-break)
+## Parallel work and honest timing
 
-The fatal failure is suppressing a real breach — one miss and the customer turns Arbiter off forever. So error costs are deliberately **asymmetric**, enforced in several places:
+The L1 worker can review a later event while Gemma reviews an earlier escalation.
+There is **one worker per decision stage**, plus the report worker; there are
+not five copies of either model. Other application duties can use additional
+threads. Both models share the computer's inference resources.
 
-```mermaid
-flowchart LR
-    A["alert"] --> S{"score &amp; context"}
-    S -->|"strong benign history"| SUP["suppress<br/><small>+ written rationale</small>"]
-    S -->|"anything unclear"| ESC["escalate<br/><small>+ evidence summary</small>"]
-    S -->|"LLM fails / low-confidence suppress"| ESC
-```
+The durable buffer defaults to 10,000 unfinished events. One event can wait
+immediately ahead of L1; subsequent inter-stage queues hold up to 32 jobs each.
+Full queues slow upstream work instead of growing memory without a limit.
+Enough L2 backlog will eventually slow L1 too. Ordinary single-brain and other
+L2 modes retain their own arrangements.
 
-- Suppression always needs stronger justification than escalation.
-- Every suppression carries a written rationale; every escalation carries an evidence summary. No silent verdicts.
-- A low-confidence "suppress" from the model is upgraded to escalate; if the model is unreachable, the event escalates by policy.
-- **Shadow mode first**: Arbiter scores alongside the human for weeks before it earns the right to suppress anything.
+In the measured checkpoint, a valid L2 model review averaged about **34s**;
+the L2-routed ingestion-to-final path averaged **36m 09s**, including waiting.
+The overall **41.83 records/min** includes large numbers of quick rule decisions.
+These describe different measurements. The new report worker's latency gain
+needs a fresh real-model test. See [queue details](FIVE-WORKER-PIPELINE.md).
 
-## Guardrails — non-suppressible invariants (the adversarial layer)
+## Learn repeats without trusting an entire host
 
-The hardest attack class is the **fact-trap**: a malicious action dressed as routine maintenance ("opened RDP to the internet *during the patch window*", "uploaded 6GB to an unknown host *during the backup window*"). An adversarial evaluation exposed that this can't be fixed by trusting the model. A local 4B model caught **0 of 9** fact-traps — and, counter-intuitively, did *worse* than a dumb keyword heuristic, because a smarter model over-applies the benign "maintenance window" framing and extends it to things it never should.
+Eligible high-confidence Qwen suppressions teach L1's memory. Eligible Gemma
+suppressions that pass the challenge and final gates teach L2's memory. A later
+exact match can avoid that stage's inference, retaining the original model,
+event, reason and report-template reference.
 
-So fact-trap resistance is not a property to hope the model has; it is a guarantee enforced in code. Certain signals are **non-suppressible** — no environment fact and no model verdict may silence them:
+The match includes host/source identity, event content, model and environment.
+It expires after one hour or 25 hits, cannot renew itself and can be revoked.
+Native process patterns retain their stricter evidence/history requirements.
+Changed users, commands, destinations or risk must receive normal review.
+Neither brain edits executable pre-filter code. This is local SQLite memory,
+not fine-tuning. See [scope and limits](LEARNED-PATTERNS.md).
 
-- exposure of a service to the public internet (`0.0.0.0/0`)
-- an integrity/binary change with no matching package update
-- data leaving to an unknown or external destination
-- creation or elevation of a privileged (uid-0/admin) account
-- remote shell execution (pipe-to-shell, reverse shell)
-- credential dumping
+The latest checkpoint recorded zero L2 pre-filter suppressions and zero learned
+hits. The capability is implemented; its benefit on that run was not demonstrated.
 
-`arbiter/guardrails.py` checks these before the model (a hard signal escalates without spending inference) and vetoes any model "suppress" after it. With the guardrail sandwich, both the mock and the local model go to **100% recall on the fact-trap set** (9/9), with precision *unchanged* — the guardrails never fire on benign maintenance.
+## Safety and deployment boundaries
 
-### The Adversarial Evaluation Suite
+- **Preserve uncertainty.** Unsupported quieting, invalid replies, model errors
+  and protected-risk vetoes keep warnings visible. The missed session attack
+  shows that these checks still need better judgement/context tests.
+- **Keep the evidence.** L1's original verdict remains auditable alongside L2's
+  classification and the final result. Pending L2 warnings remain visible.
+- **Keep customer inference local.** Either evaluated model can be replaced by
+  a compatible local model meeting the role's checks. Ollama is the current
+  runner; other serving systems need an adapter. A replacement needs evaluation.
+- **Separate action authority.** This final-review preset cannot authorize a
+  device block or a command. Supported native responses have independent
+  approval, scope, freshness, expiry and audit checks.
+- **Keep customer UI assets local.** Operational APIs require authentication;
+  state changes use CSRF and role checks. The frontend reads through the API,
+  never by calling the brain. No runtime CDN or analytics is used.
+- **Separate integrations and demonstrations.** Enabled AWS readers contact
+  configured AWS APIs for telemetry. The separately authorized public simulator
+  has its own consent/cloud boundary and cannot act on a customer's device.
+  The public landing carries static copy and makes no authenticated API calls;
+  customer installs leave it off by default.
 
-`samples/adversarial_suite.jsonl` turns this into a permanent, growing benchmark. Each category pairs legitimate maintenance (must suppress) with an attack wearing the same costume (must escalate): maintenance window, backup window, patch Tuesday, scheduled scan, CI/CD, developer sandbox, nightly sync, database migration, VPN maintenance, cloud autoscaling, and generic fact-traps. The rule is binary — **every disguised attack must be caught, or the gate fails.** Every new fact-trap that slips past becomes a new guardrail rule *and* a permanent case here; the suite only grows.
+The [controller + trusted edge architecture](BREACH_CONTAINMENT_ARCHITECTURE.md)
+remains a planned extension. Remote fleet enforcement, broader cloud adapters,
+real AWS account validation and production delivery capacity are future work.
 
-```bash
-python -m arbiter eval samples/adversarial_suite.jsonl --backend ollama --model qwen3.5:4b
-python -m arbiter eval samples/adversarial_suite.jsonl --backend mock --no-guardrails   # see the raw model fail
-```
+## What happens next
 
-## Adaptation through context, not weights
+The published source has compact replies, saved receipts and the independent
+report worker. The **649-test / 25-subtest** publication check and frontend
+validation passed. The 20K benchmark predates that update. The next evaluation
+must test the missed account/session case, malformed evidence, GPU endurance,
+repeat-pattern eligibility and queue delay with real Qwen/Gemma. The **18–23s**
+L2 model-review goal is a planning target, not a measured result.
 
-Arbiter gets smarter about *your* environment through a local, human-readable SQLite **memory layer** — asset criticality, per-signature verdict history, environment facts ("backups run at 02:00, ignore the IO spike"), and a human feedback loop — not through per-customer fine-tuning. This is more transparent than fine-tuned weights: the customer can read exactly why the system believes what it believes.
-
-## Response — detect, triage, and act surgically
-
-Escalations can carry a recommended response action (block an IP, kill a session, lock an account, quarantine a host). Actions are **surgical, TTL-limited, and reversible** — never service-wide. Auto-execution is reserved for the deterministic prefilter tier; the LLM tier only ever *recommends*, and a human approves. Blocking requires stronger justification than alerting, mirroring the trust model.
-
-Remote response follows the same principle: the controller dispatches typed action requests only, and the edge agent independently validates local policy and target scope before execution. Arbitrary model-generated commands are never part of the response contract.
-
-## API and frontend
-
-The first web layer — a stdlib-only dashboard plus a Svelte SPA (see [`ADR-001`](ADR-001-dashboard-retention-iam.md), now superseded) — was removed on 2026-07-26 and rebuilt. What replaced it:
-
-- **`arbiter/api/server.py`** — a thin JSON API over `store.py`, `iam.py` and `memory.py`. Still stdlib `http.server`; session cookie plus CSRF double-submit and security headers; a background thread polls the audit store and fans new rows out over SSE (`/api/stream`). It never talks to the triage engine directly, so it is indifferent to whether a collector, `arbiter run`, or the development-only `--demo-feed` produced the row.
-- **`frontend/`** — React + Vite + TypeScript + Tailwind. The public landing page ships; the dashboard views are in progress.
-
-The operator model is unchanged from ADR-001: two signed-in roles, **analyst** (see and act) and **admin** (also configure), with the analyst confirming or overruling verdicts to train the memory layer.
-
-## What ships vs. what's deferred
-
-**In the current slice:** the Event/Verdict contract, the memory layer, both triage tiers (mock + local qwen), shadow mode, the JSONL/SQLite audit trail, the response actuator (dry-run), built-in IAM, live endpoint/security-tool ingestion and manually approved TTL-limited local Windows IP blocking.
-
-**Next architectural slice:** controller/edge enrollment, authenticated remote telemetry, typed response RPC, host isolation, priority breach-processing lane and incident breakout metrics.
-
-**Deferred:** the shared threat-pattern feed (the network-effect moat — needs more than one customer, and ships anonymized *lessons*, never data), LoRA adaptation, broad multi-host fleet scale, identity/cloud containment providers and production-grade distributed ingestion.
-
-## Component map
-
-| Concern | Module |
-|---|---|
-| Event/Verdict contract (the collector boundary) | `arbiter/schema.py` |
-| Per-company memory: assets, history, facts | `arbiter/memory.py` |
-| Tier 1 — cheap prefilter | `arbiter/prefilter.py` |
-| Local AI — Qwen3.5 or a compatible replacement; current runner: Ollama | `arbiter/llm.py` |
-| Non-suppressible security guardrails | `arbiter/guardrails.py` |
-| Adversarial evaluation suite + gate | `samples/adversarial_suite.jsonl`, `arbiter/eval.py` |
-| Orchestrator, shadow mode, audit trail | `arbiter/triage.py` |
-| Response actuator / future typed provider registry | `arbiter/respond.py` |
-| Queryable audit store + 30-day retention | `arbiter/store.py` |
-| Built-in IAM (scrypt, signed cookies, roles) | `arbiter/iam.py` |
-| Authenticated dashboard/API | `arbiter/api/`, `frontend/` |
-| Remote breach containment target architecture | `docs/BREACH_CONTAINMENT_ARCHITECTURE.md` |
+[Setup](TWO-BRAIN-SETUP.md) · [Measured progress](PROGRESS-2026-11-20.md) ·
+[Reproduction](CHRONOLOGICAL-PUBLIC-RUN.md) · [Project vision](../CONCEPT.md)

@@ -1,30 +1,21 @@
 # Arbiter architecture — still-diagram edition
 
-These static diagrams contain the same labels as the
-[animated walkthrough](../ARCHITECTURE-WALKTHROUGH.md). No motion is required to
-understand the system. Follow the linked explanations for the full text equivalent.
+**Current November 20 source: five decision workers plus a separate CPU report
+worker.** Qwen3.5:4b is L1; only its successful model escalations enter the L2
+pre-filter and, when unresolved, Gemma4:12b. All final routes pass shared checks.
+A separate worker prepares reports from saved evidence without an AI call.
 
-Each box explains its job in everyday language. **Qwen3.5:4b is L1;
-Gemma4:12b is the L2 model. Only Qwen's escalations enter the separate L2 rules;
-Gemma is called when useful.** Both stages use a shared final guardrail. Either model can be replaced with a compatible
-local model. Ollama is the current
-local runner, not the name of the model. See the [model and runner explanation](../ARCHITECTURE-WALKTHROUGH.md#qwen35-replacement-models-and-ollama).
+![Current architecture: collection and durable queue, gateway, L1 rules and Qwen, L2 pre-filter, independent Gemma, shared final guardrails, saved decisions, separate CPU reports, authenticated dashboard and scoped live repeat memory.](arbiter-flow.svg)
 
-## 1–2. Complete intake and triage flow
+Each box explains its job in everyday language. Side arrows show which cases
+avoid a model review. The dashboard can show a saved decision before its longer
+report is ready. Either model is replaceable with a compatible local model;
+Ollama is the current runner. Classification grants no device-action authority.
 
-![One continuous flowchart from sources through validation, queue, context, guardrails, prefilter and optional local reasoning to observations or alerts, audit and operator explanation.](arbiter-flow.svg)
+The measured 20K checkpoint predates compact replies and the separate report
+worker. Those source changes passed software checks and await real-model retesting.
 
-[Read the intake explanation](../ARCHITECTURE-WALKTHROUGH.md#1-intake-preserve-the-evidence).
-[Read the triage explanation](../ARCHITECTURE-WALKTHROUGH.md#2-triage-decide-with-evidence).
-
-## 3. Review and response
-
-![Authenticated UI explains an alert; review and deadlines are separate from explicitly approved typed responses and verified undo.](03-review-response.svg)
-
-[Read the review and response explanation](../ARCHITECTURE-WALKTHROUGH.md#3-review-explain-before-asking-for-action).
-
-## 4. System boundaries
-
-![Optional agent L2 review and policy gate, separate customer/public deployment boundaries, and the planned remote edge target.](04-boundaries.svg)
-
-[Read the boundaries explanation](../ARCHITECTURE-WALKTHROUGH.md#4-boundaries-keep-reasoning-and-authority-separate).
+[What the workers do](../ARCHITECTURE-WALKTHROUGH.md#2-triage-decide-with-evidence) ·
+[Review and human corrections](../ARCHITECTURE-WALKTHROUGH.md#3-review-explain-before-asking-for-action) ·
+[Model and deployment boundaries](../ARCHITECTURE-WALKTHROUGH.md#4-boundaries-keep-reasoning-and-authority-separate) ·
+[Latest results](../PROGRESS-2026-11-20.md)
