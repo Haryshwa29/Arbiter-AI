@@ -273,7 +273,7 @@ RULES = [
      "a high-priority security-tool finding requires review; benign history or model confidence cannot dismiss it",
      _high_priority_tool_finding),
     ("NON_SUPPRESSIBLE_WEB_ALERT", "source_web_alert",
-     "a source-classified web attack/reconnaissance alert or correlated path enumeration requires review; an HTTP error does not establish harmlessness or prove compromise",
+     "a native web security alert, denied-access finding or correlated path enumeration requires review; a blocked request or HTTP error alone does not establish harmlessness or prove compromise",
      _source_web_alert),
     ("NON_SUPPRESSIBLE_PRIVILEGED_SESSION", "source_privileged_session",
      "a recorded root sudo operation or privileged/service-account identity transition requires review; authentication success alone is not a benign explanation",

@@ -16,6 +16,7 @@ the model is upgraded to ESCALATE by the orchestrator.
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import urllib.request
 from abc import ABC, abstractmethod
@@ -100,6 +101,11 @@ class LLMBackend(ABC):
                facts: list[str]) -> LLMVerdict: ...
 
 
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError('Inference redirects are forbidden')
+
+
 class OllamaBackend(LLMBackend):
     """Local inference via Ollama (https://ollama.com). Zero data egress."""
 
@@ -109,11 +115,16 @@ class OllamaBackend(LLMBackend):
                  url: str = "http://localhost:11434") -> None:
         self.model = model
         self.url = url.rstrip("/")
-        self._opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        self._opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
 
     def triage(self, event: Event, criticality: float, history_summary: str,
                facts: list[str]) -> LLMVerdict:
-        return parse_response(self.generate(build_prompt(event, criticality, history_summary, facts), SYSTEM_PROMPT))
+        prompt=build_prompt(event,criticality,history_summary,facts)
+        result=parse_response(self.generate(prompt,SYSTEM_PROMPT))
+        result.decision_receipt=dict(version=1,format='l1-decision-v1',evidence_packet=json.loads(prompt),
+            packet_digest=hashlib.sha256(prompt.encode()).hexdigest(),
+            proposed_decision=result.decision.value,reason=result.rationale,confidence=result.confidence)
+        return result
 
     def generate(self, prompt: str, system: str) -> str:
         # A local Ollama server can route cloud models or renamed remote aliases.

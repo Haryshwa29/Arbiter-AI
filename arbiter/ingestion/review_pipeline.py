@@ -17,6 +17,7 @@ class ReviewPipeline(Pipeline):
     def __init__(self, buffer, engine, audit, workflow):
         super().__init__(buffer, engine, audit)
         self.workflow = workflow
+        self.report_worker=getattr(workflow.agent.service,'reports',None)
         self.workflow.brain.routing_only = True
         # Keep priority selection close to L1; longer L2 waits stay bounded too.
         self.queues = {name: queue.Queue(1 if name == 'l1' else 32) for name in self.stages[1:]}
@@ -29,6 +30,7 @@ class ReviewPipeline(Pipeline):
 
     def start(self):
         if self.threads: raise RuntimeError('review pipeline already started')
+        if getattr(self,'report_worker',None):self.report_worker.start()
         for stage in self.stages:
             self.threads[stage] = threading.Thread(target=self._run, args=(stage,),
                 name='arbiter-'+stage, daemon=True)
@@ -98,6 +100,8 @@ class ReviewPipeline(Pipeline):
                     with self.state_lock: self.state[stage]['errors'] += 1
                     if stage in {'l2_prefilter', 'l2'}:
                         job['l2_error'] = type(exc).__name__
+                        job['l2_error_detail'] = str(exc)[:500]
+                        job['l2_error_stage'] = stage
                         self._put('final_guardrail', job, stage)
                     else:
                         self.buffer.fail(job['row']['id'])
@@ -169,6 +173,7 @@ class ReviewPipeline(Pipeline):
                 learned=self.engine.memory.match_pattern('l2',key)
                 if learned:
                     prepared['assessment']={'route':'suppress','rule':'L2_LEARNED_EXACT_PATTERN',
+                        'learned_pattern':dict(learned,stage='l2'),
                         'reason':f"Exact Gemma-reviewed routine pattern {key[:12]}, origin {learned['origin_event']}; "
                             f"repeat {learned['hit']}/25 within one hour. Prior reason: {learned['reason'][:1200]}"}
             if case.get('brief'):
@@ -200,8 +205,12 @@ class ReviewPipeline(Pipeline):
                             project_final(first, brief, event_id=job['event'].event_id)
                         except Exception as exc:
                             job['l2_error'] = type(exc).__name__
+                            job['l2_error_detail'] = str(exc)[:500]
+                            job['l2_error_stage'] = 'final_guardrail'
                     if job.get('l2_error'):
-                        case.update(review_failed=True, review_error=job['l2_error'], state='needs_review', brief=None)
+                        case.update(review_failed=True, review_error=job['l2_error'],
+                            review_error_detail=job.get('l2_error_detail',''), review_error_stage=job.get('l2_error_stage',''),
+                            state='needs_review', brief=None)
                         notice = 'L2 unavailable or invalid output; alert retained for human review'
                     else:
                         brief['learned_pattern_key']=job.get('learned_l2_key')
@@ -214,7 +223,7 @@ class ReviewPipeline(Pipeline):
                     if (brief and not rejected and brief['alert_decision']=='suppress' and brief['review_status']=='accepted'
                             and not job.get('reused_brief') and self.engine.memory.history(job['event'].to_event().signature).overruled==0):
                         self.engine.memory.learn_pattern('l2',key,job['event'].to_event(),
-                            self.workflow.brain.backend.model,brief['decision_reason'])
+                            self.workflow.brain.backend.model,brief['decision_reason'],report_template=brief.get('report_template'))
                     elif rejected or (brief and brief['alert_decision']=='escalate'):
                         self.engine.memory.revoke_pattern('l2',key)
                 elif case.get('brief'):
@@ -239,3 +248,4 @@ class ReviewPipeline(Pipeline):
         for thread in self.threads.values(): thread.join(timeout=max(0, deadline-time.monotonic()))
         if any(t.is_alive() for t in self.threads.values()):
             raise RuntimeError('review workers are still stopping; keep their stores open')
+        if getattr(self,'report_worker',None):self.report_worker.stop()

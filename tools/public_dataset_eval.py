@@ -74,7 +74,7 @@ def check_match(raw, row):
         raise ValueError("Raw alert and published event label do not align")
 
 
-def event_from_raw(raw):
+def native_from_raw(raw):
     # Elastic export calls this @timestamp; native manager input calls it
     # timestamp. Retain original native fields, rule severity, host and text.
     # Ground truth, CSV host aliases, attack categories and time_label are
@@ -93,7 +93,11 @@ def event_from_raw(raw):
                 ipaddress.IPv4Address(address)
                 detail[prefix + "ip"] = address
                 detail.setdefault(prefix + "port", int(port))
-    return normalize(data, "wazuh").to_event()
+    return normalize(data, "wazuh")
+
+
+def event_from_raw(raw):
+    return native_from_raw(raw).to_event()
 
 
 def prepare(args):

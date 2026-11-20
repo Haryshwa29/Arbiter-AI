@@ -49,6 +49,8 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
     finally {setBusy(false);}
   }
   const analysis = event?.analysis ?? verdict;
+  const report = event?.report;
+  const explanation = report && ['ready','partial'].includes(report.state) ? report.body?.brief : event?.analysis?.brief;
   const reasoningBackend = event?.analysis?.second_stage?.backend ?? event?.analysis?.backend ?? "unrecorded";
   const status = event ? eventStatus(event) : verdict ? verdict.decision === "escalate" ? "Alerted · escalated for review" : "Suppressed" : "Loading…";
   return <div className="fixed inset-0 z-50 flex justify-end bg-black/60" onMouseDown={e => {if (e.target === e.currentTarget) onClose();}}>
@@ -62,11 +64,16 @@ export function EventPanel({id, onClose, demo = false, publicDemo = false}: {id:
         <h3>{event?.event.event_type ?? verdict?.signature} · {event?.event.hostname ?? verdict?.host}</h3>
         <p className="text-sm text-sky-300">{status}</p>{event && <p className="text-xs text-neutral-400">{eventProgress(event)}</p>}
         {event && <p className="text-xs text-neutral-400">Source: {event.event.source_type}<br/>Occurred: {event.event.timestamp ? new Date(event.event.timestamp).toLocaleString() : "Unknown (not supplied)"}<br/>Received: {new Date(event.event.received_at).toLocaleString()}</p>}
-        {event?.analysis?.brief && <section aria-label="Alert explanation" className="space-y-3 rounded border border-neutral-700 p-4 text-sm">
-          {event.analysis.brief.observed && <><h3 className="font-medium">What was recorded</h3><p className="whitespace-pre-wrap break-words">{event.analysis.brief.observed}</p><p className="text-xs text-neutral-400">Reported by the event source; verify against the original payload below.</p></>}
-          <h3 className="font-medium">Why this triggered</h3><p>{event.analysis.brief.why}</p>
-          <dl className="space-y-2">{Object.entries(event.analysis.brief.origin).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-400">{label}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
-          <h3 className="font-medium">What still needs checking</h3><p>{event.analysis.brief.uncertainty}</p>
+        {report && ['pending','stale'].includes(report.state) && <p role="status" className="text-sm text-neutral-400">Event saved. The explanation is being prepared separately.</p>}
+        {report?.state === 'partial' && <p role="status" className="text-sm text-neutral-400">Review in progress. Recorded facts are available below; the final explanation will follow.</p>}
+        {report?.state === 'failed' && <p role="status" className="text-sm text-amber-300">The explanation could not be prepared. The saved decision and original evidence remain available.</p>}
+        {explanation && <section aria-label="Alert explanation" className="space-y-3 rounded border border-neutral-700 p-4 text-sm">
+          {report?.state === 'ready' && <p className="text-xs text-neutral-400">Saved event report · {report.body?.title} · {report.body?.reviewer}</p>}
+          {explanation.observed && <><h3 className="font-medium">What was recorded</h3><p className="whitespace-pre-wrap break-words">{explanation.observed}</p><p className="text-xs text-neutral-400">Reported by the event source; verify against the original payload below.</p></>}
+          <h3 className="font-medium">Why this decision was made</h3><p>{explanation.why}</p>
+          <dl className="space-y-2">{Object.entries(explanation.origin).map(([label, value]) => <div key={label}><dt className="text-xs text-neutral-400">{label}</dt><dd className="max-h-32 overflow-auto whitespace-pre-wrap break-all">{value}</dd></div>)}</dl>
+          <h3 className="font-medium">What still needs checking</h3><p>{explanation.uncertainty}</p>
+          {report?.state === 'ready' && report.body?.checks.length ? <><h3 className="font-medium">Suggested checks</h3><ul className="list-disc space-y-1 pl-5">{report.body.checks.map(check => <li key={check}>{check}</li>)}</ul><p className="text-xs text-neutral-400">Standard checks for this event type, prepared from a local template.</p></> : null}
         </section>}
         <h3 className="font-medium">Analysis</h3><p className="text-sm">{analysis?.rationale ?? event?.error ?? "Waiting for analysis."}</p>
         {event?.analysis?.first_stage && <details><summary className="cursor-pointer">First review · {event.analysis.first_stage.model ?? 'L1'} · {event.analysis.first_stage.decision === 'escalate' ? 'raised for review' : 'quieted'}</summary><p className="mt-2 text-sm">{event.analysis.first_stage.rationale}</p></details>}

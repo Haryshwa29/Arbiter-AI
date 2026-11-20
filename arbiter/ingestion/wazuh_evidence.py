@@ -96,13 +96,21 @@ def observations(raw: dict, groups: list[str]) -> dict:
     # These are source-generated attack/recon rule groups, not URI keywords
     # or dataset identities. A 404 alone in an ordinary access log is not an
     # attack verdict. A detector-classified application alert needs review.
-    if {"web", "accesslog"}.issubset(group_set) and decoder_name == "web-accesslog":
+    if "web" in group_set and decoder_name == "web-accesslog":
         status = str(data.get("id", ""))
         method, path = str(data.get("protocol", "")), str(data.get("url", ""))
         if status.isdigit() and 400 <= int(status) <= 499 and path.startswith("/"):
             result["web"] = {"status": int(status), "method": method[:16], "path": path[:2048]}
             if group_set.intersection({"attack", "web_scan", "recon", "web_attack", "sql_injection"}):
                 result["web_alert_review"] = True
+    # Apache's own denied-access records must not become harmless just because
+    # the denial worked. Ordinary access-log 403/404 responses remain distinct.
+    if ({"apache", "web", "access_denied"}.issubset(group_set)
+            and decoder_name == "apache-errorlog"
+            and ((data.get("id") == "AH01276" and "Cannot serve directory " in text
+                  and "directory index forbidden by Options directive" in text)
+                 or (data.get("id") == "AH01630" and "client denied by server configuration:" in text))):
+        result["web_alert_review"] = True
     # Preserve underlying Suricata priority even if an older Wazuh wrapper
     # assigns the same low rule level to every embedded alert.
     alert = data.get("alert")

@@ -111,6 +111,8 @@ class L2Workflow:
                 except ValueError:
                     analysis=project_final(first);status='invalid-review-alert-retained'
                 analysis.update(second_stage_status=status,second_stage_case_id=case.get('id'))
+                if case.get('review_failed'):
+                    analysis['second_stage_error']={key:case.get(key,'') for key in ('review_error','review_error_detail','review_error_stage')}
                 row={**row,'analysis':analysis}
             result.append(row)
         return result
@@ -126,6 +128,7 @@ class L2Workflow:
             b.conn.execute('INSERT OR REPLACE INTO l2_cases VALUES (?,?)', (case['id'], json.dumps(case)))
             if notice:
                 b.conn.execute('INSERT INTO l2_notices(ts,case_id,body) VALUES (?,?,?)', (self.clock(), case['id'], notice))
+        if getattr(self.brain,'final_review',False) is True:b.queue_report(case['event_id'])
         if notice and self.notify: self.notify({'l2_case': case['id'], 'notification': notice})
         if notice: self.agent.audit.record_iam('l2-policy', 'l2_notice', json.dumps({'case': case['id'], 'message': notice}))
 
@@ -304,6 +307,7 @@ class L2Workflow:
         previous.stop()
         pipeline=ReviewPipeline(previous.buffer,previous.engine,previous.audit,self)
         pipeline.simulation=previous.simulation
+        pipeline.report_worker=getattr(previous,'report_worker',None)
         self.agent.service.pipeline=pipeline
         return pipeline
 

@@ -380,6 +380,7 @@ export interface IngestionStatus {
   metrics: Record<string, number>;
   worker_alive: boolean;
   pipeline_workers?: Record<string, {alive: boolean; busy?: boolean; queued?: number; completed?: number; errors?: number}>;
+  report_worker?: {alive: boolean; queued: number; completed: number; errors: number; uses_inference: boolean};
   learned_patterns?: Record<string, {patterns: number; hits: number}>;
   l2?: {enabled: boolean; model: string; counts: {suppressed?: number; retained?: number; failed?: number; pending?: number}};
 }
@@ -391,6 +392,10 @@ export interface TelemetryEvent {
 }
 export interface ProtectionAction {id: string; status: string; target: string; expires_at: string; actor: string;}
 export interface TelemetryRow {
+  report?: {state: 'partial' | 'pending' | 'ready' | 'stale' | 'failed' | 'not_requested'; error?: string; body?: {
+    title: string; template_id: string; decision: Decision | null; reviewer: string; checks: string[];
+    brief: {observed: string; why: string; origin: Record<string,string>; uncertainty: string};
+  } | null};
   response_case?: ResponseCase | null;
   response_stopped?: boolean;
   response_schedule_available?: boolean;

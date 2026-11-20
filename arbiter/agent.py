@@ -125,7 +125,7 @@ class Agent:
         final_mode = self.l2 and getattr(self.l2.brain,'final_review',False) is True
         if final_mode: rows=self.l2.project(rows)
         for row in rows:
-            detail = row
+            detail = self.service.reports.attach(row)
             results.append({**detail, "proposal": self.protection.proposal(detail) if self.scope else None,
                             "actions": self.protection.actions(row["event_id"])})
         return results

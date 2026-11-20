@@ -6,10 +6,7 @@ import urllib.request
 from urllib.parse import urlsplit
 import ipaddress
 from .ingestion.schema import safe_json
-
-class NoRedirect(urllib.request.HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise ValueError('L2 inference redirects are forbidden')
+from .llm import NoRedirect
 
 class L2Transport:
     def __init__(self, model, *, think=True, num_ctx=16384, num_predict=3072, base_url='http://127.0.0.1:11434'):

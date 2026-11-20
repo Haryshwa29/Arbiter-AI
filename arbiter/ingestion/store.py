@@ -53,6 +53,12 @@ CREATE TABLE IF NOT EXISTS inventory (
 );
 CREATE TABLE IF NOT EXISTS ingestion_metrics (name TEXT PRIMARY KEY, value INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS ingestion_settings (name TEXT PRIMARY KEY, value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS decision_reports (
+ event_id TEXT PRIMARY KEY, revision INTEGER NOT NULL DEFAULT 1,
+ state TEXT NOT NULL DEFAULT 'pending', snapshot TEXT, digest TEXT, body TEXT,
+ error TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_reports_pending ON decision_reports(state);
 CREATE TABLE IF NOT EXISTS incidents (
  incident_id TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
  rule_name TEXT NOT NULL, event_ids TEXT NOT NULL
@@ -154,10 +160,19 @@ class EventBuffer:
         with self.lock, self.conn:
             self.conn.execute("UPDATE telemetry SET state='done',analysis=?,related=?,latency_ms=?,error='',decision=?,tier=?,analysis_backend=? WHERE id=?",
                               (json.dumps(analysis), json.dumps(related), latency_ms, analysis.get("decision"), analysis.get("tier"), analysis.get("backend", ""), row_id))
+            self.conn.execute("INSERT INTO decision_reports(event_id) SELECT event_id FROM telemetry WHERE id=? "
+                "ON CONFLICT(event_id) DO UPDATE SET revision=revision+1,state='pending',body=NULL,error=''",(row_id,))
+
+    def queue_report(self, event_id):
+        with self.lock, self.conn:
+            self.conn.execute("INSERT INTO decision_reports(event_id) SELECT event_id FROM telemetry WHERE event_id=? AND state IN ('done','failed') "
+                "ON CONFLICT(event_id) DO UPDATE SET revision=revision+1,state='pending',body=NULL,error=''",(event_id,))
 
     def fail(self, row_id):
         with self.lock, self.conn:
             self.conn.execute("UPDATE telemetry SET state='failed',error='Analysis failed; administrator review required' WHERE id=?", (row_id,))
+            self.conn.execute("INSERT INTO decision_reports(event_id) SELECT event_id FROM telemetry WHERE id=? "
+                "ON CONFLICT(event_id) DO UPDATE SET revision=revision+1,state='pending',body=NULL,error=''",(row_id,))
 
     def query(self, filters=None, limit=100, offset=0):
         filters = filters or {}
@@ -343,6 +358,8 @@ class EventBuffer:
     def prune(self):
         cutoff = (datetime.now(timezone.utc) - timedelta(days=self.retention_days)).isoformat()
         with self.lock, self.conn:
+            self.conn.execute("DELETE FROM decision_reports WHERE event_id IN (SELECT event_id FROM telemetry "
+                "WHERE received_at<? AND state IN ('done','failed'))",(cutoff,))
             self.conn.execute("DELETE FROM telemetry INDEXED BY idx_telemetry_received WHERE received_at<? AND state IN ('done','failed')", (cutoff,))
             self.conn.execute("DELETE FROM incidents WHERE updated_at<?", (cutoff,))
 

@@ -166,7 +166,7 @@ export default {
     {
       "code": "NON_SUPPRESSIBLE_WEB_ALERT",
       "name": "source_web_alert",
-      "reason": "a source-classified web attack/reconnaissance alert or correlated path enumeration requires review; an HTTP error does not establish harmlessness or prove compromise"
+      "reason": "a native web security alert, denied-access finding or correlated path enumeration requires review; a blocked request or HTTP error alone does not establish harmlessness or prove compromise"
     },
     {
       "code": "NON_SUPPRESSIBLE_PRIVILEGED_SESSION",

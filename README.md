@@ -13,11 +13,33 @@ account validation and production-scale delivery remain future validation work.
 
 ## Public-data evaluation
 
-**Latest: [26,002-record checkpoint and downloadable raw evidence](evals/2026-11-18-26k-checkpoint/README.md).**
-The stopped run took 14 hours 31 minutes 28 seconds: 57.52% were quieted and
-42.48% retained for review. This original-order prefix contains no attack labels,
-so these percentages do not measure attack-detection accuracy. The report explains
-the L2 routing failure, latency, limitations and next evaluation.
+**Latest: [Progress from the initial run, explained in tables](docs/PROGRESS-2026-11-20.md).**
+
+| Measure | Initial published run | Latest measured checkpoint |
+|---|---:|---:|
+| Saved decisions | 26,002 | **20,002 of 26,000 planned** |
+| Attack-labelled records included | 0 | **17,305** |
+| Attack records kept visible | Not measured | **17,304 / 17,305 — 99.994%** |
+| Unannotated records quieted | 57.52% | **89.95%** |
+| Unannotated L1 warnings removed by L2 | 0.35% | **64.67%** |
+| Actual Gemma review attempts | 43 | **759** |
+| Overall observed replay rate | 29.84 records/min | **41.83 records/min** |
+
+The full pipeline retained all but one attack-labelled record. Most attack
+records were repeated scans handled by safety rules; the models reviewed five
+attack records and retained four. Unannotated records have no publisher attack
+label and are not independently certified benign. The
+[20,002-record report and downloadable evidence](evals/2026-11-20-20k-checkpoint/README.md)
+cover every failure, layer, timing and next step.
+
+**New in the source:** compact L2 decisions, a separate CPU report worker and
+six reusable event templates, with saved evidence and learned-pattern origins.
+The [implementation notes](docs/DECISION-REPORT-WORKER.md) explain the checks.
+The update passed 649 tests and 25 subtests; a fresh real-model benchmark is next.
+The installed dashboard and benchmark remain stopped.
+
+The [initial 26,002-record checkpoint](evals/2026-11-18-26k-checkpoint/README.md)
+took 14 hours 31 minutes 28 seconds, quieting 57.52% of its unannotated records.
 
 The [arrival-capacity simulation](evals/2026-11-18-arrival-simulation/README.md)
 shows the burst limit behind that average: one hour of source arrivals required
@@ -29,8 +51,9 @@ time. Simulated waiting and measured per-record processing are reported separate
 The subsequent [five-worker upgrade](docs/FIVE-WORKER-PIPELINE.md) supports the
 terminal and local dashboard. [Scoped repeat-pattern memory](docs/LEARNED-PATTERNS.md)
 lets each model teach its own pre-filter exact routine repeats, with expiry,
-revocation and safety checks. These upgrades were made after the frozen run;
-their real-world speed and detection quality still need a fresh evaluation.
+revocation and safety checks. The [latest progress tables](docs/PROGRESS-2026-11-20.md)
+distinguish measured five-worker results from the newer decision/report update
+awaiting its real-model retest.
 
 To process every supported public record with both local models, see
 [the resumable full-dataset run guide](docs/FULL-PUBLIC-RUN.md).

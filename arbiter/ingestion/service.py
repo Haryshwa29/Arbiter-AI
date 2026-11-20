@@ -40,6 +40,9 @@ class IngestionService:
         # runtime/API backend names still resolve only to local or mock models.
         llm = backend if isinstance(backend, LLMBackend) else OllamaBackend(model, ollama_url) if backend == "ollama" else get_backend(backend, model)
         self.pipeline = Pipeline(self.buffer, TriageEngine(memory, llm, os.devnull, shadow=True), audit)
+        from .report_worker import ReportWorker
+        self.reports=ReportWorker(self.buffer,lambda row:self.project_rows([row])[0] if row else None)
+        self.pipeline.report_worker=self.reports
 
     def enable_final_review(self, model, protection, review_seconds=180):
         from types import SimpleNamespace
@@ -58,7 +61,7 @@ class IngestionService:
         protection.project=self.project
 
     def project(self, row):
-        return self.project_rows([row])[0] if row else row
+        return self.reports.attach(self.project_rows([row])[0]) if row else row
 
     def project_rows(self, rows):
         return self.final_review.project(rows) if self.final_review else rows
@@ -79,6 +82,7 @@ class IngestionService:
             else:
                 self.pipeline = Pipeline(self.buffer, engine, self.pipeline.audit)
             self.backend, self.model = "ollama", model
+            self.pipeline.report_worker=self.reports
             with self.buffer.lock, self.buffer.conn:
                 self.buffer.conn.execute("INSERT OR REPLACE INTO analysis_configuration VALUES (1,?,?)", (self.backend, model))
             self.pipeline.start()
@@ -167,6 +171,7 @@ class IngestionService:
                 "coverage": "This device and explicitly configured sources; other network devices require sensors",
                 "connectors": connectors, "metrics": metrics,
                 "worker_alive": all(w['alive'] for w in workers.values()), "pipeline_workers": workers,
+                "report_worker": self.reports.status() if include_metrics else {'alive':bool(self.reports.thread and self.reports.thread.is_alive()),'uses_inference':False},
                 "learned_patterns": self.pipeline.engine.memory.learned_counts() if include_metrics else {},
                 "l2": {"enabled": self.final_review is not None,
                     "model": self.final_review.brain.backend.model if self.final_review else '',
@@ -200,6 +205,7 @@ class IngestionService:
                 collector.stop()
         if self.final_review: self.final_review.close()
         self.pipeline.stop()
+        self.reports.stop()
         self.buffer.close()
 
 

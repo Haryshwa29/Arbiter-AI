@@ -79,6 +79,7 @@ def prefilter(event: Event, memory: Memory, learned_key=None) -> PrefilterResult
     learned=(memory.match_pattern('l1',learned_key) if broad_overrule==0 and history.overruled==0
              and not final_guardrail_check(event,'suppress') else None)
     if learned:
+        event.fields['_learned_pattern']=dict(learned,stage='l1')
         return PrefilterResult(Decision.SUPPRESS,score,
             f"L1 learned exact routine pattern {learned_key[:12]}; model-reviewed origin {learned['origin_event']}; "
             f"repeat {learned['hit']}/25 within one hour. Prior reason: {learned['reason']}")

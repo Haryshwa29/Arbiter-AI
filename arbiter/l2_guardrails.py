@@ -29,6 +29,9 @@ def review_floor(event, security_context=None):
         return GuardrailHit('L2_REPORTED_VULNERABILITY','l2_reported_vulnerability',
             'the native scanner reports an active CVE for a named package and version; retain for applicability and patch review, without claiming exploitation')
     from .l2_context import conversation_for, protocol_anomaly
+    if (protocol_anomaly(event) and 'unable to match response to request' in event.message.casefold()):
+        return GuardrailHit('L2_HTTP_REQUEST_UNOBSERVED','l2_http_request_unobserved',
+            'the IDS could not associate this response with its request; missing request evidence does not establish a harmless parser fault or exclude attack activity')
     if protocol_anomaly(event) and conversation_for(event):
         return GuardrailHit('L2_PROTOCOL_CONTEXT_ONLY','l2_protocol_context_only',
             'conversation metadata does not explain the recorded protocol anomaly; TLS, packet counts and absence of exploit proof cannot justify quieting it')
@@ -86,7 +89,7 @@ def validate(data, packet, assessment, proposal):
         if not isinstance(assertion,dict): raise ValueError('invalid assertion')
         fact = facts.get(assertion.get('fact_id')); field = assertion.get('field')
         if not fact or field not in fact or field in {'id'} or type(assertion.get('value')) is not type(fact[field]) or assertion['value']!=fact[field]:
-            raise ValueError('unsupported L2 evidence assertion')
+            raise ValueError(f'unsupported L2 evidence assertion: fact={assertion.get("fact_id")!r}, field={field!r}')
         cited.add(fact['id'])
     if data['action']=='block_ip':
         if not proposal or not assessment['rule'] or not set(assessment['required_facts'])<=cited:

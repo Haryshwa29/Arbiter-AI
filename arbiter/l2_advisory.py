@@ -135,7 +135,7 @@ class AdvisoryL2Brain(L2Brain):
             'reason':self.assessment_reason}
         prompt = {'evidence_packet':packet,'independent_assessment':assessment,'supported_proposal':None}
         deadline = started+self.review_seconds
-        data = validate(safe_json(self.backend.generate(json.dumps(prompt),self.system,deadline=deadline,format_schema=self.assessment_format)),packet,assessment,None)
+        data = self.assess(prompt,packet,assessment,deadline)
         if getattr(self,'final_review',False) is True and 'outlook' not in data:
             data['outlook']='routine_looking' if data.get('decision')=='suppress' else 'suspicious'
             data['outlook_derived_from_decision']=True
@@ -143,17 +143,24 @@ class AdvisoryL2Brain(L2Brain):
             raise ValueError('advice-only review cannot clear an alert or authorize a target')
         if data.get('outlook') not in {'suspicious','routine_looking','uncertain'}:
             raise ValueError('invalid advisory outlook')
-        critic = safe_json(self.backend.generate(json.dumps({**prompt,'recommendation':data}),self.critic_system,deadline=deadline,format_schema=self.critic_format))
-        if not isinstance(critic,dict) or type(critic.get('accept')) is not bool:
-            raise ValueError('invalid advisory challenge')
-        objections, citations = critic.get('objections'), critic.get('citations')
-        known = {f['id'] for f in packet['facts']}
-        if (not isinstance(objections,list) or len(objections)>16
-                or any(not isinstance(x,str) or not x.strip() or len(x)>2000 for x in objections)):
-            raise ValueError('invalid advisory objections')
-        if not isinstance(citations,list) or not citations or any(not isinstance(x,str) or x not in known for x in citations):
-            raise ValueError('invalid advisory citations')
-        accepted = critic['accept'] and not objections
+        retain_only=getattr(self,'final_review',False) is True and data.get('decision')=='escalate'
+        if retain_only:
+            # A challenge cannot turn an escalation into suppression. Keep all
+            # evidence validation; every proposed suppression still needs both calls.
+            critic={'skipped':True,'reason':'Retain-only classification; cannot suppress or authorize device actions'}
+            accepted=True;objections=[]
+        else:
+            critic = safe_json(self.backend.generate(json.dumps({**prompt,'recommendation':self.critic_recommendation(data)}),self.critic_system,deadline=deadline,format_schema=self.critic_format))
+            if not isinstance(critic,dict) or type(critic.get('accept')) is not bool:
+                raise ValueError('invalid advisory challenge')
+            objections, citations = critic.get('objections'), critic.get('citations')
+            known = {f['id'] for f in packet['facts']}
+            if (not isinstance(objections,list) or len(objections)>16
+                    or any(not isinstance(x,str) or not x.strip() or len(x)>2000 for x in objections)):
+                raise ValueError('invalid advisory objections')
+            if not isinstance(citations,list) or not citations or any(not isinstance(x,str) or x not in known for x in citations):
+                raise ValueError('invalid advisory citations')
+            accepted = critic['accept'] and not objections
         proposed = data['outlook']
         if not accepted:
             data['outlook']='uncertain'
@@ -163,6 +170,13 @@ class AdvisoryL2Brain(L2Brain):
             action_authority=False,proposed_outlook=proposed,challenge=critic,
             review_status='accepted' if accepted else 'challenged',
             guardrail={'version':'advisory-v1','packet_digest':packet['digest'],
-                'exact_assertions_checked':True,'critic_accepted':accepted,'action_authority':False},
+                     'exact_assertions_checked':True,'critic_accepted':None if retain_only else accepted,'action_authority':False},
             review_ms=round((time.monotonic()-started)*1000,2))
+        return data
+
+    def assess(self,prompt,packet,assessment,deadline):
+        return validate(safe_json(self.backend.generate(json.dumps(prompt),self.system,
+            deadline=deadline,format_schema=self.assessment_format)),packet,assessment,None)
+
+    def critic_recommendation(self,data):
         return data

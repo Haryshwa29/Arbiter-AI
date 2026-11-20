@@ -18,6 +18,7 @@ class Pipeline:
         self.last_activity = time.monotonic()
 
     def start(self):
+        if getattr(self,'report_worker',None):self.report_worker.start()
         self.thread = threading.Thread(target=self.run, daemon=True)
         self.thread.start()
 
@@ -74,8 +75,20 @@ class Pipeline:
             reasoning = detail.get("fields", {}).get("_analysis_backend", {})
             analysis['final_guardrail']=detail.get('fields',{}).get('_final_guardrail',{})
             analysis['context_signature']=detail.get('fields',{}).get('_context_signature','')
+            if detail.get('fields',{}).get('_decision_receipt'):
+                analysis['decision_receipt']=detail['fields']['_decision_receipt']
+            if detail.get('fields',{}).get('_learned_pattern'):
+                analysis['learned_pattern']=detail['fields']['_learned_pattern']
             analysis["backend"] = reasoning.get("backend", "unrecorded") if analysis["tier"] == "llm" else "deterministic"
             analysis["model"] = reasoning.get("model", "")
+            saved = safe_json(row.get('analysis') or '{}')
+            if (isinstance(saved, dict) and saved.get('event_id') == event.event_id
+                    and all(saved.get(key) == analysis[key] for key in ("decision", "tier", "score", "rationale", "evidence"))):
+                from ..llm import validated_steps
+                analysis['recommended_steps'] = validated_steps(saved.get('recommended_steps'))
+                confidence = saved.get('model_confidence')
+                if type(confidence) in (int, float) and 0 <= confidence <= 1:
+                    analysis['model_confidence'] = confidence
         else:
             legacy = event.to_event()
             from ..learned_patterns import pattern_key
@@ -89,12 +102,17 @@ class Pipeline:
             legacy.fields["_analysis_backend"] = {"backend": backend, "model": model}
             verdict = self.engine.triage(legacy,learned_key=key) if key else self.engine.triage(legacy)
             legacy.fields['_final_guardrail']=getattr(verdict,'final_guardrail',{})
+            if getattr(verdict,'decision_receipt',None):
+                legacy.fields['_decision_receipt']={**verdict.decision_receipt,'final_decision':verdict.decision.value}
             self.audit.record_verdict(legacy, verdict)
             analysis = safe_json(verdict.to_json())
             analysis["recommended_steps"] = getattr(verdict, "recommended_steps", [])
             analysis['context_signature']=legacy.fields.get('_context_signature','')
             analysis['final_guardrail']=getattr(verdict,'final_guardrail',{})
             analysis['model_confidence']=getattr(verdict,'model_confidence',0)
+            if legacy.fields.get('_decision_receipt'):analysis['decision_receipt']=legacy.fields['_decision_receipt']
+            if legacy.fields.get('_learned_pattern'):
+                analysis['learned_pattern']=legacy.fields['_learned_pattern']
             analysis["backend"] = backend if analysis["tier"] == "llm" else "deterministic"
             analysis["model"] = model if analysis["backend"] in {"ollama", "ollama-cloud"} else ""
         if analysis["tier"] == "llm" and analysis["rationale"].startswith("LLM tier failed ("):
@@ -135,3 +153,4 @@ class Pipeline:
             self.thread.join(timeout=130)  # existing model timeout is 120s
             if self.thread.is_alive():
                 raise RuntimeError("analysis worker is still stopping")
+        if getattr(self,'report_worker',None):self.report_worker.stop()

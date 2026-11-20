@@ -2,6 +2,7 @@
 import json
 import threading
 import time
+import os
 from unittest.mock import Mock
 
 import pytest
@@ -106,6 +107,9 @@ def test_l2_stage_errors_keep_the_l1_alert_visible(tmp_path,monkeypatch,failure_
         assert row['analysis']['decision']=='escalate'
         assert agent.l2.cases()[0]['review_failed'] is True
         assert agent.l2.cases()[0]['brief'] is None
+        assert agent.l2.cases()[0]['review_error_detail']=='Controlled stage failure'
+        assert agent.l2.cases()[0]['review_error_stage']=={
+            'prepare_review':'l2_prefilter','review_prepared':'l2','finish_review':'final_guardrail'}[failure_stage]
         assert agent.command('status')['worker_alive']
     finally:agent.close()
 
@@ -125,6 +129,34 @@ def test_human_rejection_during_model_review_wins(tmp_path,monkeypatch):
         assert agent.events()[0]['analysis']['decision']=='escalate'
         assert agent.l2.cases()[0]['state']=='rejected'
     finally:release.set();agent.close()
+
+
+def test_recovered_l1_keeps_saved_guidance_without_calling_the_model_again(tmp_path):
+    from arbiter.ingestion.pipeline import Pipeline
+    from arbiter.ingestion.store import EventBuffer
+    from arbiter.llm import OllamaBackend
+    from arbiter.memory import Memory
+    from arbiter.store import AuditStore
+    from arbiter.triage import TriageEngine
+    memory=Memory(tmp_path/'memory.db');audit=AuditStore(tmp_path/'audit.db');buffer=EventBuffer(tmp_path/'events.db')
+    engine=TriageEngine(memory,OllamaBackend('qwen3.5:4b'),os.devnull)
+    observed=event('recover-guidance')
+    verdict=Verdict(observed.event_id,observed.to_event().signature,Decision.ESCALATE,4,Tier.LLM,'Review the observation','Recorded evidence')
+    verdict.recommended_steps=['Compare the source record with the approved change ticket']
+    verdict.model_confidence=.97
+    engine.triage=Mock(return_value=verdict)
+    pipeline=Pipeline(buffer,engine,audit)
+    try:
+        buffer.enqueue(observed,'wazuh');claimed=buffer.claim()
+        first=pipeline.analyze(pipeline.prepare(claimed))
+        recovered=pipeline.analyze(pipeline.prepare({**claimed,'analysis':json.dumps(first)}))
+        assert recovered['recommended_steps']==verdict.recommended_steps
+        assert recovered['model_confidence']==.97
+        engine.triage.assert_called_once()
+        foreign={**first,'event_id':'unrelated','recommended_steps':['Foreign guidance']}
+        rejected=pipeline.analyze(pipeline.prepare({**claimed,'analysis':json.dumps(foreign)}))
+        assert rejected.get('recommended_steps',[])!=foreign['recommended_steps']
+    finally:buffer.close();memory.close();audit.close()
 
 
 def test_shutdown_waits_for_inference_and_restart_reuses_durable_l1(tmp_path,monkeypatch):

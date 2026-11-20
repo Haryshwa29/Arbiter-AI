@@ -116,7 +116,9 @@ class TriageEngine:
         history = self.memory.history(event.signature)
         summary = (
             f"seen {history.total}x before: {history.suppressed} suppressed, "
-            f"{history.escalated} escalated, {history.overruled} human-overruled"
+            f"{history.escalated} escalated, {history.overruled} human-overruled. "
+            "These are aggregate prior decisions for this host/event class, not a verified benign baseline. "
+            "Earlier automatic suppressions do not prove safety, human approval or absence of incidents."
             if history.total else "first occurrence of this signature"
         )
         # Scope-check every fact against THIS event before the model sees
@@ -163,6 +165,7 @@ class TriageEngine:
         # serialization contract and cannot grant execution authority.
         verdict.recommended_steps = getattr(llm, "recommended_steps", [])
         verdict.model_confidence = llm.confidence
+        if getattr(llm,'decision_receipt',None):verdict.decision_receipt=llm.decision_receipt
         return verdict
 
     def _audit(self, event: Event, verdict: Verdict) -> None:
