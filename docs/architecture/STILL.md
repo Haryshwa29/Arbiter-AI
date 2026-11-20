@@ -1,24 +1,21 @@
 # Arbiter architecture — still-diagram edition
 
-These static diagrams contain the same labels as the
-[animated walkthrough](../ARCHITECTURE-WALKTHROUGH.md). No motion is required to
-understand the system. Follow the linked explanations for the full text equivalent.
+**Current November 20 source: five decision workers plus a separate CPU report
+worker.** Qwen3.5:4b is L1; only its successful model escalations enter the L2
+pre-filter and, when unresolved, Gemma4:12b. All final routes pass shared checks.
+A separate worker prepares reports from saved evidence without an AI call.
 
-## 1–2. Complete intake and triage flow
+![Current architecture: collection and durable queue, gateway, L1 rules and Qwen, L2 pre-filter, independent Gemma, shared final guardrails, saved decisions, separate CPU reports, authenticated dashboard and scoped live repeat memory.](https://raw.githubusercontent.com/Haryshwa29/Arbiter-AI/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/architecture/arbiter-flow.svg)
 
-![One continuous flowchart from sources through validation, queue, context, guardrails, prefilter and optional local reasoning to observations or alerts, audit and operator explanation.](arbiter-flow.svg)
+Each box explains its job in everyday language. Side arrows show which cases
+avoid a model review. The dashboard can show a saved decision before its longer
+report is ready. Either model is replaceable with a compatible local model;
+Ollama is the current runner. Classification grants no device-action authority.
 
-[Read the intake explanation](../ARCHITECTURE-WALKTHROUGH.md#1-intake-preserve-the-evidence).
-[Read the triage explanation](../ARCHITECTURE-WALKTHROUGH.md#2-triage-decide-with-evidence).
+The measured 20K checkpoint predates compact replies and the separate report
+worker. Those source changes passed software checks and await real-model retesting.
 
-## 3. Review and response
-
-![Authenticated UI explains an alert; review and deadlines are separate from explicitly approved typed responses and verified undo.](03-review-response.svg)
-
-[Read the review and response explanation](../ARCHITECTURE-WALKTHROUGH.md#3-review-explain-before-asking-for-action).
-
-## 4. System boundaries
-
-![Optional agent L2 review and policy gate, separate customer/public deployment boundaries, and the planned remote edge target.](04-boundaries.svg)
-
-[Read the boundaries explanation](../ARCHITECTURE-WALKTHROUGH.md#4-boundaries-keep-reasoning-and-authority-separate).
+[What the workers do](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE-WALKTHROUGH.md#2-triage-decide-with-evidence) ·
+[Review and human corrections](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE-WALKTHROUGH.md#3-review-explain-before-asking-for-action) ·
+[Model and deployment boundaries](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/ARCHITECTURE-WALKTHROUGH.md#4-boundaries-keep-reasoning-and-authority-separate) ·
+[Latest results](https://github.com/Haryshwa29/Arbiter-AI/blob/90798fe744d1b96ddfaa0fcab3f1412b7fcbf9c6/docs/PROGRESS-2026-11-20.md)
