@@ -20,9 +20,11 @@ Refresh validation: 647 tests passed, two optional AWS checks skipped in the bas
 environment, 25 subtests passed; 22-event mock seed/run passed. Local document
 links/anchors, SVG/XML labels, PNG/GIF dimensions and frozen result counts were
 checked; the current illustrated design was visually inspected. Main's older
-homepage was identified as the discoverability problem. Publish documentation
-there with explicit links to the implementation branch; do not merge application
-changes or deploy as part of this refresh.
+homepage was identified as the discoverability problem. Documentation-only
+commit bd46322 was pushed to main; its README and architecture were read back
+through GitHub and verified. Links pin the full source/report publication at
+90798fe on the implementation branch. No application changes were merged to
+main and no deployment or benchmark restart occurred.
 
 Owner approved pushing the tested source update and requested an initial-run
 comparison as the main public table. README and docs/PROGRESS-2026-11-20.md now
