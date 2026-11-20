@@ -1,0 +1,792 @@
+{
+  "records": 20002,
+  "planned": 26000,
+  "remaining": 5998,
+  "unfinished_admitted": 57,
+  "first_source_utc": "2022-01-18T12:37:00+00:00",
+  "last_source_utc": "2022-01-18T17:06:09.106747+00:00",
+  "source_span_s": 16149.106747,
+  "sequence_min": 1,
+  "sequence_max": 20059,
+  "counts": {
+    "completed": 20002,
+    "tp": 17304,
+    "l1_tp": 17305,
+    "qwen_attempted": 787,
+    "gemma_attempted": 759,
+    "qwen_attack_attempts": 5,
+    "gemma_attack_attempts": 5,
+    "failed_records": 13,
+    "l2_unannotated_quieted": 496,
+    "l2_attack_quieted": 1,
+    "l2_prefilter_suppressions": 0,
+    "l1_learned_hits": 0,
+    "l2_learned_hits": 0,
+    "tn": 2426,
+    "l1_tn": 1930,
+    "proposed_suppressions_blocked": 24,
+    "suppression_confidence_below_0_9": 18,
+    "fp": 271,
+    "l1_fp": 767,
+    "fn": 1
+  },
+  "rates": {
+    "attack_retention_percent": 99.99422132331696,
+    "unannotated_quiet_percent": 89.95179829440119,
+    "unannotated_retained_percent": 10.048201705598814,
+    "label_agreement_percent": 98.64013598640136,
+    "l2_unannotated_warning_reduction_percent": 64.66753585397653,
+    "overall_records_per_min": 41.8325208327342,
+    "completion_percent": 76.93076923076923
+  },
+  "families": {
+    "dirb": {
+      "tp": 17293,
+      "records": 17293
+    },
+    "-": {
+      "tn": 2426,
+      "records": 2697,
+      "fp": 271
+    },
+    "online_cracking": {
+      "tp": 2,
+      "records": 2
+    },
+    "attacker_change_user": {
+      "tp": 2,
+      "records": 3,
+      "fn": 1
+    },
+    "escalated_sudo_command": {
+      "tp": 7,
+      "records": 7
+    }
+  },
+  "actors": {
+    "guardrail": {
+      "tp": 17300
+    },
+    "prefilter": {
+      "tn": 1903,
+      "fp": 12
+    },
+    "gemma": {
+      "tp": 4,
+      "fp": 246,
+      "tn": 496,
+      "fn": 1
+    },
+    "model_failure_retained": {
+      "fp": 13
+    },
+    "llm": {
+      "tn": 27
+    }
+  },
+  "started_utc": "2026-11-19T22:43:43.057922+00:00",
+  "finished_utc": "2026-11-20T06:41:51.742613+00:00",
+  "wall_elapsed_s": 28688.684691,
+  "active_elapsed_s": 28686.621237199986,
+  "latency": {
+    "receipt_to_final_all": {
+      "n": 20002,
+      "mean_s": 82.51305414188582,
+      "median_s": 0.15677649999999999,
+      "p95_s": 0.252945,
+      "max_s": 2459.550777,
+      "total_s": 1650426.108946
+    },
+    "pipeline_elapsed_all": {
+      "n": 20002,
+      "mean_s": 82.42494158791108,
+      "median_s": 0.0727746999473311,
+      "p95_s": 0.16953159996774048,
+      "max_s": 2459.4329477000283,
+      "total_s": 1648663.6816413975
+    },
+    "receipt_to_final_rules_only": {
+      "n": 19215,
+      "mean_s": 0.20207088462138953,
+      "median_s": 0.155855,
+      "p95_s": 0.194095,
+      "max_s": 27.013565,
+      "total_s": 3882.792048
+    },
+    "receipt_to_final_gemma_routed": {
+      "n": 759,
+      "mean_s": 2168.69954829249,
+      "median_s": 2252.327025,
+      "p95_s": 2440.481149,
+      "max_s": 2459.550777,
+      "total_s": 1646042.957154
+    },
+    "gemma_assessment_call_wall": {
+      "n": 759,
+      "mean_s": 31.84109423267569,
+      "median_s": 31.546211499953642,
+      "p95_s": 36.85085649997927,
+      "max_s": 75.69530099991243,
+      "total_s": 24167.39052260085
+    },
+    "gemma_challenge_call_wall": {
+      "n": 521,
+      "mean_s": 3.1484031729369324,
+      "median_s": 3.1001749000279233,
+      "p95_s": 3.745000599999912,
+      "max_s": 7.4964554000180215,
+      "total_s": 1640.3180531001417
+    },
+    "gemma_sum_call_wall_per_record": {
+      "n": 759,
+      "mean_s": 34.0022510878801,
+      "median_s": 33.79177820007317,
+      "p95_s": 39.417143999948166,
+      "max_s": 82.5405203999253,
+      "total_s": 25807.70857570099
+    },
+    "qwen_call_wall": {
+      "n": 787,
+      "mean_s": 10.680090322363364,
+      "median_s": 10.703723800019361,
+      "p95_s": 13.228828300023451,
+      "max_s": 15.576256000087596,
+      "total_s": 8405.231083699968
+    },
+    "receipt_to_final_qwen_without_gemma": {
+      "n": 28,
+      "mean_s": 17.869990857142856,
+      "median_s": 20.7582025,
+      "p95_s": 30.16391,
+      "max_s": 33.164873,
+      "total_s": 500.359744
+    }
+  },
+  "usage_mean": {
+    "assessment.prompt_eval_count": 2644.2229551451187,
+    "assessment.eval_count": 589.7493403693932,
+    "assessment.load_duration": 0.06659562242744063,
+    "assessment.prompt_eval_duration": 3.947903656969657,
+    "assessment.eval_duration": 27.25938821767282,
+    "challenge.prompt_eval_count": 3169.6429942418426,
+    "challenge.eval_count": 18,
+    "challenge.load_duration": 0.02046670460652591,
+    "challenge.prompt_eval_duration": 2.0104588406679462,
+    "challenge.eval_duration": 0.6592560729366602
+  },
+  "calls": {
+    "qwen_calls": 787,
+    "qwen_errors": 1,
+    "gemma_calls": 1280,
+    "gemma_errors": 1
+  },
+  "gemma_calls_per_record": {
+    "2": 521,
+    "1": 238
+  },
+  "critic": {
+    "checks": 521,
+    "accepted": 521,
+    "rejected": 0,
+    "retained_alert_skipped": 226
+  },
+  "final_vetoes": {
+    "L2_HTTP_REQUEST_UNOBSERVED": 4,
+    "L2_PRIVILEGED_SESSION": 2
+  },
+  "misses": [
+    {
+      "record": 17856,
+      "event_id": "cbd77a94c03d50d7f2dc0032c5e76b3519e721023116bb0c796de0c47f0d7c9e",
+      "label": "attacker_change_user",
+      "source_timestamp": "2022-01-18T13:14:31+00:00",
+      "l1_decision": "escalate",
+      "l1_reason": "A login initiated by the root user (uid=0) represents a high-risk credential abuse scenario that cannot be dismissed as benign without independent verification, and the lack of environment facts prevents applying any known safe patterns.",
+      "l2_reason": "The record shows a single successful login for user phopkins without any accompanying failed attempts or evidence of privilege escalation.",
+      "confidence": 0.9,
+      "challenge": {
+        "accept": true,
+        "objections": [],
+        "citations": [
+          "F1"
+        ]
+      },
+      "guardrail": {
+        "version": "shared-final-v1",
+        "packet_digest": "6f48cd6637f0dbc2459faf2877e6678b5fbc683d160968a4b70dea1cc25b52e1",
+        "exact_assertions_checked": true,
+        "critic_accepted": true,
+        "action_authority": false,
+        "suppression_threshold": 0.9,
+        "decision": "suppress",
+        "veto": null
+      }
+    }
+  ],
+  "failed_reviews": [
+    {
+      "record": 17463,
+      "event_id": "ede703cb76a0ecb2117eb8837fbdc7df6518faecc865fecb2a14017d94589e83",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='dst_port'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 17703,
+      "event_id": "057a501d7bae7cc32137e0a20bb5bcd6138bd9750ac78211d48418bfda113d7e",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='username'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 17705,
+      "event_id": "147c3505934dd1d7199b8a6b8db7e0141f3dc41c5622e6a8c9988a5cffb442b6",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='username'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 17784,
+      "event_id": "67288d18a66589563197f1913e538c800cffb1f74530404bf4cd455fd8516b53",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "HTTPError",
+      "review_error_detail": "HTTP Error 500: Internal Server Error",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 18032,
+      "event_id": "a23bc754ba9c22431db3b1a1d1086b3438c609ca2f77cc851d43fcfe9b5791a8",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='signature'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 18086,
+      "event_id": "09908b8dd649ed57e971af44b4b1aa90263c9d980a36e68fd34916a8d0cfdd82",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 18161,
+      "event_id": "c2c32becb681bc2222fdf012219f9971f484b9662fd8479548c6b3d047a70e5e",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 18165,
+      "event_id": "cbc43c1d6ba51b5d6bf1938aa909f309f4e65c385130d1785c49026ec3755b18",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 19730,
+      "event_id": "fd5b1218df081bac610872a330928e0c76f8d414e80b9c149628f95a600abd98",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 19731,
+      "event_id": "fc5717158f36d4cbc38c05477cef7219bff77e5e42f084d116b482ca270dc163",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 19732,
+      "event_id": "462e2b277b2617e4c84ff805ef32afbc410a1c6834e633bf2ce59d5bf2ee278a",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 19733,
+      "event_id": "757b6361ed24e00fbaa6314cedf7433df8b9f4b3de05813f9707656b30670697",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "ValueError",
+      "review_error_detail": "unsupported L2 evidence assertion: fact='F1', field='auth_failures_same_peer_5m'",
+      "review_error_stage": "l2"
+    },
+    {
+      "record": 20059,
+      "event_id": "11223ef658f31299f9646193ec15f2163f105ea4e060c2ccc4a39ff1151f7258",
+      "label": "-",
+      "final_decision": "escalate",
+      "review_error": "HTTPError",
+      "review_error_detail": "LLM tier failed (HTTP Error 500: Internal Server Error); escalating by policy.",
+      "review_error_stage": "l1"
+    }
+  ],
+  "model_reviewed_attacks": [
+    {
+      "record": 17306,
+      "label": "online_cracking",
+      "decision": "escalate"
+    },
+    {
+      "record": 17308,
+      "label": "online_cracking",
+      "decision": "escalate"
+    },
+    {
+      "record": 17856,
+      "label": "attacker_change_user",
+      "decision": "suppress"
+    },
+    {
+      "record": 17859,
+      "label": "escalated_sudo_command",
+      "decision": "escalate"
+    },
+    {
+      "record": 17863,
+      "label": "escalated_sudo_command",
+      "decision": "escalate"
+    }
+  ],
+  "paired_development_checkpoint": {
+    "records": 17612,
+    "old_tp": 17272,
+    "new_tp": 17295,
+    "prior_attack_misses_now_retained": 23,
+    "old_fn": 23,
+    "old_tn": 263,
+    "new_tn": 261,
+    "new_fp": 56,
+    "old_fp": 54
+  },
+  "initial_published": {
+    "completed": 26002,
+    "scope": "Contiguous first records in original file order, stopped at the user target; not the whole dataset or a random representative sample",
+    "by_scenario": {
+      "fox": 26002
+    },
+    "l1": {
+      "records": 26002,
+      "attack_labels_flagged": 0,
+      "attack_labels_quieted": 0,
+      "unannotated_flagged": 11084,
+      "unannotated_quieted": 14918,
+      "label_agreement_percent": 57.37250980693793,
+      "attack_label_recall_percent": null,
+      "unannotated_quieted_percent": 57.37250980693793
+    },
+    "final": {
+      "records": 26002,
+      "attack_labels_flagged": 0,
+      "attack_labels_quieted": 0,
+      "unannotated_flagged": 11045,
+      "unannotated_quieted": 14957,
+      "label_agreement_percent": 57.52249826936389,
+      "attack_label_recall_percent": null,
+      "unannotated_quieted_percent": 57.52249826936389
+    },
+    "layers": {
+      "completed": 26002,
+      "l1_tn": 14918,
+      "final_tn": 14957,
+      "l1_tier_prefilter": 14684,
+      "qwen_reviews": 11310,
+      "qwen_errors": 0,
+      "l2_inputs": 10907,
+      "gemma_reviews": 43,
+      "gemma_model_calls_completed": 86,
+      "gemma_attack_inputs": 0,
+      "l2_errors": 0,
+      "l2_rule_decisions": 10864,
+      "gemma_suppressions": 39,
+      "l2_rule_suppressions": 0,
+      "l1_elapsed_s": 50853.161791401624,
+      "l2_elapsed_s": 1378.8395702030975,
+      "l1_tier_llm": 11310,
+      "consecutive_model_errors": 0,
+      "l1_fp": 11084,
+      "final_fp": 11045,
+      "l1_tier_guardrail": 8
+    },
+    "latency": {
+      "all_records": {
+        "n": 26002,
+        "p50_s": 0.001171600044472143,
+        "p95_s": 6.329237800033297,
+        "mean_s": 2.0087994904241335,
+        "max_s": 57.071246100007556,
+        "total_s": 52232.804350008315
+      },
+      "rules_only": {
+        "n": 14692,
+        "p50_s": 0.0009913000103551894,
+        "p95_s": 0.001372799975797534,
+        "mean_s": 0.001059072672168154,
+        "max_s": 0.24353160004829988,
+        "total_s": 15.559895699494518
+      },
+      "qwen_l1": {
+        "n": 11310,
+        "p50_s": 3.8582211999455467,
+        "p95_s": 6.822943499893881,
+        "mean_s": 4.494925012882593,
+        "max_s": 57.07101020007394,
+        "total_s": 50837.60189570213
+      },
+      "gemma_review": {
+        "n": 43,
+        "p50_s": 32.0861278999364,
+        "p95_s": 39.40471419994719,
+        "mean_s": 32.02163710231963,
+        "max_s": 41.58338930003811,
+        "total_s": 1376.9303953997442
+      },
+      "gemma_record_total": {
+        "n": 43,
+        "p50_s": 36.86806410003919,
+        "p95_s": 45.73861139995279,
+        "mean_s": 36.51241338837805,
+        "max_s": 48.720257799956016,
+        "total_s": 1570.0337757002562
+      }
+    },
+    "wall_elapsed_s": 52287.738031,
+    "observed_records_per_minute": 29.837205791442855,
+    "final_actor_counts": {
+      "prefilter": {
+        "unannotated_suppress": 14515,
+        "unannotated_escalate": 169
+      },
+      "llm": {
+        "unannotated_suppress": 403
+      },
+      "l2-prefilter": {
+        "unannotated_escalate": 10864
+      },
+      "guardrail": {
+        "unannotated_escalate": 8
+      },
+      "gemma": {
+        "unannotated_suppress": 39,
+        "unannotated_escalate": 4
+      }
+    },
+    "examples": {
+      "prefilter": {
+        "record": 1,
+        "id": "fox:1",
+        "decision": "suppress",
+        "reason": "Routine FreshClam signature-database update observation: the source decoder, update rule and recorded update-start message agree; no correlated detection. An update start does not prove completion or absence of malware."
+      },
+      "llm": {
+        "record": 20,
+        "id": "fox:20",
+        "decision": "suppress",
+        "reason": "This alert is a false positive generated by an overly broad rule matching benign package management traffic; the signature history confirms this is the first occurrence, but the internal classification overrides the generic severity score."
+      },
+      "l2-prefilter": {
+        "record": 133,
+        "id": "fox:133",
+        "decision": "escalate",
+        "reason": "This isolated protocol/login observation lacks independent flow or login context needed to justify quieting it; retain the warning without repeating the same evidence through Gemma."
+      },
+      "guardrail": {
+        "record": 273,
+        "id": "fox:273",
+        "decision": "escalate",
+        "reason": "Security guardrail [NON_SUPPRESSIBLE_PRIVILEGED_SESSION]: a recorded root sudo operation or privileged/service-account identity transition requires review; authentication success alone is not a benign explanation."
+      },
+      "gemma": {
+        "record": 775,
+        "id": "fox:775",
+        "decision": "suppress",
+        "reason": "The log records a single POST request to a login page resulting in a 302 redirect, which is standard behavior for a failed or redirected login attempt without evidence of a brute force or successful compromise."
+      }
+    },
+    "attack_labels_quieted_ids": [],
+    "l2_rules": {
+      "L2_CONTEXT_REQUIRED": 10851,
+      "L2_PRIVILEGED_SESSION": 3,
+      "L2_DNS_CONTEXT_MISSING": 10
+    },
+    "retained_unannotated_sources": {
+      "IDS event.": 5175,
+      "Suricata: Alert - SURICATA TLS invalid handshake message": 2642,
+      "Suricata: Alert - SURICATA TLS invalid record/traffic": 2642,
+      "PAM: User login failed.": 166,
+      "Dovecot Invalid User Login Attempt.": 156,
+      "Multiple IDS alerts for same id.": 93,
+      "Multiple IDS events from same source ip.": 37,
+      "Suricata: Alert - SURICATA HTTP unable to match response to request": 27,
+      "syslog: User authentication failure.": 18,
+      "PAM: Multiple failed logins in a small period of time.": 17,
+      "First time this IDS alert is generated.": 15,
+      "PAM: Login session opened.": 13,
+      "Multiple IDS alerts for same id (ignoring now this id).": 13,
+      "Dovecot brute force attack (multiple auth failures).": 9,
+      "PAM: Login session closed.": 8,
+      "sshd: authentication success.": 5,
+      "First time user executed sudo.": 2,
+      "Web server 400 error code.": 2,
+      "CMS (WordPress or Joomla) login attempt.": 2,
+      "Web server 500 error code (Internal Error).": 2,
+      "Successful sudo to ROOT executed.": 1
+    },
+    "hardware": {
+      "observed_utc": "2026-11-18T20:23:13.2084642Z",
+      "cpu": "13th Gen Intel(R) Core(TM) i7-13700F",
+      "ram_bytes": 34130571264,
+      "gpu": "NVIDIA GeForce RTX 4060 Ti, 16380, 617.42",
+      "note": "Hardware snapshot during checkpoint preparation; other desktop/development activity shared the machine."
+    },
+    "reference_checked_date": "2026-11-18",
+    "corporate_references": [
+      {
+        "title": "Published automated per-alert triage claim",
+        "url": "https://d3security.com/siem-triage-automation/",
+        "metric": "Under 2 minutes for up to 95% of alerts, advertised with L2+ investigation depth.",
+        "scope": "Vendor claim including cross-stack enrichment/investigation, not our isolated-record classification test; no matched inputs or independently reproduced quality/latency."
+      },
+      {
+        "title": "Enterprise ingestion processing documentation",
+        "url": "https://learn.microsoft.com/en-us/azure/azure-monitor/logs/data-ingestion-time",
+        "metric": "Under 10 seconds after the collection endpoint to query availability; upload buffering and source delays can add time.",
+        "scope": "Log availability, not per-alert AI classification or containment."
+      },
+      {
+        "title": "Enterprise near-real-time detection rules",
+        "url": "https://learn.microsoft.com/en-us/azure/sentinel/near-real-time-rules",
+        "metric": "Queries scheduled once per minute with a documented two-minute delay.",
+        "scope": "Query cadence and data window, not one alert processed per minute."
+      },
+      {
+        "title": "Published guided-response architecture, 2024",
+        "url": "https://arxiv.org/html/2407.09017v1",
+        "metric": "15-minute inference-job interval; batch latency of a few minutes while handling very large daily incident volumes.",
+        "scope": "Distributed incident-level recommendation batches, not an isolated single-alert timing on our hardware."
+      },
+      {
+        "title": "Managed SOC observed workload, reported March 2026",
+        "url": "https://investors.n-able.com/news/news-details/2026/N-able-Report-Reveals-Why-AI-Powered-Layered-Cyber-Defense-Is-Essential-for-Business-Resilience/default.aspx",
+        "metric": "Average two alerts/minute during March-December 2025, as reported by the provider.",
+        "scope": "Observed operational volume, not an ideal rate, measured maximum capacity or isolated-alert latency."
+      },
+      {
+        "title": "Published automated workflow capacity claim",
+        "url": "https://d3security.com/resources/event-pipeline-automate-handling-of-hundreds-of-alerts-per-minute/",
+        "metric": "Up to 200 alerts/minute advertised for automated tier-one workflows.",
+        "scope": "Vendor-reported capacity with normalization, deduplication, triage and enrichment; no matched AIT-ADS quality/hardware test or single-alert latency."
+      }
+    ],
+    "qualitative_review_file": "manual-review.md",
+    "workload_references": [
+      {
+        "title": "Prophet Security 2025 survey, all organizations",
+        "daily_alerts": 960,
+        "url": "https://www.prophetsecurity.ai/blog/6-key-takeaways-from-the-ai-in-soc-survey-report",
+        "average_arrivals_per_minute": 0.6666666666666666
+      },
+      {
+        "title": "Prophet Security 2025 survey, enterprises with 20,000+ employees",
+        "daily_alerts": 3181,
+        "url": "https://www.prophetsecurity.ai/blog/6-key-takeaways-from-the-ai-in-soc-survey-report",
+        "average_arrivals_per_minute": 2.2090277777777776
+      },
+      {
+        "title": "Vectra AI 2023 survey of 2,000 SecOps analysts",
+        "daily_alerts": 4484,
+        "url": "https://www.vectra.ai/about/news/research-reveals-significant-disconnect-between-security-operations-teams-and-the-effectiveness-of-threat-detection-tools-in-preventing-cyber-attacks",
+        "average_arrivals_per_minute": 3.113888888888889
+      }
+    ],
+    "performance_estimates": {
+      "unchanged_routing_ideal_stage_overlap_gain_percent": 2.7114136498711083,
+      "corrected_routing_scenarios": [
+        {
+          "assumed_l2_prefilter_suppression_percent": 0,
+          "serial_inference_records_per_minute": 3.89919693993359,
+          "ideal_stage_overlap_records_per_minute": 4.466930133499645
+        },
+        {
+          "assumed_l2_prefilter_suppression_percent": 50.0,
+          "serial_inference_records_per_minute": 6.9190089489420465,
+          "ideal_stage_overlap_records_per_minute": 8.93386026699929
+        },
+        {
+          "assumed_l2_prefilter_suppression_percent": 75.0,
+          "serial_inference_records_per_minute": 11.291458114639287,
+          "ideal_stage_overlap_records_per_minute": 17.86772053399858
+        },
+        {
+          "assumed_l2_prefilter_suppression_percent": 90.0,
+          "serial_inference_records_per_minute": 18.187634093421313,
+          "ideal_stage_overlap_records_per_minute": 30.678918380720802
+        }
+      ],
+      "measured": false
+    },
+    "comparison_result": "No matched commercial single-alert benchmark was run; no superiority or speedup factor is established."
+  },
+  "source": {
+    "dataset": {
+      "dataset": "AIT Alert Data Set v1",
+      "doi": "10.5281/zenodo.8263181",
+      "dataset_url": "https://zenodo.org/records/8263181/files/ait_ads.zip?download=1",
+      "dataset_sha256": "9f0595c4ebe56ac9223763881f55369dd4f249a8108064e4ae108eb3309aeeb9",
+      "labels_url": "https://raw.githubusercontent.com/ait-aecid/alert-data-set/ce927ddaeaa674f6909e1de676fa7dc293e393bd/alerts_csv/alerts_csv.zip",
+      "labels_revision": "ce927ddaeaa674f6909e1de676fa7dc293e393bd",
+      "labels_sha256": "2bf1a81527a3fe15d92079a7834c9d77c5305546e15569657d2097d6294825c3",
+      "scenario": "fox",
+      "records": 26000,
+      "selection": "Contiguous supported records from the requested source time; no outcome-based selection",
+      "requested_start_utc": "2022-01-18T12:37:00Z",
+      "first_source_utc": "2022-01-18T12:37:00+00:00",
+      "last_source_utc": "2022-01-19T10:13:35+00:00",
+      "label_counts": {
+        "dirb": 17293,
+        "-": 8695,
+        "online_cracking": 2,
+        "attacker_change_user": 3,
+        "escalated_sudo_command": 7
+      },
+      "attack_labelled": 17305,
+      "unannotated": 8695,
+      "label_caveat": "Unannotated is not certified benign. This selected scenario is not a full-dataset accuracy estimate.",
+      "source_commit": "4e5d7f56b1fe602d8ce14ff56a9337c88ca766d6",
+      "protocol": {
+        "workers": 5,
+        "l1": "qwen3.5:4b",
+        "l2": "gemma4:12b",
+        "l2_review_seconds": 180,
+        "ordering": "Accelerated chronological admission: next record after preceding L1 is saved; L2 overlaps L1",
+        "memory": "Initially empty, persistent within this isolated run; no ground-truth feedback",
+        "connector": "Test-only native Wazuh fixture to exercise live learned-pattern eligibility; not a live collector",
+        "clocks": "Context uses original source time; learned-pattern one-hour TTL uses processing wall time, maximum 25 hits",
+        "timing": "Observed benchmark receipt-to-final; not original-arrival delay or corporate product comparison",
+        "actions": "No collectors, Agent, response executor or customer database; recommendations only",
+        "qwen_options": {
+          "think": false,
+          "temperature": 0.1,
+          "format": "json",
+          "context": "server default"
+        },
+        "gemma_options": {
+          "think": false,
+          "num_ctx": 8192,
+          "num_predict": 1536,
+          "temperature": 0.1
+        },
+        "development_overlap": "Policy development used earlier AIT-ADS samples; no independent held-out claim"
+      }
+    },
+    "run": {
+      "models": {
+        "qwen3.5:4b": {
+          "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen35",
+            "families": [
+              "qwen35"
+            ],
+            "parameter_size": "4.7B",
+            "quantization_level": "Q4_K_M"
+          },
+          "parameters": "presence_penalty               1.5\ntemperature                    1\ntop_k                          20\ntop_p                          0.95",
+          "template_sha256": "b507b9c2f6ca642bffcd06665ea7c91f235fd32daeefdf875a0f938db05fb315"
+        },
+        "gemma4:12b": {
+          "digest": "4eb23ef187e2c5462566d6a1d3bbbc2f1346d0b4327cbb66d58fffbcc9b2b05c",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "gemma4",
+            "families": [
+              "gemma4"
+            ],
+            "parameter_size": "11.9B",
+            "quantization_level": "Q4_K_M"
+          },
+          "parameters": "top_p                          0.95\ntemperature                    1\ntop_k                          64",
+          "template_sha256": "b507b9c2f6ca642bffcd06665ea7c91f235fd32daeefdf875a0f938db05fb315"
+        }
+      },
+      "frozen_files_sha256": "5a78455919c1be4f6120cf6c4ce4ca6bf091fc666c13b30daf852a46a6e92f32",
+      "python": "3.14.5",
+      "started_utc": "2026-11-19T22:43:43.057922+00:00",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "ollama_version": {
+        "version": "0.40.3"
+      },
+      "initial_loaded_models": {
+        "models": [
+          {
+            "name": "qwen3.5:4b",
+            "model": "qwen3.5:4b",
+            "size": 3627171183,
+            "digest": "2a654d98e6fba55d452b7043684e9b57a947e393bbffa62485a7aac05ee4eefd",
+            "details": {
+              "parent_model": "",
+              "format": "gguf",
+              "family": "qwen35",
+              "families": [
+                "qwen35"
+              ],
+              "parameter_size": "4.7B",
+              "quantization_level": "Q4_K_M"
+            },
+            "expires_at": "2026-11-19T17:45:34.1431166-05:00",
+            "size_vram": 3627171183,
+            "context_length": 16384,
+            "runner": "llamacpp"
+          }
+        ]
+      },
+      "dashboard": "Owner authorized pausing the installed service for isolated timing"
+    },
+    "runtime_sha256": "fa1ca25e942534ff60858f49b00c8892c39dcd932eb0e63fb97ab460b25da0df",
+    "results_sha256": "4ff546095709bfb5a78f334b0110c97ba049bd0d62e71d1d7d9d0147f2992665",
+    "decisions_sha256": "bbe7273946e16564aa7d725614dbd765236bcc71c69d576cc563710e302ca6f5",
+    "progress_sha256": "4bd3ca7bb434d1699a039f27119ae0e9f871eb960065dc79cefb4fa96e588427",
+    "initial_summary_sha256": "81013aa7c0e07bdcaf121729caeb3766e710c057b2f69c8635e6e34d9f3ffed6",
+    "initial_archive_sha256": "9e3483bf725f6125454e130c846d8161238ff3f0379718c2aa6793c1b62f502a",
+    "intermediate_results_sha256": "51c7080e62eb8d5e790499af9f5d4161136400a29e6d1f8a10782c1a06fc93e0",
+    "intermediate_runtime_sha256": "ac45d158144639d678d315b6bbb59bfd4e9ec7297a50cefd2f03bf9c1dd382f2"
+  },
+  "caveats": [
+    "Stopped partial checkpoint with noncontiguous completed sequence numbers; unfinished rows excluded.",
+    "Unannotated rows are not independently certified benign.",
+    "Published baseline contains zero attack-labelled records; this checkpoint contains 17,305. The comparison table records each run's attack and unannotated counts.",
+    "Paired intermediate checkpoint was used in development; it is not held-out validation.",
+    "Nearly all attack records are repeated scans handled by rules; model-only attack sample has five records.",
+    "A checking call uses Gemma again; it is not an independent model or human adjudicator."
+  ],
+  "comparison": {
+    "unannotated_quiet_difference_pp": 32.42930002503729,
+    "unannotated_warning_rate_relative_difference_percent": 76.34465000009232,
+    "observed_mix_throughput_difference_percent": 40.20254150183034,
+    "gemma_attempt_count_ratio": 17.651162790697676
+  }
+}
