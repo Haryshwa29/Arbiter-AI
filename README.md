@@ -19,7 +19,7 @@ account validation and production-scale delivery remain future validation work.
 |---|---:|---:|
 | Saved decisions | 26,002 | **20,002 of 26,000 planned** |
 | Attack-labelled records included | 0 | **17,305** |
-| Attack records kept visible | Not measured | **17,304 / 17,305 — 99.994%** |
+| Attack-labelled records correctly flagged | Not measured | **17,304 / 17,305 — 99.994%** |
 | Unannotated records quieted | 57.52% | **89.95%** |
 | Unannotated L1 warnings removed by L2 | 0.35% | **64.67%** |
 | Actual Gemma review attempts | 43 | **759** |
